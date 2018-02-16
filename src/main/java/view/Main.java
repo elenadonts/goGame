@@ -7,19 +7,18 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class Main extends Application {
-    private static final int DEFAULT_WIDTH = 900;
-    private static final int DEFAULT_HEIGHT = 700;
+    private static final int DEFAULT_WIDTH = 200;
+    private static final int DEFAULT_HEIGHT = 180;
 
     public static void main(String[] args) {
         launch(args);
     }
+
     @Override
     public void start(Stage primaryStage) throws Exception {//init UI and run player
-        Parent root = FXMLLoader.load(getClass().getResource("/playerWindow.fxml"));
-        primaryStage.setTitle("GoGame");
-        primaryStage.setScene(new Scene(root, DEFAULT_WIDTH, DEFAULT_HEIGHT));
-        primaryStage.setMinWidth(DEFAULT_WIDTH);
-        primaryStage.setMinHeight(DEFAULT_HEIGHT);
+        Parent login = FXMLLoader.load(getClass().getResource("/login.fxml"));
+        primaryStage.setTitle("GoGame login");
+        primaryStage.setScene(new Scene(login));
         primaryStage.setResizable(false);
         primaryStage.show();
         primaryStage.setOnCloseRequest(we -> {
