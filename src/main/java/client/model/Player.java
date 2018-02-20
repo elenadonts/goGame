@@ -1,7 +1,7 @@
-package model;
+package client.model;
 
-import controller.PlayerWindowController;
-import controller.Server;
+import client.controller.PlayerWindowController;
+import server.controller.Server;
 
 import java.io.*;
 import java.net.Socket;
@@ -24,11 +24,11 @@ public class Player extends Thread {
             socket = new Socket("localhost", Server.PORT);
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));//сюда получаем
             writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
-            String msgIn;
+            String input;
             while (true) {
                 if (reader.ready()){
-                    msgIn = reader.readLine();
-                    guiController.receiveReply(msgIn);
+                    input = reader.readLine();
+                    guiController.getMeta(input);
                 }
             }
         } catch (IOException e) {
