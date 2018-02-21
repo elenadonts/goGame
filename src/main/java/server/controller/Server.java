@@ -1,5 +1,6 @@
 package server.controller;
 
+import org.apache.log4j.Logger;
 import server.model.ClientHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -14,6 +15,7 @@ import java.net.ServerSocket;
 import java.util.HashMap;
 
 public class Server {
+    private static final Logger logger = Logger.getLogger(Server.class);
     public static final int PORT = 3000;
     public static DocumentBuilder docBuilder;
     public static HashMap<String, String> userList = new HashMap<>();
@@ -44,7 +46,7 @@ public class Server {
                 userList.put(userElement.getElementsByTagName("login").item(0).getTextContent()
                         , userElement.getElementsByTagName("password").item(0).getTextContent());
             } catch (SAXException | IOException e) {
-                e.printStackTrace();
+                logger.error("Excepion", e);
             }
         }
     }

@@ -1,13 +1,14 @@
 package client.model;
 
 import client.controller.PlayerWindowController;
+import org.apache.log4j.Logger;
 import server.controller.Server;
 
 import java.io.*;
 import java.net.Socket;
 
 public class Player extends Thread {
-
+    private static final Logger logger = Logger.getLogger(Player.class);
     private Socket socket;
     private BufferedReader reader;
     private PrintWriter writer;
@@ -32,7 +33,7 @@ public class Player extends Thread {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("IOException", e);
         }
     }
     public void send(String message){

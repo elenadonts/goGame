@@ -21,7 +21,7 @@ public class Tile extends Rectangle {
         setOnMousePressed(event -> {
                 System.out.println("Mouse coordinates : X = " + event.getSceneX() + " Y = " + event.getSceneY());
                 this.getTileCorner(event.getSceneX(), event.getSceneY());
-                System.out.println("Corner coordinates: = " + corner[0] + " Y = " + corner[1]);
+                System.out.println("Corner coordinates: X = " + corner[0] + " Y = " + corner[1]);
                 System.out.println();
             stone = new Stone(corner[0], corner[1]);
             this.game.drawStone(stone);

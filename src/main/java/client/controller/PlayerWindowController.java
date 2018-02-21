@@ -12,6 +12,7 @@ import javafx.scene.control.Label;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import client.model.Player;
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -26,6 +27,7 @@ import java.io.StringReader;
 
 
 public class PlayerWindowController {
+    private static final Logger logger = Logger.getLogger(PlayerWindowController.class);
     @FXML
     public Label helloUser;
     private DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -71,9 +73,7 @@ public class PlayerWindowController {
                     break;
             }
         } catch (SAXException | IOException e) {
-            e.printStackTrace();
+            logger.error("Exception", e);
         }
     }
-
-
 }

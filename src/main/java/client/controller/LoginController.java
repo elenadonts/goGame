@@ -6,6 +6,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import client.model.Player;
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -21,6 +22,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.StringWriter;
 
 public class LoginController {
+    private static final Logger logger = Logger.getLogger(LoginController.class);
     private DocumentBuilder docBuilder;
     @FXML
     private Label errorLabel;
@@ -71,8 +73,8 @@ public class LoginController {
                 transformer.transform(new DOMSource(doc), new StreamResult(writer));
                 String output = writer.toString();
                 player.send(output);
-            } catch (ParserConfigurationException | TransformerException ex) {
-                ex.printStackTrace();
+            } catch (ParserConfigurationException | TransformerException e) {
+                logger.error("Exception", e);
             }
         }
     }

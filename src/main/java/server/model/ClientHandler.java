@@ -1,5 +1,6 @@
 package server.model;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -17,7 +18,7 @@ import java.io.*;
 import java.net.Socket;
 
 public class ClientHandler extends Thread{
-
+    private static final Logger logger = Logger.getLogger(ClientHandler.class);
     private BufferedReader reader;
     private PrintWriter writer;
 
@@ -35,7 +36,7 @@ public class ClientHandler extends Thread{
             transformer = tf.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "no");
         } catch (ParserConfigurationException | TransformerConfigurationException e) {
-            e.printStackTrace();
+            logger.error("Exception", e);
         }
         start();
     }
@@ -47,7 +48,7 @@ public class ClientHandler extends Thread{
             writer = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream()), true);//send to java.client
             reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));//receive from java.client
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("IOException", e);
         }
         while (true) {
             String input;
@@ -73,11 +74,11 @@ public class ClientHandler extends Thread{
 
                         writer.println(stringWriter.toString());
                     } catch (SAXException | TransformerException e) {
-                        e.printStackTrace();
+                        logger.error("Exception", e);
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("IOException", e);
             }
         }
     }
@@ -127,9 +128,7 @@ public class ClientHandler extends Thread{
         try {
             transformer.transform(new DOMSource(doc), new StreamResult(file));
         } catch (TransformerException e) {
-            e.printStackTrace();
+            logger.error("TransformerException", e);
         }
     }
-
-
 }
