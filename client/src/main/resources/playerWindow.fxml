@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane minWidth="231.0" prefHeight="448.0000999999975" prefWidth="609.0000999999975" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="controller.PlayerWindowController">
+  <TabPane layoutX="14.0" layoutY="52.0" prefHeight="383.0" prefWidth="581.0" tabClosingPolicy="UNAVAILABLE">
+    <tabs>
+      <Tab text="Room">
+        <content>
+          <AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+            <children>
+              <TableView editable="true" layoutX="14.0" layoutY="14.0" prefHeight="337.0001220703125" prefWidth="553.0">
+                <columns>
+                  <TableColumn prefWidth="75.0" text="Host" />
+                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="398.0" text="Description" />
+                  <TableColumn maxWidth="5000.0" minWidth="0.0" prefWidth="79.0" text="Online" />
+                </columns>
+              </TableView>
+            </children>
+          </AnchorPane>
+        </content>
+      </Tab>
+      <Tab text="User">
+        <content>
+          <AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+            <children>
+              <TableView blendMode="SRC_OVER" cache="true" cacheHint="DEFAULT" disable="false" editable="true" focusTraversable="true" layoutX="14.0" layoutY="14.0" mouseTransparent="false" pickOnBounds="false" prefHeight="338.0" prefWidth="553.0" tableMenuButtonVisible="false" visible="true">
+                <columns>
+                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="136.0" text="Nickname" />
+                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="97.0" text="Game count" />
+                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="92.0" text="Rating" />
+                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="107.0" text="\% wins" />
+                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="120.0" text="Online" />
+                </columns>
+              </TableView>
+            </children>
+          </AnchorPane>
+        </content>
+      </Tab>
+    </tabs>
+  </TabPane>
+  <Label fx:id="helloUser" layoutX="14.0" layoutY="14.0" text="Hello:" />
+  <Button layoutX="531.0" layoutY="16.0" mnemonicParsing="false" text="Connect" />
+  <Button layoutX="434.0" layoutY="16.0" mnemonicParsing="false" text="Create room" />
+</AnchorPane>
