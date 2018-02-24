@@ -16,6 +16,7 @@ public class GoGame extends Application {
     public static final int TILE_SIZE = 100;
     public static final int WIDTH = 8;
     public static final int HEIGHT = 8;
+    public static int count = 1;
 
     private Group tileGroup = new Group();
     private Group pieceGroup = new Group();
@@ -33,7 +34,7 @@ public class GoGame extends Application {
         for (int y = 0; y < HEIGHT; y++) {
             for (int x = 0; x < WIDTH; x++) {
                 Tile tile = new Tile(x, y, this);
-                /* add to hashMap<Point, PointState> */
+				/* add to hashMap<Point, PointState> */
                 tileGroup.getChildren().add(tile);
                 tileGroup.setLayoutX(50);
                 tileGroup.setLayoutY(50);
@@ -52,6 +53,7 @@ public class GoGame extends Application {
 
     public void drawStone(Stone stone) {
         pieceGroup.getChildren().add(stone);
+        count++;
     }
 
     public static void main(String[] args) {

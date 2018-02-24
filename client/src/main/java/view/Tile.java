@@ -19,12 +19,17 @@ public class Tile extends Rectangle {
         setStrokeWidth(2);
 
         setOnMousePressed(event -> {
-                System.out.println("Mouse coordinates : X = " + event.getSceneX() + " Y = " + event.getSceneY());
-                this.getTileCorner(event.getSceneX(), event.getSceneY());
-                System.out.println("Corner coordinates: X = " + corner[0] + " Y = " + corner[1]);
-                System.out.println();
-            stone = new Stone(corner[0], corner[1]);
-            this.game.drawStone(stone);
+            System.out.println("Mouse coordinates : X = " + event.getSceneX() + " Y = " + event.getSceneY());
+            this.getTileCorner(event.getSceneX(), event.getSceneY());
+            System.out.println("Corner coordinates: X = " + corner[0] + " Y = " + corner[1]);
+            System.out.println();
+            if(game.count % 2 != 0){
+                stone = new Stone(StoneColor.BLACK, corner[0], corner[1]);
+                this.game.drawStone(stone);
+            } else {
+                stone = new Stone(StoneColor.WHITE, corner[0], corner[1]);
+                this.game.drawStone(stone);
+            }
         });
     }
 
