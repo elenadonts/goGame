@@ -1,45 +1,49 @@
 package model;
 
-import controller.PlayerWindowController;
-import org.apache.log4j.Logger;
 
+public class Player {
+    private String userName;
+    private String userGameCount;
+    private String userRating;
+    private String userPercentWins;
+    private String userStatus;
 
-
-import java.io.*;
-import java.net.Socket;
-
-public class Player extends Thread {
-    private static int SERVER_PORT = 3000;
-    private static final Logger logger = Logger.getLogger(Player.class);
-    private Socket socket;
-    private BufferedReader reader;
-    private PrintWriter writer;
-
-    private PlayerWindowController guiController;
-
-    public void setGuiController(PlayerWindowController guiController) {
-        this.guiController = guiController;
+    @Override
+    public String toString() {
+        return "Player{" +
+                "userName='" + userName + '\'' +
+                ", userGameCount='" + userGameCount + '\'' +
+                ", userRating='" + userRating + '\'' +
+                ", userPercentWins='" + userPercentWins + '\'' +
+                ", userStatus='" + userStatus + '\'' +
+                '}';
     }
 
-
-    public void run() {
-        try {
-            socket = new Socket("localhost", SERVER_PORT);
-            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));//сюда получаем
-            writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
-            String input;
-            while (true) {
-                if (reader.ready()){
-                    input = reader.readLine();
-                    guiController.getMeta(input);
-                }
-            }
-        } catch (IOException e) {
-            logger.error("IOException", e);
-        }
-    }
-    public void send(String message){
-        writer.println(message);
+    public Player(String name, String gameCount, String rating, String  percentWins) {
+        userName = name;
+        userGameCount = gameCount;
+        userRating = rating;
+        userPercentWins = percentWins;
+        userStatus = "online";
     }
 
+    public String getUserName() {
+        return userName;
+    }
+
+    public String getUserGameCount() {
+        return userGameCount;
+    }
+
+    public String getUserStatus() {
+        return userStatus;
+    }
+
+    public String getUserPercentWins() {
+        return userPercentWins;
+    }
+
+    public String getUserRating() {
+        return userRating;
+    }
 }

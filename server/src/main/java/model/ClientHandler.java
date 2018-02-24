@@ -17,7 +17,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.net.Socket;
 
-public class ClientHandler extends Thread{
+public class ClientHandler extends Thread {
     private static final Logger logger = Logger.getLogger(ClientHandler.class);
     private BufferedReader reader;
     private PrintWriter writer;
@@ -26,6 +26,7 @@ public class ClientHandler extends Thread{
 
     private DocumentBuilder builder;
     private Transformer transformer;
+    private Player currentPlayer;
 
     public ClientHandler(Socket client) {
         this.clientSocket = client;
@@ -38,7 +39,7 @@ public class ClientHandler extends Thread{
         } catch (ParserConfigurationException | TransformerConfigurationException e) {
             logger.error("Exception", e);
         }
-        start();
+        this.setDaemon(true);
     }
 
     @Override
@@ -47,6 +48,7 @@ public class ClientHandler extends Thread{
             System.out.println("User: " + clientSocket.getInetAddress().toString().replace("/", "") + " connected;");
             writer = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream()), true);//send to java.client
             reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));//receive from java.client
+            Server.writers.add(writer);
         } catch (IOException e) {
             logger.error("IOException", e);
         }
@@ -73,6 +75,18 @@ public class ClientHandler extends Thread{
                         transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
 
                         writer.println(stringWriter.toString());
+                        if (output.substring(0, output.indexOf(";")).equals("connect")) {
+                            for (PrintWriter writer : Server.writers) {
+                                for (Player player : Server.userOnline) {
+                                    if (!writer.equals(this.writer)) {
+                                        writer.println(createXML(player));
+                                    } else if(!player.getUserName().equals(currentPlayer.getUserName())){
+                                        writer.println(createXML(player));
+                                    }
+                                }
+                            }
+                        }
+
                     } catch (SAXException | TransformerException e) {
                         logger.error("Exception", e);
                     }
@@ -99,19 +113,27 @@ public class ClientHandler extends Thread{
     }
 
     private String testLogin(String login, String password) {
-        String info = "connect";
         if (!Server.userList.containsKey(login)) {
-            createNewUser(login, password);
+            currentPlayer = createNewUser(login, password);
         } else {
-            if (!Server.userList.get(login).equals(password)) {
-                info = "incorrect";
+            if (!Server.userList.get(login).getUserPassword().equals(password)) {
+                return "incorrect";
+            } else {
+                currentPlayer = Server.userList.get(login);
             }
         }
-        return info;
+        Server.userOnline.add(currentPlayer);
+        return getInfoAboutPlayer(currentPlayer);
     }
 
-    private void createNewUser(String login, String password) {
-        Server.userList.put(login,password);
+    public String getInfoAboutPlayer(Player player) {
+        return "connect;" + player.getUserName() + ";" + player.getUserGameCount()
+                + ";" + player.getUserPercentWins() + ";" + player.getUserRating() + ";";
+    }
+
+    private Player createNewUser(String login, String password) {
+        Player newPlayer = new Player(password, login);
+        Server.userList.put(login, newPlayer);
         File file = new File("users" + File.separator + login + ".xml");
         Document doc = builder.newDocument();
 
@@ -125,10 +147,42 @@ public class ClientHandler extends Thread{
         Element pass = doc.createElement("password");
         pass.appendChild(doc.createTextNode(password));
         root.appendChild(pass);
+
+        Element gameCount = doc.createElement("gameCount");
+        gameCount.appendChild(doc.createTextNode("0"));
+        root.appendChild(gameCount);
+
+        Element rating = doc.createElement("rating");
+        rating.appendChild(doc.createTextNode("0"));
+        root.appendChild(rating);
+
+        Element percentWins = doc.createElement("percentWins");
+        percentWins.appendChild(doc.createTextNode("0%"));
+        root.appendChild(percentWins);
         try {
             transformer.transform(new DOMSource(doc), new StreamResult(file));
         } catch (TransformerException e) {
             logger.error("TransformerException", e);
         }
+        return newPlayer;
+    }
+
+    public String createXML(Player player) {
+        Document document = builder.newDocument();
+
+        Element root = document.createElement("body");
+        document.appendChild(root);
+
+        Element meta = document.createElement("meta-info");
+        meta.appendChild(document.createTextNode("newUser" + getInfoAboutPlayer(player)));
+        root.appendChild(meta);
+
+        StringWriter stringWriter = new StringWriter();
+        try {
+            transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+        return stringWriter.toString();
     }
 }

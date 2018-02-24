@@ -5,6 +5,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
+import model.ClientHandler;
 import model.Player;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -22,7 +23,6 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.StringWriter;
 
 public class LoginController {
-    private static final Logger logger = Logger.getLogger(LoginController.class);
     private DocumentBuilder docBuilder;
     @FXML
     private Label errorLabel;
@@ -30,10 +30,10 @@ public class LoginController {
     private TextField userLogin;
     @FXML
     private PasswordField userPassword;
-    private static Player player;
+    private static ClientHandler clientHandler;
 
-    public static void setPlayer(Player currPlayer) {
-        player  = currPlayer;
+    public static void setClientHandler(ClientHandler currClientHandler) {
+        clientHandler = currClientHandler;
     }
 
     @FXML
@@ -46,7 +46,6 @@ public class LoginController {
             errorLabel.setText("Login or password must be more 4 char");
         } else {
             try {
-                System.out.println("Login:" + log + "; Password:" + pass);
                 DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
                 docBuilder = docFactory.newDocumentBuilder();
                 Document doc = docBuilder.newDocument();
@@ -72,9 +71,9 @@ public class LoginController {
                 StringWriter writer = new StringWriter();
                 transformer.transform(new DOMSource(doc), new StreamResult(writer));
                 String output = writer.toString();
-                player.send(output);
-            } catch (ParserConfigurationException | TransformerException e) {
-                logger.error("Exception", e);
+                clientHandler.send(output);
+            } catch (ParserConfigurationException | TransformerException ex) {
+                ex.printStackTrace();
             }
         }
     }
@@ -83,7 +82,11 @@ public class LoginController {
         errorLabel.setText("");
     }
 
-    public void setErrorLabel(String text){
+    public void setErrorLabel(String text) {
         errorLabel.setText(text);
+    }
+
+    public String getUserLogin() {
+        return userLogin.getText();
     }
 }
