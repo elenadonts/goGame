@@ -12,4 +12,5 @@ public class GameField {
             allPoints.put(point, PointState.BLANK);
         }
     }
+
 }

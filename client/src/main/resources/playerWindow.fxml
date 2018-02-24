@@ -6,7 +6,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane minWidth="231.0" prefHeight="448.0000999999975" prefWidth="609.0000999999975" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="controller.PlayerWindowController">
+<AnchorPane minWidth="231.0" prefHeight="448.0000999999975" prefWidth="609.0000999999975"
+            xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2"
+            fx:controller="controller.PlayerWindowController">
   <TabPane layoutX="14.0" layoutY="52.0" prefHeight="383.0" prefWidth="581.0" tabClosingPolicy="UNAVAILABLE">
     <tabs>
       <Tab text="Room">
@@ -28,13 +30,13 @@
         <content>
           <AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
             <children>
-              <TableView blendMode="SRC_OVER" cache="true" cacheHint="DEFAULT" disable="false" editable="true" focusTraversable="true" layoutX="14.0" layoutY="14.0" mouseTransparent="false" pickOnBounds="false" prefHeight="338.0" prefWidth="553.0" tableMenuButtonVisible="false" visible="true">
+              <TableView fx:id="userListTable" blendMode="SRC_OVER" cache="true" cacheHint="DEFAULT" disable="false" editable="true" focusTraversable="true" layoutX="14.0" layoutY="14.0" mouseTransparent="false" pickOnBounds="false" prefHeight="338.0" prefWidth="553.0" tableMenuButtonVisible="false" visible="true">
                 <columns>
-                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="136.0" text="Nickname" />
-                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="97.0" text="Game count" />
-                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="92.0" text="Rating" />
-                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="107.0" text="\% wins" />
-                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="120.0" text="Online" />
+                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="136.0" text="Nickname" fx:id="userName" />
+                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="97.0" text="Game count" fx:id="userGameCount" />
+                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="92.0" text="Rating" fx:id="userRating" />
+                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="107.0" text="\% wins" fx:id="userPercentWins" />
+                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="120.0" text="Online" fx:id="userStatus" />
                 </columns>
               </TableView>
             </children>
