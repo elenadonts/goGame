@@ -10,11 +10,11 @@ public class Stone extends StackPane {
     public static final int TILE_SIZE = 100;
 
     public Stone(StoneColor stoneColor, double x, double y) {
+        relocate(x + 6, y + 6);
+        Circle backCircle = new Circle(TILE_SIZE / 2 - TILE_SIZE * 0.06);
+        backCircle.setFill(Color.valueOf("#db9900"));
+        Circle frontCircle = new Circle(TILE_SIZE / 2 - TILE_SIZE * 0.1);
         if (stoneColor.equals(BLACK)){
-            relocate(x + 6, y + 6);
-            Circle backCircle = new Circle(TILE_SIZE / 2 - TILE_SIZE * 0.06);
-            backCircle.setFill(Color.valueOf("#db9900"));
-            Circle frontCircle = new Circle(TILE_SIZE / 2 - TILE_SIZE * 0.1);
             RadialGradient blackGrad = new RadialGradient(0,
                     .0,
                     frontCircle.getCenterX(),
@@ -27,10 +27,6 @@ public class Stone extends StackPane {
             frontCircle.setFill(blackGrad);
             getChildren().addAll(backCircle, frontCircle);
         } else {
-            relocate(x + 6, y + 6);
-            Circle backCircle = new Circle(TILE_SIZE / 2 - TILE_SIZE * 0.06);
-            backCircle.setFill(Color.valueOf("#db9900"));
-            Circle frontCircle = new Circle(TILE_SIZE / 2 - TILE_SIZE * 0.1);
             RadialGradient whiteGrad = new RadialGradient(0,
                     .0,
                     frontCircle.getCenterX(),

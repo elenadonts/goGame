@@ -3,6 +3,9 @@ package view;
 import javafx.geometry.Bounds;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import model.GameField;
+import model.Point;
+import model.PointState;
 
 public class Tile extends Rectangle {
     private GoGame game;
@@ -21,14 +24,22 @@ public class Tile extends Rectangle {
         setOnMousePressed(event -> {
             System.out.println("Mouse coordinates : X = " + event.getSceneX() + " Y = " + event.getSceneY());
             this.getTileCorner(event.getSceneX(), event.getSceneY());
-            System.out.println("Corner coordinates: X = " + corner[0] + " Y = " + corner[1]);
-            System.out.println();
-            if(game.count % 2 != 0){
-                stone = new Stone(StoneColor.BLACK, corner[0], corner[1]);
-                this.game.drawStone(stone);
-            } else {
-                stone = new Stone(StoneColor.WHITE, corner[0], corner[1]);
-                this.game.drawStone(stone);
+            double xCoordinate = corner[0];
+            double yCoordinate = corner[1];
+            System.out.println("Corner coordinates: X = " + xCoordinate + " Y = " + yCoordinate);
+
+            //will be removed when we have two players
+            PointState estimatedPointState = game.count % 2 == 0 ? PointState.STONE_WHITE : PointState.STONE_BLACK;
+
+            if (GameField.isAllowedToPlace(xCoordinate, yCoordinate, estimatedPointState)){
+                if(game.count % 2 != 0){
+                    stone = new Stone(StoneColor.BLACK, xCoordinate, yCoordinate);
+                    this.game.drawStone(stone);
+                } else {
+                    stone = new Stone(StoneColor.WHITE, xCoordinate, yCoordinate);
+                    this.game.drawStone(stone);
+                }
+                GameField.addStone(new Point(xCoordinate, yCoordinate), estimatedPointState);
             }
         });
     }

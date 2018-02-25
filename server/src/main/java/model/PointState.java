@@ -1,8 +1,10 @@
 package model;
 
 public enum PointState {
-    OCCUPIED_WHITE(1),
-    OCCUPIED_BLACK(2),
+    STONE_WHITE(1),
+    STONE_BLACK(2),
+    TARGET(3),
+    USED(4),
     BLANK(0);
 
     private int value;
