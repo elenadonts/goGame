@@ -7,6 +7,7 @@ public enum PointState {
     USED(4),
     BLANK(0);
 
+
     private int value;
 
     PointState(int value) {

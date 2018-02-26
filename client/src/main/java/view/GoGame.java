@@ -44,11 +44,11 @@ public class GoGame extends Application {
                 tileGroup.setLayoutX(50);
                 tileGroup.setLayoutY(50);
             }
-            gameGrid[WIDTH][y] = new Point( y * TILE_SIZE, WIDTH * TILE_SIZE);
+            gameGrid[WIDTH][y] = new Point(y * TILE_SIZE, WIDTH * TILE_SIZE);
             System.out.println();
         }
         for (int i = 0; i < HEIGHT+1; i++){
-            gameGrid[i][HEIGHT] = new Point( HEIGHT * TILE_SIZE, i*TILE_SIZE);
+            gameGrid[i][HEIGHT] = new Point(HEIGHT * TILE_SIZE, i * TILE_SIZE);
         }
 
         //later - send in xml

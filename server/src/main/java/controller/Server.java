@@ -10,10 +10,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
+import java.io.*;
 import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,5 +59,4 @@ public class Server {
             }
         }
     }
-
 }

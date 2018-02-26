@@ -1,10 +1,12 @@
 package model;
 
+
 public class Point {
 
     private double x;
     private double y;
-    private PointState pointState = PointState.BLANK;
+    private PointState pointState;
+
 
     public PointState getPointState() {
         return pointState;
@@ -25,6 +27,12 @@ public class Point {
 
     public double getY() {
         return y;
+    }
+
+    public Point clone () {
+        Point result = new Point(this.getX(), this.getY());
+        result.setPointState(this.getPointState());
+        return result;
     }
 
 }
