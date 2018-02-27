@@ -1,6 +1,7 @@
 package view;
 
 import javafx.geometry.Bounds;
+import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import model.GameField;
@@ -9,6 +10,7 @@ import model.PointState;
 
 public class Tile extends Rectangle {
     private GoGame game;
+    private LastStone lastStone;
     private Stone stone;
     private double[] corner;
 
@@ -21,25 +23,41 @@ public class Tile extends Rectangle {
         setStroke(Color.BLACK);
         setStrokeWidth(2);
 
-        setOnMousePressed(event -> {
-            System.out.println("Mouse coordinates : X = " + event.getSceneX() + " Y = " + event.getSceneY());
-            this.getTileCorner(event.getSceneX(), event.getSceneY());
-            double xCoordinate = corner[0];
-            double yCoordinate = corner[1];
-            System.out.println("Corner coordinates: X = " + xCoordinate + " Y = " + yCoordinate);
+        this.setOnMousePressed(event -> {
+            if(event.getButton() == MouseButton.PRIMARY) {
+                System.out.println("Mouse coordinates : X = " + event.getSceneX() + " Y = " + event.getSceneY());
+                this.getTileCorner(event.getSceneX(), event.getSceneY());
+                double xCoordinate = corner[0];
+                double yCoordinate = corner[1];
+                System.out.println("Corner coordinates: X = " + xCoordinate + " Y = " + yCoordinate);
 
-            //will be removed when we have two players
-            PointState estimatedPointState = game.count % 2 == 0 ? PointState.STONE_WHITE : PointState.STONE_BLACK;
+                //will be removed when we have two players
+                PointState estimatedPointState = game.clickCount % 2 == 0 ? PointState.STONE_WHITE : PointState.STONE_BLACK;
 
-            if (GameField.isAllowedToPlace(xCoordinate, yCoordinate, estimatedPointState)){
-                if(game.count % 2 != 0){
-                    stone = new Stone(StoneColor.BLACK, xCoordinate, yCoordinate);
-                    this.game.drawStone(stone);
-                } else {
-                    stone = new Stone(StoneColor.WHITE, xCoordinate, yCoordinate);
-                    this.game.drawStone(stone);
+                if (GameField.isAllowedToPlace(xCoordinate, yCoordinate, estimatedPointState)) {
+                    if(game.clickCount % 2 != 0){
+                        if(game.getLastStone() != null){
+                            game.removeLastStone();
+                        }
+                        stone = new Stone(StoneColor.BLACK, xCoordinate, yCoordinate);
+                        this.game.drawStone(stone);
+                        lastStone = new LastStone(StoneColor.BLACK, xCoordinate, yCoordinate);
+                        this.game.drawLastStone(lastStone);
+                    } else {
+                        game.removeLastStone();
+                        stone = new Stone(StoneColor.WHITE, xCoordinate, yCoordinate);
+                        this.game.drawStone(stone);
+                        lastStone = new LastStone(StoneColor.WHITE, xCoordinate, yCoordinate);
+                        this.game.drawLastStone(lastStone);
+
+                    }
+                   GameField.addStone(new Point(xCoordinate, yCoordinate), estimatedPointState);
                 }
-                GameField.addStone(new Point(xCoordinate, yCoordinate), estimatedPointState);
+            } else if (event.getButton() == MouseButton.SECONDARY) {
+                System.out.println("Mouse coordinates : X = " + event.getSceneX() + " Y = " + event.getSceneY());
+                this.getTileCorner(event.getSceneX(), event.getSceneY());
+                System.out.println("Corner coordinates: X = " + corner[0] + " Y = " + corner[1]);
+                game.removeStone(corner[0], corner[1]);
             }
         });
     }

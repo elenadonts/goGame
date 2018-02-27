@@ -55,7 +55,7 @@ public class Server {
                 player.setUserRating(userElement.getElementsByTagName("rating").item(0).getTextContent());
                 userList.put(player.getUserName(), player);
             } catch (SAXException | IOException e) {
-                logger.error("Excepion", e);
+                logger.error("Exception", e);
             }
         }
     }
