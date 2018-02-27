@@ -3,6 +3,9 @@ package model;
 
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class GameField {
 
@@ -21,7 +24,6 @@ public class GameField {
     }
 
     public static boolean isAllowedToPlace(double x, double y, PointState stoneColor){
-        initTempGrid();
         Point pointOnGrid = new Point(x, y);
         pointOnGrid.setPointState(stoneColor);
         if (isCellOccupied(pointOnGrid)) return false;
@@ -42,6 +44,7 @@ public class GameField {
     }
 
     private static boolean hasAnyOpenWay(Point target){
+        initTempGrid();
         PointState enemyColor = getEnemyStoneColor(target.getPointState());
         int row = getArrayCellIndexFromCoordinate(target.getY());
         int column = getArrayCellIndexFromCoordinate(target.getX());
@@ -69,16 +72,16 @@ public class GameField {
         boolean isOpen;
         try {
             if (tempGrid[rowToCheck][columnToCheck].getPointState() == PointState.BLANK){
-                logger.info("Blank cell " + rowToCheck + " " + columnToCheck);
+                //logger.info("Blank cell " + rowToCheck + " " + columnToCheck);
                 return true;
             }
             if (tempGrid[rowToCheck][columnToCheck].getPointState() == opposite){
-                logger.info("Enemy stone");
+               //logger.info("Enemy stone");
                 return false;
             }
             if (tempGrid[rowToCheck][columnToCheck].getPointState() == current){
                 tempGrid[rowToCheck][columnToCheck].setPointState(PointState.USED);
-                logger.info("Own stone");
+               // logger.info("Own stone");
                 return wayIsOpen(current, opposite, rowToCheck, columnToCheck);
             }
             tempGrid[rowToCheck][columnToCheck].setPointState(opposite);
@@ -89,7 +92,7 @@ public class GameField {
             if (tempGrid[rowToCheck][columnToCheck].getPointState() == PointState.USED) return false;
         }
         catch (ArrayIndexOutOfBoundsException e) {
-            logger.info("Out of game grid");
+           // logger.info("Out of game grid");
             return false;
         }
         return isOpen;
@@ -103,7 +106,26 @@ public class GameField {
         int row = getArrayCellIndexFromCoordinate(stoneCoordinates.getY());
         int column = getArrayCellIndexFromCoordinate(stoneCoordinates.getX());
         gameGrid[row][column].setPointState(pointState);
+        List<Point> toRemove = getPointsToRemove();
+
+
+        System.out.println("points to remove - " + toRemove.size());
+        for (int i = 0; i < toRemove.size(); i++){
+            System.out.println(toRemove.get(i).getX() + " " + toRemove.get(i).getY());
+        }
         //remove stones if necessary
+    }
+
+    public static List<Point> getPointsToRemove(){
+        List<Point> pointsToRemove = new ArrayList<>();
+        for (int i = 0; i < gameGrid.length; i++){
+            for (int j = 0; j < gameGrid[i].length; j++){
+                if (!hasAnyOpenWay(gameGrid[i][j])){
+                    pointsToRemove.add(gameGrid[i][j]);
+                }
+            }
+        }
+        return pointsToRemove;
     }
 
     private static void initTempGrid(){
