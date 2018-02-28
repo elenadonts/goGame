@@ -1,7 +1,7 @@
 package model;
 
 
-public class Point {
+public class Point implements Cloneable {
 
     private double x;
     private double y;

@@ -106,24 +106,20 @@ public class GameField {
         int row = getArrayCellIndexFromCoordinate(stoneCoordinates.getY());
         int column = getArrayCellIndexFromCoordinate(stoneCoordinates.getX());
         gameGrid[row][column].setPointState(pointState);
-        List<Point> toRemove = getPointsToRemove();
 
-
-        System.out.println("points to remove - " + toRemove.size());
-        for (int i = 0; i < toRemove.size(); i++){
-            System.out.println(toRemove.get(i).getX() + " " + toRemove.get(i).getY());
-        }
-        //remove stones if necessary
     }
 
     public static List<Point> getPointsToRemove(){
         List<Point> pointsToRemove = new ArrayList<>();
-        for (int i = 0; i < gameGrid.length; i++){
-            for (int j = 0; j < gameGrid[i].length; j++){
-                if (!hasAnyOpenWay(gameGrid[i][j])){
-                    pointsToRemove.add(gameGrid[i][j]);
+        for (int i = 0; i < tempGrid.length; i++){
+            for (int j = 0; j < tempGrid[i].length; j++){
+                if (!hasAnyOpenWay(tempGrid[i][j])){
+                    pointsToRemove.add(gameGrid[i][j].clone());
                 }
             }
+        }
+        for (Point point: pointsToRemove) {
+            point.setPointState(PointState.BLANK);
         }
         return pointsToRemove;
     }

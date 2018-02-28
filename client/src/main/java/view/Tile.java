@@ -8,6 +8,8 @@ import model.GameField;
 import model.Point;
 import model.PointState;
 
+import java.util.List;
+
 public class Tile extends Rectangle {
     private GoGame game;
     private LastStone lastStone;
@@ -51,7 +53,8 @@ public class Tile extends Rectangle {
                         this.game.drawLastStone(lastStone);
 
                     }
-                   GameField.addStone(new Point(xCoordinate, yCoordinate), estimatedPointState);
+                    GameField.addStone(new Point(xCoordinate, yCoordinate), estimatedPointState);
+                    removeSurroundedStones(GameField.getPointsToRemove());
                 }
             } else if (event.getButton() == MouseButton.SECONDARY) {
                 System.out.println("Mouse coordinates : X = " + event.getSceneX() + " Y = " + event.getSceneY());
@@ -60,6 +63,11 @@ public class Tile extends Rectangle {
                 game.removeStone(corner[0], corner[1]);
             }
         });
+    }
+    private void removeSurroundedStones(List<Point> stonesToRemove){
+        for (Point point : stonesToRemove){
+            game.removeStone(point.getX(), point.getY());
+        }
     }
 
     public void getTileCorner(double mouseClickX, double mouseClickY) {
