@@ -85,8 +85,4 @@ public class LoginController {
     public void setErrorLabel(String text) {
         errorLabel.setText(text);
     }
-
-    public String getUserLogin() {
-        return userLogin.getText();
-    }
 }

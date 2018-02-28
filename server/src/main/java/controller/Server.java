@@ -1,5 +1,6 @@
 package controller;
 
+import model.GameRoom;
 import model.Player;
 import org.apache.log4j.Logger;
 import model.ClientHandler;
@@ -22,6 +23,7 @@ public class Server {
     public static HashMap<String, Player> userList = new HashMap<>();
     public static HashSet<PrintWriter> writers = new HashSet<>();
     public static HashSet<Player> userOnline = new HashSet<>();
+    public static HashMap<String,GameRoom> gameRooms = new HashMap<>();
 
     public static void main(String[] args) throws Exception {
         ServerSocket server = new ServerSocket(PORT);

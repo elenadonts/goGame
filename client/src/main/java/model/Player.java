@@ -8,23 +8,21 @@ public class Player {
     private String userPercentWins;
     private String userStatus;
 
-    @Override
-    public String toString() {
-        return "Player{" +
-                "userName='" + userName + '\'' +
-                ", userGameCount='" + userGameCount + '\'' +
-                ", userRating='" + userRating + '\'' +
-                ", userPercentWins='" + userPercentWins + '\'' +
-                ", userStatus='" + userStatus + '\'' +
-                '}';
+    public Player(String userName, String userGameCount, String userRating, String userPercentWins) {
+        this.userName = userName;
+        this.userGameCount = userGameCount;
+        this.userRating = userRating;
+        this.userPercentWins = userPercentWins;
+        userStatus = "online";
     }
 
-    public Player(String name, String gameCount, String rating, String  percentWins) {
-        userName = name;
-        userGameCount = gameCount;
-        userRating = rating;
-        userPercentWins = percentWins;
-        userStatus = "online";
+    public Player(String userName) {
+        this.userName = userName;
+        this.userGameCount = "0";
+        this.userRating = "0";
+        this.userPercentWins = "0";
+        userStatus = "offline";
+
     }
 
     public String getUserName() {
@@ -46,4 +44,5 @@ public class Player {
     public String getUserRating() {
         return userRating;
     }
+
 }
