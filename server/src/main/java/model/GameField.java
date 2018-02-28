@@ -72,16 +72,16 @@ public class GameField {
         boolean isOpen;
         try {
             if (tempGrid[rowToCheck][columnToCheck].getPointState() == PointState.BLANK){
-                //logger.info("Blank cell " + rowToCheck + " " + columnToCheck);
+//                logger.info("Blank cell " + rowToCheck + " " + columnToCheck);
                 return true;
             }
             if (tempGrid[rowToCheck][columnToCheck].getPointState() == opposite){
-               //logger.info("Enemy stone");
+//               logger.info("Enemy stone");
                 return false;
             }
             if (tempGrid[rowToCheck][columnToCheck].getPointState() == current){
                 tempGrid[rowToCheck][columnToCheck].setPointState(PointState.USED);
-               // logger.info("Own stone");
+//                logger.info("Own stone");
                 return wayIsOpen(current, opposite, rowToCheck, columnToCheck);
             }
             tempGrid[rowToCheck][columnToCheck].setPointState(opposite);
@@ -92,7 +92,7 @@ public class GameField {
             if (tempGrid[rowToCheck][columnToCheck].getPointState() == PointState.USED) return false;
         }
         catch (ArrayIndexOutOfBoundsException e) {
-           // logger.info("Out of game grid");
+//            logger.info("Out of game grid");
             return false;
         }
         return isOpen;
@@ -111,14 +111,16 @@ public class GameField {
 
     public static List<Point> getPointsToRemove(){
         List<Point> pointsToRemove = new ArrayList<>();
-        for (int i = 0; i < tempGrid.length; i++){
-            for (int j = 0; j < tempGrid[i].length; j++){
-                if (!hasAnyOpenWay(tempGrid[i][j])){
+        List<Point> points = new ArrayList<>();
+        for (int i = 0; i < gameGrid.length; i++){
+            for (int j = 0; j < gameGrid[i].length; j++){
+                if (!hasAnyOpenWay(gameGrid[i][j])){
                     pointsToRemove.add(gameGrid[i][j].clone());
+                    points.add(gameGrid[i][j]);
                 }
             }
         }
-        for (Point point: pointsToRemove) {
+        for (Point point: points) {
             point.setPointState(PointState.BLANK);
         }
         return pointsToRemove;
