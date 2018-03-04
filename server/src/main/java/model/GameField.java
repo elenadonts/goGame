@@ -23,9 +23,9 @@ public class GameField {
 
     public static void initGameField(Point[][] allPoints) { //points received in xml from player after game start
         gameGrid = allPoints;
-        for (int i = 0; i < gameGrid.length; i++) {
-            for (int j = 0; j < gameGrid[i].length; j++) {
-                gameGrid[i][j].setPointState(PointState.BLANK);
+        for (int x = 0; x < gameGrid.length; x++) {
+            for (int y = 0; y < gameGrid[x].length; y++) {
+                gameGrid[x][y].setPointState(PointState.BLANK);
             }
         }
     }
