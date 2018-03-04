@@ -2,12 +2,19 @@ package controller;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import model.ClientHandler;
 import model.GameRoom;
 import sun.awt.geom.AreaOp;
+import view.GoGame;
 import view.Main;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -82,6 +89,8 @@ public class PlayerWindowController {
     public Button connectToRoom;
     @FXML
     public Button startGame;
+    @FXML
+    public Pane gamePane;
     private ClientHandler clientHandler = new ClientHandler();
 
     private SingleSelectionModel<Tab> gameRoomTabSelectionModel;
@@ -126,8 +135,11 @@ public class PlayerWindowController {
         lobbyListTable.setItems(gameRoomObsList);
 
         LoginController.setClientHandler(clientHandler);
+
         gameRoomTabSelectionModel = tabPane.getSelectionModel();
         gameRoomTabSelectionModel.select(privateRoomTab);
+
+        gamePane.getChildren().add(new GoGame().createContent());
     }
 
     public void readXML(String input) {

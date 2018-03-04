@@ -17,7 +17,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 
-public class GoGame extends Application {
+public class GoGame {
     public static final int TILE_SIZE = 100;
     public static final int SIDE = 5;
     public static int clickCount = 1;
@@ -36,7 +36,7 @@ public class GoGame extends Application {
         return lastStone;
     }
 
-    private Parent createContent() {
+    public Parent createContent() {
         Pane root = new Pane();
         root.setPrefSize(SIDE * TILE_SIZE + TILE_SIZE, SIDE * TILE_SIZE + TILE_SIZE);
         root.getChildren().addAll(tileGroup, pieceGroup);
@@ -51,14 +51,6 @@ public class GoGame extends Application {
             }
         }
         return root;
-    }
-
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        Scene scene = new Scene(createContent());
-        primaryStage.setTitle("GoGame");
-        primaryStage.setScene(scene);
-        primaryStage.show();
     }
 
     public void drawStone(Stone stone) {
@@ -85,9 +77,5 @@ public class GoGame extends Application {
 
     public void removeLastStone() {
         pieceGroup.getChildren().remove(lastStone);
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 }
