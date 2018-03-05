@@ -18,7 +18,7 @@ import java.util.Set;
 
 
 public class GoGame {
-    public static final int TILE_SIZE = 100;
+    public static final int TILE_SIZE = 80;
     public static final int SIDE = 5;
     public static int clickCount = 1;
 

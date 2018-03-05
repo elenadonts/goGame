@@ -1,24 +1,27 @@
 package model;
 
-
 import org.apache.log4j.Logger;
-
 import java.util.*;
 
 public class GameField {
-
     private static final Logger logger = Logger.getLogger(GameField.class);
-    private static final int STEP_SIZE = 100;
+    private static final int STEP_SIZE = 80;
     private static Point[][] gameGrid;
     private static Point[][] tempGrid;
     private static Set<Point> pointsToRemove = new HashSet<>();
     private static Set<Point> points = new HashSet<>();
-    private static PointState stoneColorGeneral;
+    private static PointState currentStoneColor;
     private static Point blockedPoint;
     private static boolean block;
+    private static int capturedWhiteStones;
+    private static int capturedBlackStones;
 
     public static Set<Point> getPointsToRemove() {
         return pointsToRemove;
+    }
+
+    public static boolean isBlock() {
+        return block;
     }
 
     public static void initGameField(Point[][] allPoints) { //points received in xml from player after game start
@@ -30,69 +33,80 @@ public class GameField {
         }
     }
 
+    public static void increaseCapturedStonesNumber() {
+        if (currentStoneColor.equals(PointState.STONE_BLACK)) {
+            capturedWhiteStones += getPointsToRemove().size();
+        } else if (currentStoneColor.equals(PointState.STONE_WHITE)) {
+            capturedBlackStones += getPointsToRemove().size();
+        }
+    }
+
     public static boolean isAllowedToPlace(double xCoordinate, double yCoordinate, PointState stoneColor) {
-        stoneColorGeneral = stoneColor;
+        currentStoneColor = stoneColor;
         Point pointOnGrid = new Point(xCoordinate, yCoordinate);
         pointOnGrid.setPointState(stoneColor);
 
         if ((blockedPoint != null) && (!blockedPoint.getPointState().equals(stoneColor))) {
-            int row = getArrayCellIndexFromCoordinate(blockedPoint.getY());
-            int column = getArrayCellIndexFromCoordinate(blockedPoint.getX());
+            int row = getPositionIndexFromCoordinate(blockedPoint.getY());
+            int column = getPositionIndexFromCoordinate(blockedPoint.getX());
             gameGrid[row][column].setPointState(PointState.BLANK);
             blockedPoint = null;
             block = false;
         }
 
-        if (isCellOccupied(pointOnGrid)) {
+        if (isPositionOccupied(pointOnGrid)) {
             return false;
         }
 
         if (hasAnyOpenWay(pointOnGrid)) {
             addStone(new Point(xCoordinate, yCoordinate), stoneColor);
-            pointsToRemove();
-            removeSurroundedPoints();
-            // add method, for transfering Set<Point> pointsToRemove to the client view
-            // after that we can uncomment clearPointsToRemoveList() method(see below)
-            //clearPointsToRemoveList();
+            getSurroundedPoints();
+            changeStateOfRemovedPoints();
+            increaseCapturedStonesNumber();
+            // add method, for transfering Set<Point> getSurroundedPoints to the client view
+            // after that we can uncomment getSurroundedPoints.clear() method(see below)
+            //getSurroundedPoints.clear();
             return true;
         }
 
-        if (isDoubleSurrounded(pointOnGrid, stoneColor)) {
-            removeSurroundedPoints();
-            if (block) {
+        if (isMutuallySurrounded(pointOnGrid, stoneColor)) {
+            changeStateOfRemovedPoints();
+            if (GameField.isBlock()) {
                 GameField.repeatingPosition();
             }
-            // add method, for transfering Set<Point> pointsToRemove to the client view
-            // after that we can uncomment clearPointsToRemoveList() method(see below)
-            //clearPointsToRemoveList();
+            increaseCapturedStonesNumber();
+            // add method, for transfering Set<Point> getSurroundedPoints to the client view
+            // after that we can uncomment getSurroundedPoints.clear() method(see below)
+            //getSurroundedPoints.clear();
             return true;
         }
-
         return false;
     }
 
-    private static boolean isDoubleSurrounded(Point point, PointState stoneColor) {
-        int row = getArrayCellIndexFromCoordinate(point.getY());
-        int column = getArrayCellIndexFromCoordinate(point.getX());
+    private static boolean isMutuallySurrounded(Point point, PointState stoneColor) {
+        int row = getPositionIndexFromCoordinate(point.getY());
+        int column = getPositionIndexFromCoordinate(point.getX());
         gameGrid[row][column].setPointState(stoneColor);
-        pointsToRemove();
-        if (lookForSurroundedEnemyStone(stoneColor)) {
-            removeCurrentColorStones();
+        getSurroundedPoints();
+        if (lookingForSurroundedEnemyStones(stoneColor)) {
+            removePointsWithCurrentStoneColor();
             return true;
         }
         gameGrid[row][column].setPointState(PointState.BLANK);
+        points.clear();
+        pointsToRemove.clear();
         return false;
     }
 
-    public static void removeCurrentColorStones() {
+    public static void removePointsWithCurrentStoneColor() {
         Iterator<Point> iterator = pointsToRemove.iterator();
         while (iterator.hasNext()) {
             Point point = iterator.next();
-            if (point.getPointState().equals(stoneColorGeneral)) {
+            if (point.getPointState().equals(currentStoneColor)) {
                 iterator.remove();
             }
         }
-        checkToBlockPoint();
+        checkPointToBlock();
     }
 
     public static void repeatingPosition() {
@@ -100,12 +114,12 @@ public class GameField {
             blockedPoint = point.clone();
             break;
         }
-        int row = getArrayCellIndexFromCoordinate(blockedPoint.getY());
-        int column = getArrayCellIndexFromCoordinate(blockedPoint.getX());
+        int row = getPositionIndexFromCoordinate(blockedPoint.getY());
+        int column = getPositionIndexFromCoordinate(blockedPoint.getX());
         gameGrid[row][column].setPointState(PointState.BLOCKED);
     }
 
-    public static void checkToBlockPoint() {
+    public static void checkPointToBlock() {
         if (pointsToRemove.size() == 1) {
             block = true;
         } else {
@@ -113,7 +127,7 @@ public class GameField {
         }
     }
 
-    private static boolean lookForSurroundedEnemyStone(PointState stoneColor) {
+    private static boolean lookingForSurroundedEnemyStones(PointState stoneColor) {
         Iterator<Point> iterator = pointsToRemove.iterator();
         while (iterator.hasNext()) {
             Point point = iterator.next();
@@ -124,9 +138,9 @@ public class GameField {
         return false;
     }
 
-    private static boolean isCellOccupied(Point target) {
-        int row = getArrayCellIndexFromCoordinate(target.getY());
-        int column = getArrayCellIndexFromCoordinate(target.getX());
+    private static boolean isPositionOccupied(Point target) {
+        int row = getPositionIndexFromCoordinate(target.getY());
+        int column = getPositionIndexFromCoordinate(target.getX());
         if (gameGrid[row][column].getPointState() != PointState.BLANK) {
             return true;
         }
@@ -136,8 +150,8 @@ public class GameField {
     private static boolean hasAnyOpenWay(Point target) {
         initTempGrid();
         PointState enemyColor = getEnemyStoneColor(target.getPointState());
-        int row = getArrayCellIndexFromCoordinate(target.getY());
-        int column = getArrayCellIndexFromCoordinate(target.getX());
+        int row = getPositionIndexFromCoordinate(target.getY());
+        int column = getPositionIndexFromCoordinate(target.getX());
         tempGrid[row][column].setPointState(PointState.TARGET);
         if (wayIsOpen(target.getPointState(), enemyColor, row, column)) {
             return true;
@@ -190,17 +204,17 @@ public class GameField {
         return isOpen;
     }
 
-    private static int getArrayCellIndexFromCoordinate(double coordinate) {
+    private static int getPositionIndexFromCoordinate(double coordinate) {
         return (int) coordinate / STEP_SIZE;
     }
 
     public static void addStone(Point stoneCoordinates, PointState pointState) {
-        int row = getArrayCellIndexFromCoordinate(stoneCoordinates.getY());
-        int column = getArrayCellIndexFromCoordinate(stoneCoordinates.getX());
+        int row = getPositionIndexFromCoordinate(stoneCoordinates.getY());
+        int column = getPositionIndexFromCoordinate(stoneCoordinates.getX());
         gameGrid[row][column].setPointState(pointState);
     }
 
-    public static void pointsToRemove() {
+    public static void getSurroundedPoints() {
         for (int x = 0; x < gameGrid.length; x++) {
             for (int y = 0; y < gameGrid[x].length; y++) {
                 if (!hasAnyOpenWay(gameGrid[x][y])) {
@@ -211,19 +225,15 @@ public class GameField {
         }
     }
 
-    public static void removeSurroundedPoints() {
+    public static void changeStateOfRemovedPoints() {
         if (points.size() > 0) {
             for (Point point : points) {
-                if (point.getPointState().equals(getEnemyStoneColor(stoneColorGeneral))) {
+                if (point.getPointState().equals(getEnemyStoneColor(currentStoneColor))) {
                     point.setPointState(PointState.BLANK);
                 }
             }
             points.clear();
         }
-    }
-
-    public static void clearPointsToRemoveList() {
-        pointsToRemove.clear();
     }
 
     private static void initTempGrid() {

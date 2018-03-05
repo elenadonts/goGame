@@ -24,23 +24,23 @@ public class Tile extends Rectangle {
         this.setOnMousePressed(event -> {
             if(event.getButton() == MouseButton.PRIMARY) {
                 System.out.println("Mouse coordinates : X = " + event.getSceneX() + " Y = " + event.getSceneY());
-                this.getTileCorner(event.getSceneX(), event.getSceneY());
+                this.getTileCorner(event.getSceneX() - 160, event.getSceneY() - 80);
                 System.out.println("Corner coordinates: X = " + xCoordinate + " Y = " + yCoordinate);
-                    if(game.clickCount % 2 != 0){
-                        if(game.getLastStone() != null){
-                            game.removeLastStone();
-                        }
-                        stone = new Stone(StoneColor.BLACK, xCoordinate, yCoordinate);
-                        this.game.drawStone(stone);
-                        lastStone = new LastStone(StoneColor.BLACK, xCoordinate, yCoordinate);
-                        this.game.drawLastStone(lastStone);
-                    } else {
+                if(game.clickCount % 2 != 0){
+                    if(game.getLastStone() != null){
                         game.removeLastStone();
-                        stone = new Stone(StoneColor.WHITE, xCoordinate, yCoordinate);
-                        this.game.drawStone(stone);
-                        lastStone = new LastStone(StoneColor.WHITE, xCoordinate, yCoordinate);
-                        this.game.drawLastStone(lastStone);
                     }
+                    stone = new Stone(StoneColor.BLACK, xCoordinate, yCoordinate);
+                    this.game.drawStone(stone);
+                    lastStone = new LastStone(StoneColor.BLACK, xCoordinate, yCoordinate);
+                    this.game.drawLastStone(lastStone);
+                } else {
+                    game.removeLastStone();
+                    stone = new Stone(StoneColor.WHITE, xCoordinate, yCoordinate);
+                    this.game.drawStone(stone);
+                    lastStone = new LastStone(StoneColor.WHITE, xCoordinate, yCoordinate);
+                    this.game.drawLastStone(lastStone);
+                }
             }
         });
     }
