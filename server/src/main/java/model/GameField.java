@@ -16,28 +16,13 @@ public class GameField {
     private static int capturedWhiteStones;
     private static int capturedBlackStones;
 
-    public static Set<Point> getPointsToRemove() {
-        return pointsToRemove;
-    }
-
-    public static boolean isBlock() {
-        return block;
-    }
-
-    public static void initGameField(Point[][] allPoints) { //points received in xml from player after game start
-        gameGrid = allPoints;
+    public static void initGameField(int gridSize) { //points received in xml from player after game start
+        gameGrid = new Point[gridSize+1][gridSize+1];
         for (int x = 0; x < gameGrid.length; x++) {
             for (int y = 0; y < gameGrid[x].length; y++) {
+                gameGrid[x][y] = new Point(y * STEP_SIZE, x * STEP_SIZE);
                 gameGrid[x][y].setPointState(PointState.BLANK);
             }
-        }
-    }
-
-    public static void increaseCapturedStonesNumber() {
-        if (currentStoneColor.equals(PointState.STONE_BLACK)) {
-            capturedWhiteStones += getPointsToRemove().size();
-        } else if (currentStoneColor.equals(PointState.STONE_WHITE)) {
-            capturedBlackStones += getPointsToRemove().size();
         }
     }
 
@@ -71,7 +56,7 @@ public class GameField {
 
         if (isMutuallySurrounded(pointOnGrid, stoneColor)) {
             changeStateOfRemovedPoints();
-            if (GameField.isBlock()) {
+            if (block) {
                 GameField.repeatingPosition();
             }
             increaseCapturedStonesNumber();
@@ -81,6 +66,41 @@ public class GameField {
             return true;
         }
         return false;
+    }
+
+    public static Set<Point> getPointsToRemove() {
+        return pointsToRemove;
+    }
+
+    // call after players skipped moves 3 times
+    public static void countPlayersScore(){
+        int whiteCount = 0;
+        int blackCount = 0;
+        for (int i = 0; i < gameGrid.length; i++){
+            for (int j = 0; j < gameGrid[i].length; j++){
+                if (gameGrid[i][j].getPointState() == PointState.BLANK){
+
+                    initTempGrid();
+                    tempGrid[i][j].setPointState(PointState.TARGET);
+                    if (isSurroundedByOnePlayer(i, j, PointState.STONE_WHITE))
+                        whiteCount++;
+
+                    initTempGrid();
+                    tempGrid[i][j].setPointState(PointState.TARGET);
+                    if (isSurroundedByOnePlayer(i, j, PointState.STONE_BLACK))
+                        blackCount++;
+                }
+            }
+        }
+        System.out.println("white: " + whiteCount + " black: " + blackCount);
+    }
+
+    private static void increaseCapturedStonesNumber() {
+        if (currentStoneColor.equals(PointState.STONE_BLACK)) {
+            capturedWhiteStones += getPointsToRemove().size();
+        } else if (currentStoneColor.equals(PointState.STONE_WHITE)) {
+            capturedBlackStones += getPointsToRemove().size();
+        }
     }
 
     private static boolean isMutuallySurrounded(Point point, PointState stoneColor) {
@@ -98,7 +118,7 @@ public class GameField {
         return false;
     }
 
-    public static void removePointsWithCurrentStoneColor() {
+    private static void removePointsWithCurrentStoneColor() {
         Iterator<Point> iterator = pointsToRemove.iterator();
         while (iterator.hasNext()) {
             Point point = iterator.next();
@@ -109,28 +129,21 @@ public class GameField {
         checkPointToBlock();
     }
 
-    public static void repeatingPosition() {
+    private static void repeatingPosition() {
         for (Point point : pointsToRemove) {
             blockedPoint = point.clone();
-            break;
         }
         int row = getPositionIndexFromCoordinate(blockedPoint.getY());
         int column = getPositionIndexFromCoordinate(blockedPoint.getX());
         gameGrid[row][column].setPointState(PointState.BLOCKED);
     }
 
-    public static void checkPointToBlock() {
-        if (pointsToRemove.size() == 1) {
-            block = true;
-        } else {
-            block = false;
-        }
+    private static void checkPointToBlock() {
+        block = pointsToRemove.size() == 1;
     }
 
     private static boolean lookingForSurroundedEnemyStones(PointState stoneColor) {
-        Iterator<Point> iterator = pointsToRemove.iterator();
-        while (iterator.hasNext()) {
-            Point point = iterator.next();
+        for (Point point : pointsToRemove) {
             if (point.getPointState().equals(getEnemyStoneColor(stoneColor))) {
                 return true;
             }
@@ -179,16 +192,13 @@ public class GameField {
         boolean isOpen;
         try {
             if (tempGrid[rowToCheck][columnToCheck].getPointState() == PointState.BLANK) {
-//                logger.info("Blank cell " + rowToCheck + " " + columnToCheck);
                 return true;
             }
             if (tempGrid[rowToCheck][columnToCheck].getPointState() == opposite) {
-//               logger.info("Enemy stone");
                 return false;
             }
             if (tempGrid[rowToCheck][columnToCheck].getPointState() == current) {
                 tempGrid[rowToCheck][columnToCheck].setPointState(PointState.USED);
-//                logger.info("Own stone");
                 return wayIsOpen(current, opposite, rowToCheck, columnToCheck);
             }
             tempGrid[rowToCheck][columnToCheck].setPointState(opposite);
@@ -198,7 +208,6 @@ public class GameField {
                     wayIsOpen(current, opposite, rowToCheck + 1, columnToCheck); //down
             if (tempGrid[rowToCheck][columnToCheck].getPointState() == PointState.USED) return false;
         } catch (ArrayIndexOutOfBoundsException e) {
-//            logger.info("Out of game grid");
             return false;
         }
         return isOpen;
@@ -208,13 +217,13 @@ public class GameField {
         return (int) coordinate / STEP_SIZE;
     }
 
-    public static void addStone(Point stoneCoordinates, PointState pointState) {
+    private static void addStone(Point stoneCoordinates, PointState pointState) {
         int row = getPositionIndexFromCoordinate(stoneCoordinates.getY());
         int column = getPositionIndexFromCoordinate(stoneCoordinates.getX());
         gameGrid[row][column].setPointState(pointState);
     }
 
-    public static void getSurroundedPoints() {
+    private static void getSurroundedPoints() {
         for (int x = 0; x < gameGrid.length; x++) {
             for (int y = 0; y < gameGrid[x].length; y++) {
                 if (!hasAnyOpenWay(gameGrid[x][y])) {
@@ -225,7 +234,7 @@ public class GameField {
         }
     }
 
-    public static void changeStateOfRemovedPoints() {
+    private static void changeStateOfRemovedPoints() {
         if (points.size() > 0) {
             for (Point point : points) {
                 if (point.getPointState().equals(getEnemyStoneColor(currentStoneColor))) {
@@ -243,29 +252,6 @@ public class GameField {
                 tempGrid[x][y] = gameGrid[x][y].clone();
             }
         }
-    }
-
-    // call after players skipped moves 3 times
-    public static void countPlayersScore(){
-        int whiteCount = 0;
-        int blackCount = 0;
-        for (int i = 0; i < gameGrid.length; i++){
-            for (int j = 0; j < gameGrid[i].length; j++){
-                if (gameGrid[i][j].getPointState() == PointState.BLANK){
-
-                    initTempGrid();
-                    tempGrid[i][j].setPointState(PointState.TARGET);
-                    if (isSurroundedByOnePlayer(i, j, PointState.STONE_WHITE))
-                        whiteCount++;
-
-                    initTempGrid();
-                    tempGrid[i][j].setPointState(PointState.TARGET);
-                    if (isSurroundedByOnePlayer(i, j, PointState.STONE_BLACK))
-                        blackCount++;
-                }
-            }
-        }
-        System.out.println("white: " + whiteCount + " black: " + blackCount);
     }
 
     private static boolean isSurroundedByOnePlayer(int rowToCheck, int columnToCheck, PointState stoneColor){
