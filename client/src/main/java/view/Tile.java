@@ -9,8 +9,6 @@ import model.ClientHandler;
 
 public class Tile extends Rectangle {
     private GoGame game;
-    private LastStone lastStone;
-    private Stone stone;
     private double xCoordinate;
     private double yCoordinate;
     private static ClientHandler clientHandler;
@@ -27,7 +25,9 @@ public class Tile extends Rectangle {
 
         this.setOnMousePressed(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
+
                 this.getTileCorner(event.getSceneX() - 180, event.getSceneY() - 70);
+
                 clientHandler.send(playerWindowController.sendCoordinatesToServer(xCoordinate,yCoordinate,
                         playerWindowController.getColorCurrentPlayer()));
 

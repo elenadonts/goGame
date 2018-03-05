@@ -8,6 +8,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import model.ClientHandler;
 import model.GameRoom;
+import org.w3c.dom.NodeList;
 import view.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -288,10 +289,26 @@ public class PlayerWindowController {
                     } else {
                         stoneColor = StoneColor.WHITE;
                     }
-                    System.out.println("x:" + x + ",y: " + y + ", color: " + color + ", block user:" + blockUser);
+
                     Stone stone = new Stone(stoneColor, x, y);
-                    System.out.println(stone + " stone");
-                    Platform.runLater(() -> goGame.drawStone(stone));
+                    LastStone lastStone = new LastStone(stoneColor, x, y);
+                    Platform.runLater(() -> {
+                        if (goGame.getLastStone() != null) {
+                            goGame.removeLastStone();
+                        }
+                        goGame.drawStone(stone);
+                        goGame.drawLastStone(lastStone);
+                    });
+                    break;
+
+                case "removePoint":
+                    NodeList nodeList = document.getElementsByTagName("coordinate");
+                    for (int i = 0; i < nodeList.getLength(); i++) {
+                        double xCoordinate = Double.parseDouble(nodeList.item(i).getAttributes().getNamedItem("xCoordinate").getTextContent());
+                        double yCoordinate = Double.parseDouble(nodeList.item(i).getAttributes().getNamedItem("yCoordinate").getTextContent());
+                        Platform.runLater(() -> goGame.removeStone(xCoordinate,yCoordinate));
+
+                    }
                     break;
                 default:
                     System.out.println("Default:" + input);

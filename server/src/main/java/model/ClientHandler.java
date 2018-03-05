@@ -17,6 +17,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.net.Socket;
 import java.util.Map;
+import java.util.Set;
 
 public class ClientHandler extends Thread {
     private static final Logger logger = Logger.getLogger(ClientHandler.class);
@@ -86,8 +87,6 @@ public class ClientHandler extends Thread {
                         writer.println(createXMLForRoomList("newGameRoom", currentRoom));
                     }
                 }
-
-
             }
         } catch (IOException e) {
             logger.error("IOException", e);
@@ -169,7 +168,6 @@ public class ClientHandler extends Thread {
                 }
                 break;
             case "changeStatus":
-                System.out.println("current room " + currentRoom.getGameStatus());
                 String status = inputElement.getElementsByTagName("status").item(0).getTextContent();
                 String roomId = inputElement.getElementsByTagName("idRoom").item(0).getTextContent();
                 String playerType = inputElement.getElementsByTagName("playerType").item(0).getTextContent();
@@ -238,10 +236,13 @@ public class ClientHandler extends Thread {
                 }
                 if (result) {
                     for (PrintWriter writer : currentRoom.getWriters()) {
+                        if (gameField.getPointsToRemove().size() > 0) {
+                            writer.println(createXMLForRemoveSet(gameField.getPointsToRemove()));
+                        }
                         writer.println(createXMLForSendResultToPlayer(result, x, y, color, userName));
                     }
+                    gameField.setPointsToRemoveClear();
                 }
-
                 break;
             default:
                 break;
@@ -572,6 +573,38 @@ public class ClientHandler extends Thread {
         } catch (TransformerException e) {
             e.printStackTrace();
         }
+        return stringWriter.toString();
+    }
+
+    public String createXMLForRemoveSet(Set<Point> set) {
+        Document document = builder.newDocument();
+
+        Element root = document.createElement("body");
+        document.appendChild(root);
+
+        Element meta = document.createElement("meta-info");
+        meta.appendChild(document.createTextNode("removePoint"));
+        root.appendChild(meta);
+
+        Element pointSet = document.createElement("pointSet");
+        root.appendChild(pointSet);
+
+        int id = 1;
+        for (Point temp : set) {
+            Element coordinate = document.createElement("coordinate");
+            coordinate.setAttribute("id",Integer.toString(id++));
+            coordinate.setAttribute("xCoordinate",Double.toString(temp.getX()));
+            coordinate.setAttribute("yCoordinate",Double.toString(temp.getY()));
+            pointSet.appendChild(coordinate);
+        }
+
+        StringWriter stringWriter = new StringWriter();
+        try {
+            transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+        System.out.println(stringWriter.toString());
         return stringWriter.toString();
     }
 }
