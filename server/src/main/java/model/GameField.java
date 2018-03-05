@@ -48,21 +48,15 @@ public class GameField {
             getSurroundedPoints();
             changeStateOfRemovedPoints();
             increaseCapturedStonesNumber();
-            // add method, for transfering Set<Point> getSurroundedPoints to the client view
-            // after that we can uncomment getSurroundedPoints.clear() method(see below)
-            //getSurroundedPoints.clear();
             return true;
         }
 
         if (isMutuallySurrounded(pointOnGrid, stoneColor)) {
             changeStateOfRemovedPoints();
             if (block) {
-                GameField.repeatingPosition();
+                repeatingPosition();
             }
             increaseCapturedStonesNumber();
-            // add method, for transfering Set<Point> getSurroundedPoints to the client view
-            // after that we can uncomment getSurroundedPoints.clear() method(see below)
-            //getSurroundedPoints.clear();
             return true;
         }
         return false;
@@ -70,6 +64,18 @@ public class GameField {
 
     public static Set<Point> getPointsToRemove() {
         return pointsToRemove;
+    }
+
+    public static void setPointsToRemoveClear() {
+        pointsToRemove.clear();
+    }
+
+    public static int getCapturedWhiteStones() {
+        return capturedWhiteStones;
+    }
+
+    public static int getCapturedBlackStones() {
+        return capturedBlackStones;
     }
 
     // call after players skipped moves 3 times
@@ -97,9 +103,9 @@ public class GameField {
 
     private static void increaseCapturedStonesNumber() {
         if (currentStoneColor.equals(PointState.STONE_BLACK)) {
-            capturedWhiteStones += getPointsToRemove().size();
+            capturedWhiteStones += pointsToRemove.size();
         } else if (currentStoneColor.equals(PointState.STONE_WHITE)) {
-            capturedBlackStones += getPointsToRemove().size();
+            capturedBlackStones += pointsToRemove.size();
         }
     }
 
