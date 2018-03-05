@@ -244,4 +244,53 @@ public class GameField {
             }
         }
     }
+
+    // call after players skipped moves 3 times
+    public static void countPlayersScore(){
+        int whiteCount = 0;
+        int blackCount = 0;
+        for (int i = 0; i < gameGrid.length; i++){
+            for (int j = 0; j < gameGrid[i].length; j++){
+                if (gameGrid[i][j].getPointState() == PointState.BLANK){
+
+                    initTempGrid();
+                    tempGrid[i][j].setPointState(PointState.TARGET);
+                    if (isSurroundedByOnePlayer(i, j, PointState.STONE_WHITE))
+                        whiteCount++;
+
+                    initTempGrid();
+                    tempGrid[i][j].setPointState(PointState.TARGET);
+                    if (isSurroundedByOnePlayer(i, j, PointState.STONE_BLACK))
+                        blackCount++;
+                }
+            }
+        }
+        System.out.println("white: " + whiteCount + " black: " + blackCount);
+    }
+
+    private static boolean isSurroundedByOnePlayer(int rowToCheck, int columnToCheck, PointState stoneColor){
+        boolean isSurrounded;
+        try {
+            if(tempGrid[rowToCheck][columnToCheck].getPointState() == stoneColor){
+                return true;
+            }
+            if (tempGrid[rowToCheck][columnToCheck].getPointState() == getEnemyStoneColor(stoneColor)){
+                return false;
+            }
+            if (tempGrid[rowToCheck][columnToCheck].getPointState() == PointState.BLANK){
+                tempGrid[rowToCheck][columnToCheck].setPointState(PointState.USED);
+                return isSurroundedByOnePlayer(rowToCheck, columnToCheck, stoneColor);
+            }
+            tempGrid[rowToCheck][columnToCheck].setPointState(stoneColor);
+            isSurrounded = isSurroundedByOnePlayer(rowToCheck, columnToCheck-1, stoneColor) &&
+                    isSurroundedByOnePlayer(rowToCheck, columnToCheck+1, stoneColor) &&
+                    isSurroundedByOnePlayer(rowToCheck-1, columnToCheck, stoneColor) &&
+                    isSurroundedByOnePlayer(rowToCheck+1, columnToCheck, stoneColor);
+            if (tempGrid[rowToCheck][columnToCheck].getPointState() == PointState.USED) return true;
+        }
+        catch (ArrayIndexOutOfBoundsException e){
+            return true;
+        }
+        return isSurrounded;
+    }
 }
