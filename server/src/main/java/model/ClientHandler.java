@@ -8,8 +8,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import controller.Server;
 
-import javax.jws.WebResult;
-import javax.jws.soap.SOAPBinding;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -52,7 +50,6 @@ public class ClientHandler extends Thread {
     public void run() {
         System.out.println("User: " + clientSocket.getInetAddress().toString().replace("/", "") + " connected;");
         String input;
-        String output;
         try {
             writer = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream()), true);//send to java.client
             reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));//receive from java.client
@@ -73,11 +70,11 @@ public class ClientHandler extends Thread {
                 }
                 if (document.getElementsByTagName("meta-info").item(0).getTextContent().equals("connect")) {
                     for (PrintWriter writer : Server.writers) {
-                        for (Player player : Server.userOnline) {
+                        for (Map.Entry<String, Player> entry : Server.userOnline.entrySet()) {
                             if (!writer.equals(this.writer)) {
-                                writer.println(createXMLForUserList("online", player));
-                            } else if (!player.getUserName().equals(currentPlayer.getUserName())) {
-                                writer.println(createXMLForUserList("online", player));
+                                writer.println(createXMLForUserList("online", entry.getValue()));
+                            } else if (!entry.getValue().getUserName().equals(currentPlayer.getUserName())) {
+                                writer.println(createXMLForUserList("online", entry.getValue()));
                             }
                         }
                         for (Map.Entry<String, GameRoom> entry : Server.gameRooms.entrySet()) {
@@ -101,11 +98,22 @@ public class ClientHandler extends Thread {
         } finally {
             try {
                 Server.writers.remove(writer);
-                Server.userOnline.remove(currentPlayer);
+                Server.userOnline.remove(currentPlayer.getUserName());
                 writer.close();
                 reader.close();
                 clientSocket.close();
+                boolean host = false;
+                if (currentRoom.getPlayerHost() == currentPlayer) {
+                    Server.gameRooms.remove(Integer.toString(currentRoom.getRoomId()));
+                    host = true;
+                    if (currentRoom.getRoomOnline() == 2) {
+                        currentRoom.getPrintWriter().println(createXmlForHostCloseRoom());
+                    }
+                }
                 for (PrintWriter writer : Server.writers) {
+                    if (host) {
+                        writer.println(createXMLForRoomList("closeRoom", currentRoom));
+                    }
                     writer.println(createXMLForUserList("offline", currentPlayer));
                 }
             } catch (IOException e) {
@@ -130,7 +138,7 @@ public class ClientHandler extends Thread {
 
                 metaElement.appendChild(outputDocument.createTextNode(newMeta));
 
-                if (!newMeta.equals("incorrect")) {
+                if (!newMeta.equals("incorrect") && !newMeta.equals("currentUserOnline")) {
                     root = createUserXML(outputDocument, currentPlayer, root);
                 }
                 break;
@@ -156,11 +164,12 @@ public class ClientHandler extends Thread {
                 for (PrintWriter writer : Server.writers) {
                     writer.println(createXMLForRoomList("closeRoom", closeRoom));
                 }
-                if (closeRoom.getPrintWriter() != null){
+                if (closeRoom.getPrintWriter() != null) {
                     closeRoom.getPrintWriter().println(createXmlForHostCloseRoom());
                 }
                 break;
             case "changeStatus":
+                System.out.println("current room " + currentRoom.getGameStatus());
                 String status = inputElement.getElementsByTagName("status").item(0).getTextContent();
                 String roomId = inputElement.getElementsByTagName("idRoom").item(0).getTextContent();
                 String playerType = inputElement.getElementsByTagName("playerType").item(0).getTextContent();
@@ -178,7 +187,6 @@ public class ClientHandler extends Thread {
                 if (gameRoom.getRoomOnline() != 2) {
                     metaElement.appendChild(outputDocument.createTextNode("connectionAllowed"));
                     root = createConnectAcceptXML(outputDocument, root, gameRoom);
-
                     PrintWriter hostWriter = Server.gameRooms.get(
                             inputElement.getElementsByTagName("idRoom").item(0).getTextContent()).getPrintWriterHost();
                     hostWriter.println(createXMLForHostAfterPlayerConnect(currentPlayer.getUserName()));
@@ -188,6 +196,7 @@ public class ClientHandler extends Thread {
                     for (PrintWriter writer : Server.writers) {
                         writer.println(createXMLForChangeOnlineGameRoom(gameRoom.getRoomOnline(), gameRoom.getRoomId()));
                     }
+                    currentRoom = gameRoom;
                 } else {
                     System.out.println("комната полна");
                 }
@@ -204,6 +213,35 @@ public class ClientHandler extends Thread {
                 for (PrintWriter writer : Server.writers) {
                     writer.println(createXMLForChangeOnlineGameRoom(gameRoomDisconnect.getRoomOnline(), gameRoomDisconnect.getRoomId()));
                 }
+                break;
+
+            case "startGame":
+                System.out.println(currentRoom + " room, " + currentRoom.getRoomId());
+                currentRoom.setGameStatus("in game");
+                GameField gameField = currentRoom.getGameField();
+                gameField.initGameField(Integer.parseInt(inputElement.getElementsByTagName("fieldSize").item(0).getTextContent()));
+                for (PrintWriter writer : currentRoom.getWriters()) {
+                    writer.println(createGameStartXML());
+                }
+                break;
+            case "playerMove":
+                gameField = currentRoom.getGameField();
+                double x = Double.parseDouble(inputElement.getElementsByTagName("xCoordinate").item(0).getTextContent());
+                double y = Double.parseDouble(inputElement.getElementsByTagName("yCoordinate").item(0).getTextContent());
+                String color = inputElement.getElementsByTagName("playerColor").item(0).getTextContent();
+                String userName = inputElement.getElementsByTagName("userName").item(0).getTextContent();
+                boolean result;
+                if (color.equals("BLACK")) {
+                    result = gameField.isAllowedToPlace(x, y, PointState.STONE_BLACK);
+                } else {
+                    result = gameField.isAllowedToPlace(x, y, PointState.STONE_WHITE);
+                }
+                if (result) {
+                    for (PrintWriter writer : currentRoom.getWriters()) {
+                        writer.println(createXMLForSendResultToPlayer(result, x, y, color, userName));
+                    }
+                }
+
                 break;
             default:
                 break;
@@ -238,12 +276,14 @@ public class ClientHandler extends Thread {
         } else {
             if (!Server.userList.get(login).getUserPassword().equals(password)) {
                 action = "incorrect";
+            } else if (Server.userOnline.containsKey(login)) {
+                action = "currentUserOnline";
             } else {
                 currentPlayer = Server.userList.get(login);
             }
         }
         if (currentPlayer != null) {
-            Server.userOnline.add(currentPlayer);
+            Server.userOnline.put(currentPlayer.getUserName(), currentPlayer);
         }
         return action;
     }
@@ -437,7 +477,7 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
-    private String createXMLForHostAfterPlayerDisconnect(){
+    private String createXMLForHostAfterPlayerDisconnect() {
         Document document = builder.newDocument();
 
         Element root = document.createElement("body");
@@ -465,6 +505,66 @@ public class ClientHandler extends Thread {
         Element meta = document.createElement("meta-info");
         meta.appendChild(document.createTextNode("hostCloseRoom"));
         root.appendChild(meta);
+
+        currentRoom = null;
+
+        StringWriter stringWriter = new StringWriter();
+        try {
+            transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+        return stringWriter.toString();
+    }
+
+    private String createGameStartXML() {
+        Document document = builder.newDocument();
+
+        Element root = document.createElement("body");
+        document.appendChild(root);
+
+        Element meta = document.createElement("meta-info");
+        meta.appendChild(document.createTextNode("startGame"));
+        root.appendChild(meta);
+
+        StringWriter stringWriter = new StringWriter();
+        try {
+            transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+        return stringWriter.toString();
+    }
+
+    private String createXMLForSendResultToPlayer(boolean res, double x, double y, String color, String userName) {
+        Document document = builder.newDocument();
+
+        Element root = document.createElement("body");
+        document.appendChild(root);
+
+        Element meta = document.createElement("meta-info");
+        meta.appendChild(document.createTextNode("resultMove"));
+        root.appendChild(meta);
+
+        Element result = document.createElement("result");
+        result.appendChild(document.createTextNode(Boolean.toString(res)));
+        root.appendChild(result);
+
+        Element xCoordinate = document.createElement("xCoordinate");
+        xCoordinate.appendChild(document.createTextNode(Double.toString(x)));
+        root.appendChild(xCoordinate);
+
+        Element yCoordinate = document.createElement("yCoordinate");
+        yCoordinate.appendChild(document.createTextNode(Double.toString(y)));
+        root.appendChild(yCoordinate);
+
+        Element playerColor = document.createElement("playerColor");
+        playerColor.appendChild(document.createTextNode(color));
+        root.appendChild(playerColor);
+
+        Element blockUser = document.createElement("blockUser");
+        blockUser.appendChild(document.createTextNode(userName));
+        root.appendChild(blockUser);
 
         StringWriter stringWriter = new StringWriter();
         try {

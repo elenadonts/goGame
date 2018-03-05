@@ -29,7 +29,7 @@ public class Point implements Cloneable {
         return y;
     }
 
-    public Point clone () {
+    public Point clone() {
         Point result = new Point(this.getX(), this.getY());
         result.setPointState(this.getPointState());
         return result;

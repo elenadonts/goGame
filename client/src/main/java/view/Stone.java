@@ -4,6 +4,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+
 import static view.StoneColor.BLACK;
 import static view.GoGame.TILE_SIZE;
 
@@ -22,7 +23,7 @@ public class Stone extends StackPane {
         Circle frontCircle = new Circle(frontCircleRadius);
         frontCircle.setTranslateX((TILE_SIZE - backCircleRadius * 2) / 2);
         frontCircle.setTranslateY((TILE_SIZE - backCircleRadius * 2) / 2);
-        if (stoneColor.equals(BLACK)){
+        if (stoneColor.equals(BLACK)) {
             RadialGradient blackGrad = new RadialGradient(0,
                     .0,
                     frontCircle.getCenterX(),

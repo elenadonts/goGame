@@ -12,15 +12,20 @@ public class GameRoom {
     private String roomDescription;
     private String hostStatus;
     private String playerStatus;
+    private String gameStatus;
     private int roomOnline;
+    private GameField gameField;
 
-    GameRoom(String roomDescription ,Player player1, PrintWriter printWriter1) {
+
+    GameRoom(String roomDescription, Player player1, PrintWriter printWriter1) {
+        gameField = new GameField();
         roomId = id++;
         this.roomDescription = roomDescription;
         this.playerHost = player1;
         this.printWriterHost = printWriter1;
         hostStatus = "not ready";
         roomOnline = 1;
+        gameStatus = "in lobby";
     }
 
     public void setRoomId(int roomId) {
@@ -54,7 +59,7 @@ public class GameRoom {
     public PrintWriter[] getWriters() {
         PrintWriter[] writers;
         if (printWriter != null) {
-            writers = new PrintWriter[]{printWriter,printWriterHost};
+            writers = new PrintWriter[]{printWriter, printWriterHost};
         } else {
             writers = new PrintWriter[]{printWriterHost};
         }
@@ -101,4 +106,15 @@ public class GameRoom {
         this.roomOnline = roomOnline;
     }
 
+    public void setGameStatus(String gameStatus) {
+        this.gameStatus = gameStatus;
+    }
+
+    public String getGameStatus() {
+        return gameStatus;
+    }
+
+    public GameField getGameField() {
+        return gameField;
+    }
 }

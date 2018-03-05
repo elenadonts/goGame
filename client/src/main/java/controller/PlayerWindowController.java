@@ -2,20 +2,13 @@ package controller;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
 import model.ClientHandler;
 import model.GameRoom;
-import sun.awt.geom.AreaOp;
-import view.GoGame;
-import view.Main;
+import view.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -91,6 +84,8 @@ public class PlayerWindowController {
     public Button startGame;
     @FXML
     public Pane gamePane;
+    @FXML
+    public Button buttonReady;
     private ClientHandler clientHandler = new ClientHandler();
 
     private SingleSelectionModel<Tab> gameRoomTabSelectionModel;
@@ -103,6 +98,7 @@ public class PlayerWindowController {
     private Player currentPlayer;
     private GameRoom currentGameRoom = new GameRoom();
     private String roomId;
+    private GoGame goGame;
 
     @FXML
     public void initialize() throws IOException, ParserConfigurationException {
@@ -139,7 +135,9 @@ public class PlayerWindowController {
         gameRoomTabSelectionModel = tabPane.getSelectionModel();
         gameRoomTabSelectionModel.select(privateRoomTab);
 
-        gamePane.getChildren().add(new GoGame().createContent());
+        goGame = new GoGame();
+        gamePane.getChildren().add(goGame.createContent());
+        gamePane.disableProperty().set(true);
     }
 
     public void readXML(String input) {
@@ -166,6 +164,11 @@ public class PlayerWindowController {
                 case "incorrect":
                     Platform.runLater(() ->
                             loginController.setErrorLabel("Login or password are incorrect!!!")
+                    );
+                    break;
+                case "currentUserOnline":
+                    Platform.runLater(() ->
+                            loginController.setErrorLabel("Current user online now!!!")
                     );
                     break;
                 case "online":
@@ -227,10 +230,10 @@ public class PlayerWindowController {
                         labelHostNickName.setText(currentGameRoom.getHost());
                         labelHostStatus.setText(((Element) user).getElementsByTagName("hostStatus").item(0).getTextContent());
                     });
-
                     createRoomButton.disableProperty().setValue(true);
                     connectToRoom.disableProperty().setValue(true);
                     startGame.disableProperty().setValue(true);
+                    currentGameRoom.setOnline("2");
                     break;
 
                 case "playerConnectToRoom":
@@ -238,12 +241,12 @@ public class PlayerWindowController {
                         labelPlayerNickName.setText(((Element) user).getElementsByTagName("playerName").item(0).getTextContent());
                         labelPlayerStatus.setText("not-ready");
                     });
+                    currentGameRoom.setOnline("2");
                     break;
                 case "changeOnline":
                     setOnlineInGameRoom(((Element) user).getElementsByTagName("playerOnline").item(0).getTextContent(),
                             ((Element) user).getElementsByTagName("roomId").item(0).getTextContent());
                     break;
-
                 case "playerDisconnect":
                     Platform.runLater(() -> {
                         labelPlayerNickName.setText("");
@@ -261,6 +264,35 @@ public class PlayerWindowController {
                     });
                     createRoomButton.disableProperty().setValue(false);
                     break;
+                case "startGame":
+                    if (currentGameRoom.getHost().equals(currentPlayer.getUserName())) {
+                        gamePane.disableProperty().set(false);
+                    }
+                    buttonReady.disableProperty().set(true);
+                    Tile.setClientHandler(clientHandler);
+                    Tile.setPlayerWindowController(this);
+                    break;
+                case "resultMove":
+                    double x = Double.parseDouble(((Element) user).getElementsByTagName("xCoordinate").item(0).getTextContent());
+                    double y = Double.parseDouble(((Element) user).getElementsByTagName("yCoordinate").item(0).getTextContent());
+                    String color = ((Element) user).getElementsByTagName("playerColor").item(0).getTextContent();
+                    String blockUser = ((Element) user).getElementsByTagName("blockUser").item(0).getTextContent();
+                    if (blockUser.equals(currentPlayer.getUserName())) {
+                        gamePane.disableProperty().set(true);
+                    } else {
+                        gamePane.disableProperty().set(false);
+                    }
+                    StoneColor stoneColor;
+                    if (color.equals("BLACK")) {
+                        stoneColor = StoneColor.BLACK;
+                    } else {
+                        stoneColor = StoneColor.WHITE;
+                    }
+                    System.out.println("x:" + x + ",y: " + y + ", color: " + color + ", block user:" + blockUser);
+                    Stone stone = new Stone(stoneColor, x, y);
+                    System.out.println(stone + " stone");
+                    Platform.runLater(() -> goGame.drawStone(stone));
+                    break;
                 default:
                     System.out.println("Default:" + input);
                     break;
@@ -269,7 +301,6 @@ public class PlayerWindowController {
             logger.error("Exception", e);
         }
     }
-
 
     private void addPrivateGameTab(Label labelName, Label labelStatus, String playerName) {
         Platform.runLater(() -> {
@@ -353,6 +384,7 @@ public class PlayerWindowController {
         Transformer transformer = tf.newTransformer();
         transformer.setOutputProperty(OutputKeys.INDENT, "no");
         StringWriter writer = new StringWriter();
+
         Document doc = docBuilder.newDocument();
         Element root = doc.createElement("body");
         doc.appendChild(root);
@@ -455,7 +487,7 @@ public class PlayerWindowController {
         }
     }
 
-    public void setOnlineInGameRoom(String online, String roomId) {
+    private void setOnlineInGameRoom(String online, String roomId) {
         ObservableList<GameRoom> newGameRoomObsList = FXCollections.observableArrayList();
         for (GameRoom temp : gameRoomObsList) {
             if (temp.getIdRoom().equals(roomId)) {
@@ -468,8 +500,98 @@ public class PlayerWindowController {
     }
 
     public void startGameClick(MouseEvent mouseEvent) {
-        if (currentGameRoom.getStatusHost().equals("ready") && currentGameRoom.getStatusPlayer().equals("ready")){
-            System.out.println("game start!go dance)");
+        if (currentGameRoom.getOnline().equals("2/2") && currentGameRoom.getStatusHost().equals("ready")
+                && currentGameRoom.getStatusPlayer().equals("ready")) {
+            clientHandler.send(startGame());
+        } else {
+            System.out.println("one or more player not ready to start game");
         }
+    }
+
+    private String startGame() {
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer transformer = null;
+        try {
+            transformer = tf.newTransformer();
+        } catch (TransformerConfigurationException e) {
+            e.printStackTrace();
+        }
+        transformer.setOutputProperty(OutputKeys.INDENT, "no");
+        Document document = docBuilder.newDocument();
+
+        Element root = document.createElement("body");
+        document.appendChild(root);
+
+        Element meta = document.createElement("meta-info");
+        meta.appendChild(document.createTextNode("startGame"));
+        root.appendChild(meta);
+
+        Element fieldSize = document.createElement("fieldSize");
+        fieldSize.appendChild(document.createTextNode("5"));
+        root.appendChild(fieldSize);
+
+
+        StringWriter stringWriter = new StringWriter();
+        try {
+            transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+        return stringWriter.toString();
+    }
+
+    public String sendCoordinatesToServer(double x, double y, String color) {
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer transformer = null;
+        try {
+            transformer = tf.newTransformer();
+        } catch (TransformerConfigurationException e) {
+            e.printStackTrace();
+        }
+        transformer.setOutputProperty(OutputKeys.INDENT, "no");
+        Document document = docBuilder.newDocument();
+
+        Element root = document.createElement("body");
+        document.appendChild(root);
+
+        Element meta = document.createElement("meta-info");
+        meta.appendChild(document.createTextNode("playerMove"));
+        root.appendChild(meta);
+
+        Element xCoordinate = document.createElement("xCoordinate");
+        xCoordinate.appendChild(document.createTextNode(Double.toString(x)));
+        root.appendChild(xCoordinate);
+
+        Element yCoordinate = document.createElement("yCoordinate");
+        yCoordinate.appendChild(document.createTextNode(Double.toString(y)));
+        root.appendChild(yCoordinate);
+
+        Element playerColor = document.createElement("playerColor");
+        playerColor.appendChild(document.createTextNode(color));
+        root.appendChild(playerColor);
+
+        Element userName = document.createElement("userName");
+        userName.appendChild(document.createTextNode(currentPlayer.getUserName()));
+        root.appendChild(userName);
+
+
+        StringWriter stringWriter = new StringWriter();
+        try {
+            transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+        return stringWriter.toString();
+
+    }
+
+    public String getColorCurrentPlayer() {
+        String color;
+        if (currentGameRoom.getHost().equals(currentPlayer.getUserName())) {
+            color = currentGameRoom.getHostColor();
+        } else {
+            color = currentGameRoom.getPlayerColor();
+        }
+        return color;
     }
 }

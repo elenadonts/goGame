@@ -22,9 +22,7 @@ public class Main extends Application {
         primaryStage.setTitle("GoGame");
         primaryStage.setScene(new Scene(root));
         primaryStage.setResizable(false);
-        primaryStage.setOnCloseRequest(we -> {
-            System.exit(0);
-        });
+        primaryStage.setOnCloseRequest(we -> System.exit(0));
         mainStage = primaryStage;
     }
 }

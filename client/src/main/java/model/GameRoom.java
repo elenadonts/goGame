@@ -1,5 +1,7 @@
 package model;
 
+import view.StoneColor;
+
 public class GameRoom {
     private String host;
     private String description;
@@ -8,6 +10,8 @@ public class GameRoom {
     private String idRoom;
     private String statusHost;
     private String statusPlayer;
+    private String hostColor = "BLACK";
+    private String playerColor = "WHITE";
 
     public GameRoom() {
     }
@@ -16,7 +20,8 @@ public class GameRoom {
         this.host = host;
         this.description = description;
         online = "1/2";
-        statusGame = "In lobby";
+        statusGame = "in lobby";
+        statusPlayer = "not ready";
         this.idRoom = idRoom;
     }
 
@@ -52,7 +57,6 @@ public class GameRoom {
         this.statusGame = statusGame;
     }
 
-
     public String getIdRoom() {
         return idRoom;
     }
@@ -71,5 +75,13 @@ public class GameRoom {
 
     public void setStatusPlayer(String statusPlayer) {
         this.statusPlayer = statusPlayer;
+    }
+
+    public String getHostColor() {
+        return hostColor;
+    }
+
+    public String getPlayerColor() {
+        return playerColor;
     }
 }

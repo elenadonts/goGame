@@ -13,6 +13,7 @@ public enum PointState {
     PointState(int value) {
         this.value = value;
     }
+
     public int getValue() {
         return value;
     }

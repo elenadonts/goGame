@@ -6,17 +6,17 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane minWidth="231.0" prefHeight="656.0000999999975" prefWidth="836.0000999999975" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="controller.PlayerWindowController">
-  <TabPane fx:id="tabPane" focusTraversable="true" layoutX="0.0" layoutY="36.0" prefHeight="621.0" prefWidth="837.0" side="TOP" tabClosingPolicy="SELECTED_TAB" visible="true">
+<AnchorPane minWidth="231.0" prefHeight="585.000199999995" prefWidth="700.0000168945262" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="controller.PlayerWindowController">
+  <TabPane fx:id="tabPane" focusTraversable="true" layoutX="14.0" layoutY="48.0" prefHeight="524.0" prefWidth="672.0" side="TOP" tabClosingPolicy="SELECTED_TAB" visible="true">
     <tabs>
       <Tab closable="false" text="Room">
         <content>
-          <AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+          <AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="590.0" prefWidth="797.0">
             <children>
-              <TableView fx:id="lobbyListTable" disable="false" editable="true" focusTraversable="true" layoutX="14.0" layoutY="14.0" prefHeight="402.0001220703125" prefWidth="630.0" tableMenuButtonVisible="false" visible="true">
+              <TableView fx:id="lobbyListTable" disable="false" editable="true" focusTraversable="true" layoutX="14.0" layoutY="14.0" prefHeight="465.0" prefWidth="644.0" tableMenuButtonVisible="false" visible="true">
                 <columns>
-                  <TableColumn prefWidth="75.0" text="Host" fx:id="lobbyHost" />
-                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="335.0" text="Description" fx:id="lobbyDescription" />
+                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="95.0" text="Host" fx:id="lobbyHost" />
+                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="406.0" text="Description" fx:id="lobbyDescription" />
                   <TableColumn maxWidth="5000.0" minWidth="0.0" prefWidth="73.0" text="Online" fx:id="lobbyOnline" />
                   <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="69.0" text="Status" fx:id="lobbyStatus" />
                 </columns>
@@ -29,12 +29,12 @@
         <content>
           <AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
             <children>
-              <TableView fx:id="userListTable" blendMode="SRC_OVER" cache="true" cacheHint="DEFAULT" disable="false" editable="true" focusTraversable="true" layoutX="14.0" layoutY="14.0" mouseTransparent="false" pickOnBounds="false" prefHeight="402.0001220703125" prefWidth="630.0" tableMenuButtonVisible="false" visible="true">
+              <TableView fx:id="userListTable" blendMode="SRC_OVER" cache="true" cacheHint="DEFAULT" disable="false" editable="true" focusTraversable="true" layoutX="14.0" layoutY="14.0" mouseTransparent="false" pickOnBounds="false" prefHeight="465.0" prefWidth="644.0" tableMenuButtonVisible="false" visible="true">
                 <columns>
-                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="136.0" text="Nickname" fx:id="userName" />
-                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="97.0" text="Game count" fx:id="userGameCount" />
-                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="92.0" text="Rating" fx:id="userRating" />
-                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="107.0" text="\% wins" fx:id="userPercentWins" />
+                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="164.0" text="Nickname" fx:id="userName" />
+                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="118.0" text="Game count" fx:id="userGameCount" />
+                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="131.0" text="Rating" fx:id="userRating" />
+                  <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="116.0" text="\% wins" fx:id="userPercentWins" />
                   <TableColumn maxWidth="5000.0" minWidth="10.0" prefWidth="120.0" text="Online" fx:id="userStatus" />
                 </columns>
               </TableView>
@@ -44,9 +44,9 @@
       </Tab>
       <Tab id="" fx:id="privateRoomTab" closable="false" disable="false" style="" text="Room">
         <content>
-          <AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+          <AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="519.0" prefWidth="762.0">
             <children>
-              <Button id="changeStatus" layoutX="23.0" layoutY="139.0" mnemonicParsing="false" onMouseClicked="#changeStatus" prefWidth="64.0" text="Ready" />
+              <Button id="changeStatus" fx:id="buttonReady" layoutX="23.0" layoutY="139.0" mnemonicParsing="false" onMouseClicked="#changeStatus" prefWidth="64.0" text="Ready" />
               <Button fx:id="startGame" layoutX="23.0" layoutY="163.0" mnemonicParsing="false" onMouseClicked="#startGameClick" prefWidth="64.0" text="Start" />
               <Button fx:id="closeRoom" layoutX="23.0" layoutY="188.0" mnemonicParsing="false" onMouseClicked="#closeCurrentRoom" prefWidth="64.0" text="Close" />
               <Label layoutX="23.0" layoutY="22.0" text="Nickname" />
@@ -55,14 +55,14 @@
               <Label fx:id="labelPlayerNickName" layoutX="23.0" layoutY="57.0" text="" />
               <Label fx:id="labelHostStatus" layoutX="96.0" layoutY="39.0" text="" />
               <Label fx:id="labelPlayerStatus" layoutX="96.0" layoutY="57.0" text="" />
-              <Pane fx:id="gamePane" layoutX="178.0" layoutY="7.0" prefHeight="575.0" prefWidth="652.0" />
+              <Pane id="" fx:id="gamePane" layoutX="178.0" layoutY="7.0" prefHeight="480.0" prefWidth="487.0" style="" />
             </children>
           </AnchorPane>
         </content>
       </Tab>
     </tabs>
   </TabPane>
-  <Label fx:id="helloUser" layoutX="14.0" layoutY="14.0" text="Hello:" />
-  <Button fx:id="connectToRoom" layoutX="608.0" layoutY="6.0" mnemonicParsing="false" onMouseClicked="#connectToGameRoom" text="Connect" />
-  <Button id="createRoom" fx:id="createRoomButton" disable="false" layoutX="511.0" layoutY="6.0" mnemonicParsing="false" onMouseClicked="#createRoom" text="Create room" />
+  <Label fx:id="helloUser" layoutX="21.0" layoutY="12.0" text="Hello:" />
+  <Button fx:id="connectToRoom" layoutX="622.0" layoutY="14.0" mnemonicParsing="false" onMouseClicked="#connectToGameRoom" text="Connect" />
+  <Button id="createRoom" fx:id="createRoomButton" disable="false" layoutX="518.0" layoutY="13.0" mnemonicParsing="false" onMouseClicked="#createRoom" text="Create room" />
 </AnchorPane>

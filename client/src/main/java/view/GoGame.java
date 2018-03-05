@@ -1,16 +1,13 @@
 package view;
 
-import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.stage.Stage;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -41,7 +38,6 @@ public class GoGame {
         root.setPrefSize(SIDE * TILE_SIZE + TILE_SIZE, SIDE * TILE_SIZE + TILE_SIZE);
         root.getChildren().addAll(tileGroup, pieceGroup);
         root.setBackground(new Background(new BackgroundFill(Color.valueOf("#db9900"), CornerRadii.EMPTY, Insets.EMPTY)));
-
         for (int y = 0; y < SIDE; y++) {
             for (int x = 0; x < SIDE; x++) {
                 Tile tile = new Tile(x, y, this);

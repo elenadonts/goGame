@@ -18,11 +18,11 @@ import java.util.HashSet;
 
 public class Server {
     private static final Logger logger = Logger.getLogger(Server.class);
-    public static final int PORT = 3000;
-    public static DocumentBuilder docBuilder;
+    private static final int PORT = 3000;
+    private static DocumentBuilder docBuilder;
     public static HashMap<String, Player> userList = new HashMap<>();
     public static HashSet<PrintWriter> writers = new HashSet<>();
-    public static HashSet<Player> userOnline = new HashSet<>();
+    public static HashMap<String,Player> userOnline = new HashMap<>();
     public static HashMap<String,GameRoom> gameRooms = new HashMap<>();
 
     public static void main(String[] args) throws Exception {
