@@ -692,7 +692,7 @@ public class PlayerWindowController {
 
     private String startGame() {
         String fieldSize = filedSizeGroup.getSelectedToggle().getUserData().toString();
-
+        int stepSize = 400 / Integer.parseInt(fieldSize);
         Document document = docBuilder.newDocument();
 
         Element root = document.createElement("body");
@@ -705,6 +705,12 @@ public class PlayerWindowController {
         Element fieldSizeElement = document.createElement("fieldSize");
         fieldSizeElement.appendChild(document.createTextNode(fieldSize));
         root.appendChild(fieldSizeElement);
+
+        Element stepSizeElement = document.createElement("stepSize");
+        stepSizeElement.appendChild(document.createTextNode(Integer.toString(stepSize)));
+        root.appendChild(stepSizeElement);
+
+
         startGame.disableProperty().set(true);
 
         StringWriter stringWriter = new StringWriter();

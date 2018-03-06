@@ -6,7 +6,7 @@ import java.util.*;
 
 public class GameField {
     private static final Logger logger = Logger.getLogger(GameField.class);
-    private final int STEP_SIZE = 80;
+    private int stepSize;
     private Point[][] gameGrid;
     private Point[][] tempGrid;
     private Set<Point> pointsToRemove = new HashSet<>();
@@ -22,7 +22,7 @@ public class GameField {
         gameGrid = new Point[gridSize + 1][gridSize + 1];
         for (int x = 0; x < gameGrid.length; x++) {
             for (int y = 0; y < gameGrid[x].length; y++) {
-                gameGrid[x][y] = new Point(y * STEP_SIZE, x * STEP_SIZE);
+                gameGrid[x][y] = new Point(y * stepSize, x * stepSize);
                 gameGrid[x][y].setPointState(PointState.BLANK);
             }
         }
@@ -222,7 +222,7 @@ public class GameField {
     }
 
     private int getPositionIndexFromCoordinate(double coordinate) {
-        return (int) coordinate / STEP_SIZE;
+        return (int) coordinate / stepSize;
     }
 
     private void addStone(Point stoneCoordinates, PointState pointState) {
@@ -285,5 +285,9 @@ public class GameField {
             return true;
         }
         return isSurrounded;
+    }
+
+    public void setStepSize(int stepSize) {
+        this.stepSize = stepSize;
     }
 }
