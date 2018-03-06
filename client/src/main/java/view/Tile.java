@@ -33,6 +33,7 @@ public class Tile extends Rectangle {
     }
 
     public void getTileCorner(double mouseClickX, double mouseClickY) {
+        System.out.println("x: " + mouseClickX + "; y: " + mouseClickY);
         double layoutOffsetX = game.getTileGroup().getLayoutX();
         double layoutOffsetY = game.getTileGroup().getLayoutY();
         double strokeWidth = this.getStrokeWidth() / 2;
@@ -65,5 +66,4 @@ public class Tile extends Rectangle {
     public static void setPlayerWindowController(PlayerWindowController playerWindowController) {
         Tile.playerWindowController = playerWindowController;
     }
-
 }

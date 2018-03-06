@@ -234,7 +234,7 @@ public class ClientHandler extends Thread {
                 GameField gameField = currentRoom.getGameField();
                 int fieldSize = Integer.parseInt(inputElement.getElementsByTagName("fieldSize").item(0).getTextContent());
                 gameField.initGameField(fieldSize);
-                gameField.setStepSize(Integer.parseInt(inputElement.getElementsByTagName("stepSize").item(0).getTextContent()));
+//                gameField.setStepSize(Integer.parseInt(inputElement.getElementsByTagName("stepSize").item(0).getTextContent()));
                 for (PrintWriter writer : currentRoom.getWriters()) {
                     writer.println(createGameStartXML(fieldSize));
                 }

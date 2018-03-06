@@ -6,7 +6,7 @@ import java.util.*;
 
 public class GameField {
     private static final Logger logger = Logger.getLogger(GameField.class);
-    private int stepSize;
+    private int stepSize = 80;
     private Point[][] gameGrid;
     private Point[][] tempGrid;
     private Set<Point> pointsToRemove = new HashSet<>();

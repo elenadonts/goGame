@@ -15,10 +15,8 @@ import java.util.Set;
 
 
 public class GoGame {
-    public static int TILE_SIZE;
-    public int side;
-    public static int clickCount = 1;
-
+    public static int TILE_SIZE = 80;
+    private int side = 5;
     private Group tileGroup = new Group();
     private Group pieceGroup = new Group();
 
@@ -52,7 +50,6 @@ public class GoGame {
     public void drawStone(Stone stone) {
         stones.add(stone);
         pieceGroup.getChildren().add(stone);
-        clickCount++;
     }
 
     public void drawLastStone(LastStone lastStone) {
@@ -77,6 +74,6 @@ public class GoGame {
 
     public void setSide(int side) {
         this.side = side;
-        TILE_SIZE = (480 - 80) / side;
+        TILE_SIZE = 400 / side;
     }
 }

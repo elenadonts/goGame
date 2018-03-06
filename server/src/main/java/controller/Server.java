@@ -68,6 +68,5 @@ public class Server {
                 logger.error("Exception", e);
             }
         }
-        System.out.println("ban list size: " + banList.size());
     }
 }

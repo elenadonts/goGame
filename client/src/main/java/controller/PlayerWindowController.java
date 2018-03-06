@@ -333,7 +333,7 @@ public class PlayerWindowController {
                     break;
                 case "startGame":
                     goGame = new GoGame();
-                    goGame.setSide(Integer.parseInt(((Element) user).getElementsByTagName("side").item(0).getTextContent()));
+//                    goGame.setSide(Integer.parseInt(((Element) user).getElementsByTagName("side").item(0).getTextContent()));
                     Platform.runLater(() -> {
                         gamePane.getChildren().add(goGame.createContent());
                         playerProgressName.setText(currentGameRoom.getHost());
@@ -413,6 +413,8 @@ public class PlayerWindowController {
                         fieldSize5.selectedProperty().setValue(true);
                         gamePane.getChildren().clear();
                         fieldSizePane.setDisable(false);
+                        timeLabel.setText("");
+                        playerProgressName.setText("");
                     });
                     stopTimer();
                     break;
@@ -450,7 +452,7 @@ public class PlayerWindowController {
     private void startTimer() {
         timer.cancel();
         timer = new Timer();
-        interval = 10;
+        interval = 180;
         timer.scheduleAtFixedRate(new TimerTask() {
             public void run() {
                 printDate(setInterval());
