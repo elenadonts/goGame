@@ -1,14 +1,17 @@
 package model;
 
+import java.io.PrintWriter;
+
 public class Player {
     private String userName;
     private String userPassword;
     private String userGameCount;
     private String userRating;
     private String userPercentWins;
+    private boolean admin = false;
+    private PrintWriter writer;
 
     public Player() {
-
     }
 
     public Player(String userPassword, String userName) {
@@ -57,5 +60,21 @@ public class Player {
 
     public void setUserPercentWins(String userPercentWins) {
         this.userPercentWins = userPercentWins;
+    }
+
+    public void setAdmin(boolean admin) {
+        this.admin = admin;
+    }
+
+    public boolean isAdmin() {
+        return admin;
+    }
+
+    public void setWriter(PrintWriter writer) {
+        this.writer = writer;
+    }
+
+    public PrintWriter getWriter() {
+        return writer;
     }
 }

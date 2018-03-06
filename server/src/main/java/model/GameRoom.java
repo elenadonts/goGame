@@ -1,5 +1,6 @@
 package model;
 
+
 import java.io.PrintWriter;
 
 public class GameRoom {
@@ -15,7 +16,9 @@ public class GameRoom {
     private String gameStatus;
     private int roomOnline;
     private GameField gameField;
-
+    private String fieldSizeId;
+    private boolean playerPassed = false;
+    private boolean hostPassed = false;
 
     GameRoom(String roomDescription, Player player1, PrintWriter printWriter1) {
         gameField = new GameField();
@@ -28,20 +31,8 @@ public class GameRoom {
         gameStatus = "in lobby";
     }
 
-    public void setRoomId(int roomId) {
-        this.roomId = roomId;
-    }
-
     public Player getPlayerHost() {
         return playerHost;
-    }
-
-    public void setPlayerHost(Player playerHost) {
-        this.playerHost = playerHost;
-    }
-
-    public Player getPlayer() {
-        return player;
     }
 
     public void setPlayer(Player player) {
@@ -50,10 +41,6 @@ public class GameRoom {
 
     public PrintWriter getPrintWriterHost() {
         return printWriterHost;
-    }
-
-    public void setPrintWriterHost(PrintWriter printWriterHost) {
-        this.printWriterHost = printWriterHost;
     }
 
     public PrintWriter[] getWriters() {
@@ -90,10 +77,6 @@ public class GameRoom {
         this.hostStatus = hostStatus;
     }
 
-    public String getPlayerStatus() {
-        return playerStatus;
-    }
-
     public void setPlayerStatus(String playerStatus) {
         this.playerStatus = playerStatus;
     }
@@ -116,5 +99,33 @@ public class GameRoom {
 
     public GameField getGameField() {
         return gameField;
+    }
+
+    public void setFieldSizeId(String fieldSizeId) {
+        this.fieldSizeId = fieldSizeId;
+    }
+
+    public String getFieldSizeId() {
+        return fieldSizeId;
+    }
+
+    public boolean isPlayerPassed() {
+        return playerPassed;
+    }
+
+    public void setPlayerPassed(boolean playerPassed) {
+        this.playerPassed = playerPassed;
+    }
+
+    public boolean isHostPassed() {
+        return hostPassed;
+    }
+
+    public void setHostPassed(boolean hostPassed) {
+        this.hostPassed = hostPassed;
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 }

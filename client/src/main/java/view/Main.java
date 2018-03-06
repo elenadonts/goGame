@@ -8,6 +8,7 @@ import javafx.stage.Stage;
 import sun.dc.pr.PRError;
 
 import java.lang.ref.PhantomReference;
+import java.util.Timer;
 
 public class Main extends Application {
     public static Stage mainStage;

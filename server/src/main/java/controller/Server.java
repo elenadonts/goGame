@@ -22,8 +22,9 @@ public class Server {
     private static DocumentBuilder docBuilder;
     public static HashMap<String, Player> userList = new HashMap<>();
     public static HashSet<PrintWriter> writers = new HashSet<>();
-    public static HashMap<String,Player> userOnline = new HashMap<>();
-    public static HashMap<String,GameRoom> gameRooms = new HashMap<>();
+    public static HashMap<String, Player> userOnline = new HashMap<>();
+    public static HashMap<String, GameRoom> gameRooms = new HashMap<>();
+    public static HashSet<String> banList = new HashSet<>();
 
     public static void main(String[] args) throws Exception {
         ServerSocket server = new ServerSocket(PORT);
@@ -32,7 +33,7 @@ public class Server {
         try {
             System.out.println("Listening...");
             while (true) {
-                ClientHandler clientHandler = new ClientHandler(server.accept()) ;
+                ClientHandler clientHandler = new ClientHandler(server.accept());
                 clientHandler.start();
             }
         } finally {
@@ -55,10 +56,18 @@ public class Server {
                 player.setUserGameCount(userElement.getElementsByTagName("gameCount").item(0).getTextContent());
                 player.setUserPercentWins(userElement.getElementsByTagName("percentWins").item(0).getTextContent());
                 player.setUserRating(userElement.getElementsByTagName("rating").item(0).getTextContent());
+                if (Boolean.parseBoolean(userElement.getElementsByTagName("admin").item(0).getTextContent())) {
+                    player.setAdmin(true);
+                }
+                boolean ban = Boolean.parseBoolean(userElement.getElementsByTagName("banned").item(0).getTextContent());
+                if (ban) {
+                    banList.add(player.getUserName());
+                }
                 userList.put(player.getUserName(), player);
             } catch (SAXException | IOException e) {
                 logger.error("Exception", e);
             }
         }
+        System.out.println("ban list size: " + banList.size());
     }
 }

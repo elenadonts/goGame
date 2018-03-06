@@ -102,18 +102,22 @@ public class ClientHandler extends Thread {
                 reader.close();
                 clientSocket.close();
                 boolean host = false;
-                if (currentRoom.getPlayerHost() == currentPlayer) {
-                    Server.gameRooms.remove(Integer.toString(currentRoom.getRoomId()));
-                    host = true;
-                    if (currentRoom.getRoomOnline() == 2) {
-                        currentRoom.getPrintWriter().println(createXmlForHostCloseRoom());
+                if (currentRoom != null && currentRoom.getPlayerHost() == currentPlayer) {
+                    if (Server.gameRooms.get(Integer.toString(currentRoom.getRoomId())) != null) {
+                        Server.gameRooms.remove(Integer.toString(currentRoom.getRoomId()));
+                        host = true;
+                        if (currentRoom.getRoomOnline() == 2) {
+                            currentRoom.getPrintWriter().println(createXmlForHostCloseRoom());
+                        }
                     }
                 }
-                for (PrintWriter writer : Server.writers) {
-                    if (host) {
-                        writer.println(createXMLForRoomList("closeRoom", currentRoom));
+                if (currentPlayer != null) {
+                    for (PrintWriter writer : Server.writers) {
+                        if (host && currentRoom != null) {
+                            writer.println(createXMLForRoomList("closeRoom", currentRoom));
+                        }
+                        writer.println(createXMLForUserList("offline", currentPlayer));
                     }
-                    writer.println(createXMLForUserList("offline", currentPlayer));
                 }
             } catch (IOException e) {
                 logger.error("IOException", e);
@@ -121,7 +125,7 @@ public class ClientHandler extends Thread {
         }
     }
 
-    private Document createXML(Element inputElement, Document outputDocument) {
+    private Document createXML(Element inputElement, Document outputDocument) throws IOException, SAXException {
         Element root = outputDocument.createElement("body");
         outputDocument.appendChild(root);
 
@@ -137,13 +141,18 @@ public class ClientHandler extends Thread {
 
                 metaElement.appendChild(outputDocument.createTextNode(newMeta));
 
-                if (!newMeta.equals("incorrect") && !newMeta.equals("currentUserOnline")) {
+                Element admin = outputDocument.createElement("admin");
+                admin.appendChild(outputDocument.createTextNode(Boolean.toString(currentPlayer.isAdmin())));
+                root.appendChild(admin);
+
+                if (!newMeta.equals("incorrect") && !newMeta.equals("currentUserOnline") && !newMeta.equals("banned")) {
                     root = createUserXML(outputDocument, currentPlayer, root);
                 }
                 break;
             case "createRoom":
                 String roomDescription = inputElement.getElementsByTagName("roomDescription").item(0).getTextContent();
                 currentRoom = new GameRoom(roomDescription, currentPlayer, writer);
+                currentRoom.setFieldSizeId(inputElement.getElementsByTagName("fieldSize").item(0).getTextContent());
 
                 Server.gameRooms.put(Integer.toString(currentRoom.getRoomId()), currentRoom);
                 metaElement.appendChild(outputDocument.createTextNode("roomCreated"));
@@ -181,20 +190,26 @@ public class ClientHandler extends Thread {
                 }
                 break;
             case "connectToRoom":
-                GameRoom gameRoom = Server.gameRooms.get(inputElement.getElementsByTagName("idRoom").item(0).getTextContent());
-                if (gameRoom.getRoomOnline() != 2) {
+                String id = inputElement.getElementsByTagName("idRoom").item(0).getTextContent();
+                if (Server.gameRooms.get(id).getRoomOnline() != 2) {
                     metaElement.appendChild(outputDocument.createTextNode("connectionAllowed"));
-                    root = createConnectAcceptXML(outputDocument, root, gameRoom);
+
+                    Element fieldSizeId = outputDocument.createElement("fieldSizeId");
+                    fieldSizeId.appendChild(outputDocument.createTextNode(Server.gameRooms.get(id).getFieldSizeId()));
+                    root.appendChild(fieldSizeId);
+
+                    root = createConnectAcceptXML(outputDocument, root, Server.gameRooms.get(id));
+
                     PrintWriter hostWriter = Server.gameRooms.get(
                             inputElement.getElementsByTagName("idRoom").item(0).getTextContent()).getPrintWriterHost();
                     hostWriter.println(createXMLForHostAfterPlayerConnect(currentPlayer.getUserName()));
-                    gameRoom.setPrintWriter(writer);
-                    gameRoom.setPlayer(currentPlayer);
-                    gameRoom.setRoomOnline(2);
+                    Server.gameRooms.get(id).setPrintWriter(writer);
+                    Server.gameRooms.get(id).setPlayer(currentPlayer);
+                    Server.gameRooms.get(id).setRoomOnline(2);
                     for (PrintWriter writer : Server.writers) {
-                        writer.println(createXMLForChangeOnlineGameRoom(gameRoom.getRoomOnline(), gameRoom.getRoomId()));
+                        writer.println(createXMLForChangeOnlineGameRoom(Server.gameRooms.get(id).getRoomOnline(), Server.gameRooms.get(id).getRoomId()));
                     }
-                    currentRoom = gameRoom;
+                    currentRoom = Server.gameRooms.get(id);
                 } else {
                     System.out.println("комната полна");
                 }
@@ -214,12 +229,16 @@ public class ClientHandler extends Thread {
                 break;
 
             case "startGame":
-                System.out.println(currentRoom + " room, " + currentRoom.getRoomId());
+                Server.gameRooms.get(Integer.toString(currentRoom.getRoomId())).setGameStatus("in game");
                 currentRoom.setGameStatus("in game");
                 GameField gameField = currentRoom.getGameField();
-                gameField.initGameField(Integer.parseInt(inputElement.getElementsByTagName("fieldSize").item(0).getTextContent()));
+                int fieldSize = Integer.parseInt(inputElement.getElementsByTagName("fieldSize").item(0).getTextContent());
+                gameField.initGameField(fieldSize);
                 for (PrintWriter writer : currentRoom.getWriters()) {
-                    writer.println(createGameStartXML());
+                    writer.println(createGameStartXML(fieldSize));
+                }
+                for (PrintWriter writer : Server.writers) {
+                    writer.println(createXMLForChangeStatusGameRoom(currentRoom.getGameStatus(), currentRoom.getRoomId()));
                 }
                 break;
             case "playerMove":
@@ -228,6 +247,18 @@ public class ClientHandler extends Thread {
                 double y = Double.parseDouble(inputElement.getElementsByTagName("yCoordinate").item(0).getTextContent());
                 String color = inputElement.getElementsByTagName("playerColor").item(0).getTextContent();
                 String userName = inputElement.getElementsByTagName("userName").item(0).getTextContent();
+                String secondUserName;
+                if (currentRoom.getPlayerHost().getUserName().equals(userName)) {
+                    secondUserName = currentRoom.getPlayer().getUserName();
+                    if (currentRoom.isHostPassed()) {
+                        currentRoom.setHostPassed(false);
+                    }
+                } else {
+                    secondUserName = currentRoom.getPlayerHost().getUserName();
+                    if (currentRoom.isPlayerPassed()) {
+                        currentRoom.setPlayerPassed(false);
+                    }
+                }
                 boolean result;
                 if (color.equals("BLACK")) {
                     result = gameField.isAllowedToPlace(x, y, PointState.STONE_BLACK);
@@ -239,9 +270,56 @@ public class ClientHandler extends Thread {
                         if (gameField.getPointsToRemove().size() > 0) {
                             writer.println(createXMLForRemoveSet(gameField.getPointsToRemove()));
                         }
-                        writer.println(createXMLForSendResultToPlayer(result, x, y, color, userName));
+                        writer.println(createXMLForSendResultToPlayer(result, x, y, color, userName, secondUserName));
                     }
                     gameField.setPointsToRemoveClear();
+                }
+                break;
+            case "changeFieldSize":
+                String buttonId = inputElement.getElementsByTagName("buttonId").item(0).getTextContent();
+                if (currentRoom.getPrintWriter() != null) {
+                    currentRoom.getPrintWriter().println(createXMLChangeFieldSize(buttonId));
+                }
+                currentRoom.setFieldSizeId(buttonId);
+                break;
+            case "playerPassed":
+                String user = inputElement.getElementsByTagName("userName").item(0).getTextContent();
+                if (currentRoom.getPlayerHost().getUserName().equals(user)) {
+                    currentRoom.setHostPassed(true);
+                    currentRoom.getPrintWriter().println(createXMLPlayerPass(user));
+                } else {
+                    currentRoom.setPlayerPassed(true);
+                    currentRoom.getPrintWriterHost().println(createXMLPlayerPass(user));
+                }
+                if (currentRoom.isHostPassed() && currentRoom.isPlayerPassed()) {
+                    Server.gameRooms.remove(Integer.toString(currentRoom.getRoomId()));
+                    System.out.println(Server.gameRooms.size() + " комнат онлайн");
+                    for (PrintWriter writer : currentRoom.getWriters()) {
+                        writer.println(createXMLGameOver());
+                    }
+                    for (PrintWriter writer : Server.writers) {
+                        writer.println(createXMLForRoomList("closeRoom", currentRoom));
+                    }
+                }
+                break;
+            case "banUser":
+                String banUserName = inputElement.getElementsByTagName("userName").item(0).getTextContent();
+                if (!banUserName.equals(currentPlayer.getUserName())) {
+                    Player banUser = Server.userOnline.get(banUserName);
+                    File file = new File("users" + File.separator + banUserName + ".xml");
+                    Document document = builder.parse(file);
+
+                    document.getElementsByTagName("banned").item(0).setTextContent("true");
+
+                    DOMSource domSource = new DOMSource(document);
+                    StreamResult streamResult = new StreamResult(file);
+                    try {
+                        transformer.transform(domSource, streamResult);
+                    } catch (TransformerException e) {
+                        e.printStackTrace();
+                    }
+                    Server.banList.add(banUserName);
+                    banUser.getWriter().println(createXMLBan());
                 }
                 break;
             default:
@@ -275,12 +353,19 @@ public class ClientHandler extends Thread {
         if (!Server.userList.containsKey(login)) {
             currentPlayer = createNewUser(login, password);
         } else {
+            for (String name : Server.banList) {
+                if (name.equals(login)) {
+                    currentPlayer = Server.userList.get(login);
+                    return action = "banned";
+                }
+            }
             if (!Server.userList.get(login).getUserPassword().equals(password)) {
                 action = "incorrect";
             } else if (Server.userOnline.containsKey(login)) {
                 action = "currentUserOnline";
             } else {
                 currentPlayer = Server.userList.get(login);
+                currentPlayer.setWriter(writer);
             }
         }
         if (currentPlayer != null) {
@@ -291,6 +376,7 @@ public class ClientHandler extends Thread {
 
     private Player createNewUser(String login, String password) {
         Player newPlayer = new Player(password, login);
+        newPlayer.setWriter(writer);
         Server.userList.put(login, newPlayer);
         File file = new File("users" + File.separator + login + ".xml");
         Document doc = builder.newDocument();
@@ -317,6 +403,14 @@ public class ClientHandler extends Thread {
         Element percentWins = doc.createElement("percentWins");
         percentWins.appendChild(doc.createTextNode("0%"));
         root.appendChild(percentWins);
+
+        Element admin = doc.createElement("admin");
+        admin.appendChild(doc.createTextNode("false"));
+        root.appendChild(admin);
+
+        Element banned = doc.createElement("banned");
+        banned.appendChild(doc.createTextNode("false"));
+        root.appendChild(banned);
         try {
             transformer.transform(new DOMSource(doc), new StreamResult(file));
         } catch (TransformerException e) {
@@ -339,7 +433,7 @@ public class ClientHandler extends Thread {
             root = createUserXML(document, player, root);
         } else if (action.equals("offline")) {
             Element userName = document.createElement("userName");
-            userName.appendChild(document.createTextNode(currentPlayer.getUserName()));
+            userName.appendChild(document.createTextNode(player.getUserName()));
             root.appendChild(userName);
         }
         StringWriter stringWriter = new StringWriter();
@@ -372,6 +466,14 @@ public class ClientHandler extends Thread {
         Element roomId = document.createElement("roomId");
         roomId.appendChild(document.createTextNode(Integer.toString(room.getRoomId())));
         root.appendChild(roomId);
+
+        Element roomOnline = document.createElement("roomOnline");
+        roomOnline.appendChild(document.createTextNode(Integer.toString(room.getRoomOnline())));
+        root.appendChild(roomOnline);
+
+        Element gameStatus = document.createElement("gameStatus");
+        gameStatus.appendChild(document.createTextNode(room.getGameStatus()));
+        root.appendChild(gameStatus);
 
         StringWriter stringWriter = new StringWriter();
         try {
@@ -478,6 +580,33 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
+    private String createXMLForChangeStatusGameRoom(String status, int roomId) {
+        Document document = builder.newDocument();
+
+        Element root = document.createElement("body");
+        document.appendChild(root);
+
+        Element meta = document.createElement("meta-info");
+        meta.appendChild(document.createTextNode("changeStatusGameRoom"));
+        root.appendChild(meta);
+
+        Element statusElement = document.createElement("status");
+        statusElement.appendChild(document.createTextNode(status));
+        root.appendChild(statusElement);
+
+        Element roomIdElement = document.createElement("roomId");
+        roomIdElement.appendChild(document.createTextNode(Integer.toString(roomId)));
+        root.appendChild(roomIdElement);
+
+        StringWriter stringWriter = new StringWriter();
+        try {
+            transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+        return stringWriter.toString();
+    }
+
     private String createXMLForHostAfterPlayerDisconnect() {
         Document document = builder.newDocument();
 
@@ -518,7 +647,7 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
-    private String createGameStartXML() {
+    private String createGameStartXML(int side) {
         Document document = builder.newDocument();
 
         Element root = document.createElement("body");
@@ -527,6 +656,10 @@ public class ClientHandler extends Thread {
         Element meta = document.createElement("meta-info");
         meta.appendChild(document.createTextNode("startGame"));
         root.appendChild(meta);
+
+        Element sideElement = document.createElement("side");
+        sideElement.appendChild(document.createTextNode(Integer.toString(side)));
+        root.appendChild(sideElement);
 
         StringWriter stringWriter = new StringWriter();
         try {
@@ -537,7 +670,7 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
-    private String createXMLForSendResultToPlayer(boolean res, double x, double y, String color, String userName) {
+    private String createXMLForSendResultToPlayer(boolean res, double x, double y, String color, String userName, String unblockUserName) {
         Document document = builder.newDocument();
 
         Element root = document.createElement("body");
@@ -567,6 +700,10 @@ public class ClientHandler extends Thread {
         blockUser.appendChild(document.createTextNode(userName));
         root.appendChild(blockUser);
 
+        Element unblockUser = document.createElement("unblockUser");
+        unblockUser.appendChild(document.createTextNode(unblockUserName));
+        root.appendChild(unblockUser);
+
         StringWriter stringWriter = new StringWriter();
         try {
             transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
@@ -576,7 +713,7 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
-    public String createXMLForRemoveSet(Set<Point> set) {
+    private String createXMLForRemoveSet(Set<Point> set) {
         Document document = builder.newDocument();
 
         Element root = document.createElement("body");
@@ -592,9 +729,9 @@ public class ClientHandler extends Thread {
         int id = 1;
         for (Point temp : set) {
             Element coordinate = document.createElement("coordinate");
-            coordinate.setAttribute("id",Integer.toString(id++));
-            coordinate.setAttribute("xCoordinate",Double.toString(temp.getX()));
-            coordinate.setAttribute("yCoordinate",Double.toString(temp.getY()));
+            coordinate.setAttribute("id", Integer.toString(id++));
+            coordinate.setAttribute("xCoordinate", Double.toString(temp.getX()));
+            coordinate.setAttribute("yCoordinate", Double.toString(temp.getY()));
             pointSet.appendChild(coordinate);
         }
 
@@ -605,6 +742,90 @@ public class ClientHandler extends Thread {
             e.printStackTrace();
         }
         System.out.println(stringWriter.toString());
+        return stringWriter.toString();
+    }
+
+    private String createXMLChangeFieldSize(String id) {
+        Document document = builder.newDocument();
+
+        Element root = document.createElement("body");
+        document.appendChild(root);
+
+        Element meta = document.createElement("meta-info");
+        meta.appendChild(document.createTextNode("changeFieldSize"));
+        root.appendChild(meta);
+
+        Element radioButtonId = document.createElement("radioButtonId");
+        radioButtonId.appendChild(document.createTextNode(id));
+        root.appendChild(radioButtonId);
+
+        StringWriter stringWriter = new StringWriter();
+        try {
+            transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+        return stringWriter.toString();
+    }
+
+    private String createXMLPlayerPass(String userName) {
+        Document document = builder.newDocument();
+
+        Element root = document.createElement("body");
+        document.appendChild(root);
+
+        Element meta = document.createElement("meta-info");
+        meta.appendChild(document.createTextNode("playerPassed"));
+        root.appendChild(meta);
+
+        Element userNameElement = document.createElement("userName");
+        userNameElement.appendChild(document.createTextNode(userName));
+        root.appendChild(userNameElement);
+
+        StringWriter stringWriter = new StringWriter();
+        try {
+            transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+        return stringWriter.toString();
+    }
+
+    private String createXMLGameOver() {
+        Document document = builder.newDocument();
+
+        Element root = document.createElement("body");
+        document.appendChild(root);
+
+        Element meta = document.createElement("meta-info");
+        meta.appendChild(document.createTextNode("gameOver"));
+        root.appendChild(meta);
+
+        StringWriter stringWriter = new StringWriter();
+        try {
+            transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+        return stringWriter.toString();
+    }
+
+    private String createXMLBan() {
+        Document document = builder.newDocument();
+
+        Element root = document.createElement("body");
+        document.appendChild(root);
+
+        Element meta = document.createElement("meta-info");
+        meta.appendChild(document.createTextNode("ban"));
+        root.appendChild(meta);
+
+        StringWriter stringWriter = new StringWriter();
+        try {
+            transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
         return stringWriter.toString();
     }
 }

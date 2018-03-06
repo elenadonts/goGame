@@ -4,6 +4,7 @@ import view.StoneColor;
 
 public class GameRoom {
     private String host;
+    private String player;
     private String description;
     private String online;
     private String statusGame;
@@ -83,5 +84,13 @@ public class GameRoom {
 
     public String getPlayerColor() {
         return playerColor;
+    }
+
+    public void setPlayer(String player) {
+        this.player = player;
+    }
+
+    public String getPlayer() {
+        return player;
     }
 }

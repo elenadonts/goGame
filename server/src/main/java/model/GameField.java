@@ -17,6 +17,7 @@ public class GameField {
     private int capturedWhiteStones;
     private int capturedBlackStones;
 
+
     public void initGameField(int gridSize) { //points received in xml from player after game start
         gameGrid = new Point[gridSize + 1][gridSize + 1];
         for (int x = 0; x < gameGrid.length; x++) {

@@ -30,8 +30,7 @@ public class CreateRoomController {
     private static ClientHandler clientHandler;
     private static Stage currentStage;
     private DocumentBuilder docBuilder;
-    private static Player currentPlayer;
-
+    private static PlayerWindowController playerWindowController;
     @FXML
     public void create(MouseEvent mouseEvent) throws ParserConfigurationException, TransformerException {
         if (roomDescriptionField.getText().isEmpty()){
@@ -53,13 +52,16 @@ public class CreateRoomController {
             roomName.appendChild(doc.createTextNode(roomDescription));
             root.appendChild(roomName);
 
+            Element fieldSize = doc.createElement("fieldSize");
+            fieldSize.appendChild(doc.createTextNode(playerWindowController.fieldSize5.getId()));
+            root.appendChild(fieldSize);
+
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer transformer = tf.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "no");
             StringWriter writer = new StringWriter();
             transformer.transform(new DOMSource(doc), new StreamResult(writer));
-            String output = writer.toString();
-            clientHandler.send(output);
+            clientHandler.send(writer.toString());
             currentStage.close();
         }
 
@@ -73,7 +75,7 @@ public class CreateRoomController {
         CreateRoomController.currentStage = currentStage;
     }
 
-    public static void setCurrentPlayer(Player currentPlayer) {
-        CreateRoomController.currentPlayer = currentPlayer;
+    public static void setPlayerWindowController(PlayerWindowController playerWindowController) {
+        CreateRoomController.playerWindowController = playerWindowController;
     }
 }

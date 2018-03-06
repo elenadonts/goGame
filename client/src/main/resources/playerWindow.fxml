@@ -9,7 +9,7 @@
 <AnchorPane minWidth="231.0" prefHeight="585.000199999995" prefWidth="700.0000168945262" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="controller.PlayerWindowController">
   <TabPane fx:id="tabPane" focusTraversable="true" layoutX="14.0" layoutY="48.0" prefHeight="524.0" prefWidth="672.0" side="TOP" tabClosingPolicy="SELECTED_TAB" visible="true">
     <tabs>
-      <Tab closable="false" text="Room">
+      <Tab closable="false" text="Room list">
         <content>
           <AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="590.0" prefWidth="797.0">
             <children>
@@ -25,7 +25,7 @@
           </AnchorPane>
         </content>
       </Tab>
-      <Tab closable="false" text="User">
+      <Tab closable="false" text="User list">
         <content>
           <AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
             <children>
@@ -42,20 +42,63 @@
           </AnchorPane>
         </content>
       </Tab>
-      <Tab id="" fx:id="privateRoomTab" closable="false" disable="false" style="" text="Room">
+      <Tab id="" fx:id="privateRoomTab" closable="false" disable="false" style="" text="Game room">
         <content>
           <AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="519.0" prefWidth="762.0">
             <children>
-              <Button id="changeStatus" fx:id="buttonReady" layoutX="23.0" layoutY="139.0" mnemonicParsing="false" onMouseClicked="#changeStatus" prefWidth="64.0" text="Ready" />
-              <Button fx:id="startGame" layoutX="23.0" layoutY="163.0" mnemonicParsing="false" onMouseClicked="#startGameClick" prefWidth="64.0" text="Start" />
-              <Button fx:id="closeRoom" layoutX="23.0" layoutY="188.0" mnemonicParsing="false" onMouseClicked="#closeCurrentRoom" prefWidth="64.0" text="Close" />
-              <Label layoutX="23.0" layoutY="22.0" text="Nickname" />
-              <Label layoutX="96.0" layoutY="22.0" text="Status" />
-              <Label fx:id="labelHostNickName" layoutX="23.0" layoutY="39.0" text="" />
-              <Label fx:id="labelPlayerNickName" layoutX="23.0" layoutY="57.0" text="" />
-              <Label fx:id="labelHostStatus" layoutX="96.0" layoutY="39.0" text="" />
-              <Label fx:id="labelPlayerStatus" layoutX="96.0" layoutY="57.0" text="" />
-              <Pane id="" fx:id="gamePane" layoutX="178.0" layoutY="7.0" prefHeight="480.0" prefWidth="487.0" style="" />
+              <Pane id="" fx:id="gamePane" layoutX="178.0" layoutY="7.0" prefHeight="480.0" prefWidth="480.0" style="" />
+              <VBox layoutX="12.0" layoutY="0.0" prefHeight="487.0" prefWidth="150.0">
+                <children>
+                  <Pane prefHeight="79.0" prefWidth="151.00009999999747">
+                    <children>
+                      <Label layoutX="14.0" layoutY="14.0" text="Nickname" />
+                      <Label layoutX="86.0" layoutY="14.0" text="Status" />
+                      <Label fx:id="labelHostNickName" layoutX="14.0" layoutY="32.0" text="" />
+                      <Label fx:id="labelPlayerNickName" layoutX="14.0" layoutY="49.0" text="" />
+                      <Label fx:id="labelHostStatus" layoutX="86.0" layoutY="32.0" text="" />
+                      <Label fx:id="labelPlayerStatus" layoutX="86.0" layoutY="49.0" text="" />
+                      <Separator layoutX="2.0" layoutY="71.0" prefHeight="16.0" prefWidth="148.0" />
+                    </children>
+                  </Pane>
+                  <Pane disable="false" focusTraversable="false" prefHeight="47.0" prefWidth="151.0" visible="true">
+                    <children>
+                      <Separator layoutX="2.0" layoutY="39.0" prefHeight="16.0" prefWidth="148.0" />
+                      <Button id="changeStatus" fx:id="buttonReady" layoutX="14.0" layoutY="12.0" mnemonicParsing="false" onMouseClicked="#changeStatus" prefWidth="54.0" text="Ready" />
+                      <Button fx:id="startGame" layoutX="76.0" layoutY="12.0" mnemonicParsing="false" onMouseClicked="#startGameClick" prefWidth="54.0" text="Start" />
+                    </children>
+                  </Pane>
+                  <Pane fx:id="fieldSizePane" prefHeight="102.0" prefWidth="151.0" VBox.vgrow="NEVER">
+                    <children>
+                      <Separator layoutX="2.0" layoutY="95.0" prefHeight="16.0" prefWidth="148.0" />
+                      <Label layoutX="14.0" layoutY="14.0" text="Select field size:" />
+                      <RadioButton id="field" fx:id="fieldSize5" layoutX="14.0" layoutY="40.0" mnemonicParsing="false" onMouseClicked="#changeFieldSize" selected="true" text="5 x 5" userData="5" wrapText="false">
+                        <toggleGroup>
+                          <ToggleGroup fx:id="filedSizeGroup" />
+                        </toggleGroup>
+                      </RadioButton>
+                      <RadioButton fx:id="fieldSize6" layoutX="76.0" layoutY="40.0" mnemonicParsing="false" onMouseClicked="#changeFieldSize" text="6 x 6" toggleGroup="$filedSizeGroup" userData="6" />
+                      <RadioButton fx:id="fieldSize7" layoutX="14.0" layoutY="70.0" mnemonicParsing="false" onMouseClicked="#changeFieldSize" text="7 x 7" toggleGroup="$filedSizeGroup" userData="7" />
+                      <RadioButton fx:id="fieldSize8" layoutX="76.0" layoutY="70.0" mnemonicParsing="false" onMouseClicked="#changeFieldSize" text="8 x 8" toggleGroup="$filedSizeGroup" userData="8" />
+                    </children>
+                  </Pane>
+                  <Pane disable="false" focusTraversable="false" prefHeight="47.0" prefWidth="151.0" visible="true">
+                    <children>
+                      <Separator layoutX="2.0" layoutY="39.0" prefHeight="16.0" prefWidth="148.0" />
+                      <Button fx:id="passButton" layoutX="14.0" layoutY="12.0" mnemonicParsing="false" onMouseClicked="#playerPassed" prefWidth="54.0000084472631" text="Pass" />
+                      <Button fx:id="closeRoom" layoutX="76.0" layoutY="12.0" mnemonicParsing="false" onMouseClicked="#closeCurrentRoom" prefWidth="54.0" text="Close" />
+                    </children>
+                  </Pane>
+                  <Pane disable="false" focusTraversable="false" prefHeight="79.0" prefWidth="150.0" visible="true">
+                    <children>
+                      <Separator layoutX="2.0" layoutY="71.0" prefHeight="16.0" prefWidth="148.0" />
+                      <Label layoutX="14.0" layoutY="41.0" text="Time:" />
+                      <Label fx:id="timeLabel" layoutX="68.0" layoutY="41.0" prefWidth="68.0" text="" />
+                      <Label layoutX="14.0" layoutY="8.0" text="Player progress:" />
+                      <Label fx:id="playerProgressName" layoutX="14.0" layoutY="24.0" prefWidth="122.0" text="" />
+                    </children>
+                  </Pane>
+                </children>
+              </VBox>
             </children>
           </AnchorPane>
         </content>
@@ -65,4 +108,5 @@
   <Label fx:id="helloUser" layoutX="21.0" layoutY="12.0" text="Hello:" />
   <Button fx:id="connectToRoom" layoutX="622.0" layoutY="14.0" mnemonicParsing="false" onMouseClicked="#connectToGameRoom" text="Connect" />
   <Button id="createRoom" fx:id="createRoomButton" disable="false" layoutX="518.0" layoutY="13.0" mnemonicParsing="false" onMouseClicked="#createRoom" text="Create room" />
+  <Button fx:id="banUser" layoutX="444.0" layoutY="14.0" mnemonicParsing="false" onMouseClicked="#banSelectedUser" text="Ban user" visible="false" />
 </AnchorPane>
