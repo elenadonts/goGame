@@ -414,6 +414,7 @@ public class PlayerWindowController {
                         gamePane.getChildren().clear();
                         fieldSizePane.setDisable(false);
                     });
+                    stopTimer();
                     break;
                 case "ban" :
                     Platform.runLater(() -> {
@@ -434,7 +435,7 @@ public class PlayerWindowController {
 
     private int setInterval() {
         if (interval == 1) {
-            timer.cancel();
+            stopTimer();
             if (currentPlayer.getUserName().equals(playerProgressName.getText())) {
                 Platform.runLater(this::playerPassed);
             }
@@ -454,7 +455,15 @@ public class PlayerWindowController {
             public void run() {
                 printDate(setInterval());
             }
+            @Override
+            public boolean cancel() {
+                return super.cancel();
+            }
         }, 1000, 1000);
+    }
+
+    private void stopTimer() {
+        timer.cancel();
     }
 
     private void setRadioButtonSelected(String id) {
