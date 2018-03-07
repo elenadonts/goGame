@@ -332,7 +332,6 @@ public class ClientHandler extends Thread {
                 break;
         }
         return outputDocument;
-
     }
 
     private Element createUserXML(Document document, Player player, Element root) {
@@ -859,6 +858,9 @@ public class ClientHandler extends Thread {
             res = black - white;
             setNewInfoAboutUser(hostName, res);
             setNewInfoAboutUser(userName, -res);
+        } else {
+            setNewInfoAboutUser(hostName, 0);
+            setNewInfoAboutUser(userName, 0);
         }
     }
 
@@ -878,8 +880,8 @@ public class ClientHandler extends Thread {
             if (res > 0) {
                 document.getElementsByTagName("winGames").item(0).setTextContent(Integer.toString(++winGames));
             }
-            double percentWins = winGames * 100 / gameCount;
-            document.getElementsByTagName("percentWins").item(0).setTextContent(Double.toString(percentWins));
+                double percentWins = winGames * 100 / gameCount;
+                document.getElementsByTagName("percentWins").item(0).setTextContent(Double.toString(percentWins));
 
             DOMSource domSource = new DOMSource(document);
             StreamResult streamResult = new StreamResult(file);
