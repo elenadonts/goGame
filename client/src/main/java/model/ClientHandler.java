@@ -32,14 +32,6 @@ public class ClientHandler extends Thread {
             }
         } catch (IOException e) {
             logger.error("IOException", e);
-        } finally {
-            try {
-                reader.close();
-                writer.close();
-                socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 

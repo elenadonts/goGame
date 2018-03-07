@@ -1,35 +1,29 @@
 package controller;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.scene.control.*;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Pane;
-import model.ClientHandler;
-import model.GameRoom;
-import org.w3c.dom.NodeList;
-import view.*;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-
-import java.awt.*;
-
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import model.ClientHandler;
+import model.GameRoom;
 import model.Player;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import view.*;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -37,7 +31,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.awt.event.InputEvent;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -149,6 +142,7 @@ public class PlayerWindowController {
         clientHandler.setDaemon(true);
         clientHandler.start();
         clientHandler.setGuiController(this);
+
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/login.fxml"));
         Parent login = fxmlLoader.load();
         loginController = fxmlLoader.getController();
@@ -425,6 +419,7 @@ public class PlayerWindowController {
                         timeLabel.setText("");
                         playerProgressName.setText("");
                     });
+                    removeGameRoomFromGameRoomList(currentGameRoom);
                     currentGameRoom = new GameRoom();
                     roomId = "";
                     goGame = null;
@@ -904,29 +899,6 @@ public class PlayerWindowController {
 
             clientHandler.send(writer.toString());
         }
-    }
-
-    public String gameOverForPlayer(String name) {
-        Document doc = docBuilder.newDocument();
-        Element root = doc.createElement("body");
-        doc.appendChild(root);
-
-        Element meta = doc.createElement("meta-info");
-        meta.appendChild(doc.createTextNode("gameOverForPlayer"));
-        root.appendChild(meta);
-
-        Element userName = doc.createElement("userName");
-        userName.appendChild(doc.createTextNode(name));
-        root.appendChild(userName);
-
-        StringWriter writer = new StringWriter();
-        try {
-            transformer.transform(new DOMSource(doc), new StreamResult(writer));
-        } catch (TransformerException e) {
-            e.printStackTrace();
-        }
-
-        return writer.toString();
     }
 
 }
