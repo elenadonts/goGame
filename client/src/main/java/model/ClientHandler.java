@@ -10,8 +10,6 @@ import java.net.Socket;
 public class ClientHandler extends Thread {
     private static final int SERVER_PORT = 3000;
     private static final Logger LOGGER = Logger.getLogger(ClientHandler.class);
-    private Socket socket;
-    private BufferedReader reader;
     private PrintWriter writer;
 
     private PlayerWindowController guiController;
@@ -23,8 +21,8 @@ public class ClientHandler extends Thread {
 
     public void run() {
         try {
-            socket = new Socket("localhost", SERVER_PORT);
-            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            Socket socket = new Socket("localhost", SERVER_PORT);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
             String input;
             while ((input = reader.readLine()) != null) {

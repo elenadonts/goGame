@@ -4,25 +4,16 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
 import model.ClientHandler;
+import model.TransformerAndDocumentFactory;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import java.io.StringWriter;
 
 public class LoginController {
-    private DocumentBuilder docBuilder;
+    private static final Logger LOGGER = Logger.getLogger(LoginController.class);
     @FXML
     private Label errorLabel;
     @FXML
@@ -30,7 +21,7 @@ public class LoginController {
     @FXML
     private PasswordField userPassword;
     private static ClientHandler clientHandler;
-    private static final Logger LOGGER = Logger.getLogger(LoginController.class);
+
 
     public static void setClientHandler(ClientHandler currClientHandler) {
         clientHandler = currClientHandler;
@@ -39,8 +30,10 @@ public class LoginController {
     @FXML
     public void connectToServer() {
         LOGGER.info("connecting to server");
+
         String log = userLogin.getText();
         String pass = userPassword.getText();
+
         if (log.isEmpty() || pass.isEmpty()) {
             errorLabel.setText("Login or password can't be a empty!");
             LOGGER.info("Empty login or password");
@@ -48,40 +41,25 @@ public class LoginController {
             errorLabel.setText("Login or password must be more 4 char");
             LOGGER.info("Unsatisfied password length");
         } else {
-            try {
-                DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-                docBuilder = docFactory.newDocumentBuilder();
-                Document doc = docBuilder.newDocument();
+            Document doc = TransformerAndDocumentFactory.newDocument();
 
-                Element root = doc.createElement("body");
-                doc.appendChild(root);
+            Element root = PlayerWindowController.createXML(doc, "login");
 
-                Element meta = doc.createElement("meta-info");
-                meta.appendChild(doc.createTextNode("login"));
-                root.appendChild(meta);
+            Element login = doc.createElement("login");
+            login.appendChild(doc.createTextNode(log));
+            root.appendChild(login);
 
-                Element login = doc.createElement("login");
-                login.appendChild(doc.createTextNode(log));
-                root.appendChild(login);
+            Element password = doc.createElement("password");
+            password.appendChild(doc.createTextNode(pass));
+            root.appendChild(password);
 
-                Element password = doc.createElement("password");
-                password.appendChild(doc.createTextNode(pass));
-                root.appendChild(password);
+            StringWriter writer = TransformerAndDocumentFactory.Transform(doc);
 
-                TransformerFactory tf = TransformerFactory.newInstance();
-                Transformer transformer = tf.newTransformer();
-                transformer.setOutputProperty(OutputKeys.INDENT, "no");
-                StringWriter writer = new StringWriter();
-                transformer.transform(new DOMSource(doc), new StreamResult(writer));
-                String output = writer.toString();
-                clientHandler.send(output);
-            } catch (ParserConfigurationException | TransformerException ex) {
-                LOGGER.error(ex);
-            }
+            clientHandler.send(writer.toString());
         }
     }
 
-    public void hideError(MouseEvent keyEvent) {
+    public void hideError() {
         errorLabel.setText("");
     }
 

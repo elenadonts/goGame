@@ -90,8 +90,7 @@ public class ClientHandler extends Thread {
                     }
                 }
             }
-        }
-        catch (SocketException e){
+        } catch (SocketException e) {
             LOGGER.info("User disconnected");
         } catch (IOException | SAXException | TransformerException e) {
             LOGGER.error(e);
