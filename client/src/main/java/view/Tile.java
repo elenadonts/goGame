@@ -6,6 +6,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import model.ClientHandler;
+import org.apache.log4j.Logger;
 
 public class Tile extends Rectangle {
     private GoGame game;
@@ -13,6 +14,7 @@ public class Tile extends Rectangle {
     private double yCoordinate;
     private static ClientHandler clientHandler;
     private static PlayerWindowController playerWindowController;
+    private static final Logger LOGGER = Logger.getLogger(Tile.class);
 
     public Tile(int x, int y, GoGame game) {
         this.game = game;
@@ -32,8 +34,8 @@ public class Tile extends Rectangle {
         });
     }
 
-    public void getTileCorner(double mouseClickX, double mouseClickY) {
-        System.out.println("x: " + mouseClickX + "; y: " + mouseClickY);
+    private void getTileCorner(double mouseClickX, double mouseClickY) {
+        LOGGER.info("Mouse coordinates: x - " + mouseClickX + " y - " + mouseClickY);
         double layoutOffsetX = game.getTileGroup().getLayoutX();
         double layoutOffsetY = game.getTileGroup().getLayoutY();
         double strokeWidth = this.getStrokeWidth() / 2;

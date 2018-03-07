@@ -5,8 +5,8 @@ import org.apache.log4j.Logger;
 import java.util.*;
 
 public class GameField {
-    private static final Logger logger = Logger.getLogger(GameField.class);
-    private int stepSize = 80;
+    private static final Logger LOGGER = Logger.getLogger(GameField.class);
+    private static final int STEP_SIZE = 80;
     private Point[][] gameGrid;
     private Point[][] tempGrid;
     private Set<Point> pointsToRemove = new HashSet<>();
@@ -16,21 +16,23 @@ public class GameField {
     private boolean block;
     private int capturedWhiteStones;
     private int capturedBlackStones;
-    private int whiteCount = 0;
-    private int blackCount = 0;
+    private int whiteCount;
+    private int blackCount;
 
 
     public void initGameField(int gridSize) { //points received in xml from player after game start
         gameGrid = new Point[gridSize + 1][gridSize + 1];
         for (int x = 0; x < gameGrid.length; x++) {
             for (int y = 0; y < gameGrid[x].length; y++) {
-                gameGrid[x][y] = new Point(y * stepSize, x * stepSize);
+                gameGrid[x][y] = new Point(y * STEP_SIZE, x * STEP_SIZE);
                 gameGrid[x][y].setPointState(PointState.BLANK);
             }
         }
+        LOGGER.info("New game grid of size " + gridSize + " initialized");
     }
 
     public boolean isAllowedToPlace(double xCoordinate, double yCoordinate, PointState stoneColor) {
+        LOGGER.info("Target coordinates x: " + xCoordinate + "y: " + yCoordinate);
         currentStoneColor = stoneColor;
         Point pointOnGrid = new Point(xCoordinate, yCoordinate);
         pointOnGrid.setPointState(stoneColor);
@@ -44,6 +46,7 @@ public class GameField {
         }
 
         if (isPositionOccupied(pointOnGrid)) {
+            LOGGER.info("Position occupied");
             return false;
         }
 
@@ -52,6 +55,7 @@ public class GameField {
             getSurroundedPoints();
             changeStateOfRemovedPoints();
             increaseCapturedStonesNumber();
+            LOGGER.info("Stone placed");
             return true;
         }
 
@@ -82,7 +86,6 @@ public class GameField {
         return capturedBlackStones;
     }
 
-    // call after players skipped moves 3 times
     public void countPlayersScore() {
         for (int i = 0; i < gameGrid.length; i++) {
             for (int j = 0; j < gameGrid[i].length; j++) {
@@ -102,6 +105,15 @@ public class GameField {
         }
         whiteCount -= capturedWhiteStones;
         blackCount -= capturedBlackStones;
+        LOGGER.info("Game result: white - " + whiteCount + " black - " + blackCount);
+    }
+
+    public int getBlackCount() {
+        return blackCount;
+    }
+
+    public int getWhiteCount() {
+        return whiteCount;
     }
 
     private void increaseCapturedStonesNumber() {
@@ -223,13 +235,14 @@ public class GameField {
     }
 
     private int getPositionIndexFromCoordinate(double coordinate) {
-        return (int) coordinate / stepSize;
+        return (int) coordinate / STEP_SIZE;
     }
 
     private void addStone(Point stoneCoordinates, PointState pointState) {
         int row = getPositionIndexFromCoordinate(stoneCoordinates.getY());
         int column = getPositionIndexFromCoordinate(stoneCoordinates.getX());
         gameGrid[row][column].setPointState(pointState);
+        LOGGER.info("Adding new stone to: [" + row + "][" + column + "] array cell");
     }
 
     private void getSurroundedPoints() {
@@ -286,17 +299,5 @@ public class GameField {
             return true;
         }
         return isSurrounded;
-    }
-
-    public void setStepSize(int stepSize) {
-        this.stepSize = stepSize;
-    }
-
-    public int getBlackCount() {
-        return blackCount;
-    }
-
-    public int getWhiteCount() {
-        return whiteCount;
     }
 }

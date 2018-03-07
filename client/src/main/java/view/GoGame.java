@@ -8,6 +8,7 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import org.apache.log4j.Logger;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,6 +23,7 @@ public class GoGame {
 
     private Set<Stone> stones = new HashSet<>();
     private LastStone lastStone;
+    private static final Logger LOGGER = Logger.getLogger(GoGame.class);
 
     public Group getTileGroup() {
         return tileGroup;
@@ -48,6 +50,7 @@ public class GoGame {
     }
 
     public void drawStone(Stone stone) {
+        LOGGER.info("Drawing " + stone.getStoneColor() + " x: " + stone.getX() + " y: " + stone.getY());
         stones.add(stone);
         pieceGroup.getChildren().add(stone);
     }
@@ -58,6 +61,7 @@ public class GoGame {
     }
 
     public void removeStone(double xCoordinate, double yCoordinate) {
+        LOGGER.info("Removing x: " + xCoordinate + " y: " + yCoordinate);
         Iterator<Stone> iterator = stones.iterator();
         while (iterator.hasNext()) {
             Stone stone = iterator.next();

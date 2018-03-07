@@ -10,7 +10,14 @@ import static view.GoGame.TILE_SIZE;
 
 public class Stone extends StackPane {
 
+    private double x;
+    private double y;
+    private StoneColor stoneColor;
+
     public Stone(StoneColor stoneColor, double x, double y) {
+        this.x = x;
+        this.y = y;
+        this.stoneColor = stoneColor;
         relocate(x, y);
 
         double backCircleRadius = TILE_SIZE / 2 - TILE_SIZE * 0.06;
@@ -50,4 +57,17 @@ public class Stone extends StackPane {
             getChildren().addAll(backCircle, frontCircle);
         }
     }
+
+    public double getX() {
+        return x;
+    }
+
+    public double getY() {
+        return y;
+    }
+
+    public StoneColor getStoneColor() {
+        return stoneColor;
+    }
+
 }

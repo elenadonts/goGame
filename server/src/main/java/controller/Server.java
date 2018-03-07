@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class Server {
-    private static final Logger logger = Logger.getLogger(Server.class);
+    private static final Logger LOGGER = Logger.getLogger(Server.class);
     private static final int PORT = 3000;
     private static DocumentBuilder docBuilder;
     public static HashMap<String, Player> userList = new HashMap<>();
@@ -32,7 +32,7 @@ public class Server {
         docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         uploadUserList();
         try (ServerSocket server = new ServerSocket(PORT)) {
-            System.out.println("Listening...");
+            LOGGER.info("Server starting...");
             while (true) {
                 ClientHandler clientHandler = new ClientHandler(server.accept());
                 clientHandler.start();
@@ -65,7 +65,7 @@ public class Server {
                 }
                 userList.put(player.getUserName(), player);
             } catch (SAXException | IOException e) {
-                logger.error("Exception", e);
+                LOGGER.error("Exception", e);
             }
         }
     }

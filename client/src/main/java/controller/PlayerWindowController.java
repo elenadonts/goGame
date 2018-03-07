@@ -41,6 +41,7 @@ import java.util.TimerTask;
 
 
 public class PlayerWindowController {
+
     private static final Logger logger = Logger.getLogger(PlayerWindowController.class);
     @FXML
     public Label helloUser;
@@ -112,7 +113,7 @@ public class PlayerWindowController {
     public Button banUser;
     private ClientHandler clientHandler = new ClientHandler();
 
-    private SimpleDateFormat format = new SimpleDateFormat("mm:ss");
+    private static final SimpleDateFormat FORMAT = new SimpleDateFormat("mm:ss");
     private int interval;
     private Timer timer = new Timer();
     private SingleSelectionModel<Tab> gameRoomTabSelectionModel;
@@ -135,7 +136,7 @@ public class PlayerWindowController {
         try {
             transformer = tf.newTransformer();
         } catch (TransformerConfigurationException e) {
-            e.printStackTrace();
+            logger.error(e);
         }
         transformer.setOutputProperty(OutputKeys.INDENT, "no");
         tabPane.getTabs().remove(privateRoomTab);
@@ -174,11 +175,12 @@ public class PlayerWindowController {
         gamePane.setDisable(true);
 
         passButton.setDisable(true);
+        logger.info("Player's window initialized");
     }
 
     public void readXML(String input) {
         try {
-            System.out.println("ПРИНИМАЕМ " + input);
+            //logger.info("New xml received " + input);
             Document document = docBuilder.parse(new InputSource(new StringReader(input)));
             Node user = document.getElementsByTagName("body").item(0);
             String metaInfo = ((Element) user).getElementsByTagName("meta-info").item(0).getTextContent();
@@ -466,7 +468,7 @@ public class PlayerWindowController {
     }
 
     private void printDate(int seconds) {
-        Platform.runLater(() -> timeLabel.setText(format.format(new Date(seconds * 1000))));
+        Platform.runLater(() -> timeLabel.setText(FORMAT.format(new Date(seconds * 1000))));
     }
 
     private void startTimer() {
@@ -577,7 +579,7 @@ public class PlayerWindowController {
             CreateRoomController.setPlayerWindowController(this);
             createRoomStage.show();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e);
         }
     }
 
@@ -637,6 +639,8 @@ public class PlayerWindowController {
                     break;
                 case "not ready":
                     currStatus = "ready";
+                    break;
+                default: currStatus = "unknown status";
                     break;
             }
             Document doc = docBuilder.newDocument();
@@ -733,7 +737,7 @@ public class PlayerWindowController {
             clientHandler.send(startGame());
             currentGameRoom.setStatusGame("in game");
         } else {
-            System.out.println("one or more player not ready to start game");
+            logger.info("one or more player not ready to start game");
         }
     }
 
@@ -800,10 +804,9 @@ public class PlayerWindowController {
         try {
             transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
         } catch (TransformerException e) {
-            e.printStackTrace();
+            logger.error(e);
         }
         return stringWriter.toString();
-
     }
 
     public String getColorCurrentPlayer() {
@@ -846,7 +849,7 @@ public class PlayerWindowController {
         try {
             transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
         } catch (TransformerException e) {
-            e.printStackTrace();
+            logger.error(e);
         }
         clientHandler.send(stringWriter.toString());
     }
@@ -874,7 +877,7 @@ public class PlayerWindowController {
         try {
             transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
         } catch (TransformerException e) {
-            e.printStackTrace();
+            logger.error(e);
         }
         clientHandler.send(stringWriter.toString());
     }
@@ -900,5 +903,4 @@ public class PlayerWindowController {
             clientHandler.send(writer.toString());
         }
     }
-
 }

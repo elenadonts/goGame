@@ -1,7 +1,5 @@
 package model;
 
-import view.StoneColor;
-
 public class GameRoom {
     private String host;
     private String player;
@@ -11,8 +9,8 @@ public class GameRoom {
     private String idRoom;
     private String statusHost;
     private String statusPlayer;
-    private String hostColor = "BLACK";
-    private String playerColor = "WHITE";
+    private static final String HOST_COLOR = "BLACK";
+    private static final String PLAYER_COLOR = "WHITE";
 
     public GameRoom() {
     }
@@ -79,11 +77,11 @@ public class GameRoom {
     }
 
     public String getHostColor() {
-        return hostColor;
+        return HOST_COLOR;
     }
 
     public String getPlayerColor() {
-        return playerColor;
+        return PLAYER_COLOR;
     }
 
     public void setPlayer(String player) {

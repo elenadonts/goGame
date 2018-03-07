@@ -6,7 +6,6 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import model.ClientHandler;
-import model.Player;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -31,6 +30,7 @@ public class LoginController {
     @FXML
     private PasswordField userPassword;
     private static ClientHandler clientHandler;
+    private static final Logger LOGGER = Logger.getLogger(LoginController.class);
 
     public static void setClientHandler(ClientHandler currClientHandler) {
         clientHandler = currClientHandler;
@@ -38,12 +38,15 @@ public class LoginController {
 
     @FXML
     public void connectToServer() {
+        LOGGER.info("connecting to server");
         String log = userLogin.getText();
         String pass = userPassword.getText();
         if (log.isEmpty() || pass.isEmpty()) {
             errorLabel.setText("Login or password can't be a empty!");
+            LOGGER.info("Empty login or password");
         } else if (log.length() < 4 || pass.length() < 4) {
             errorLabel.setText("Login or password must be more 4 char");
+            LOGGER.info("Unsatisfied password length");
         } else {
             try {
                 DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -73,7 +76,7 @@ public class LoginController {
                 String output = writer.toString();
                 clientHandler.send(output);
             } catch (ParserConfigurationException | TransformerException ex) {
-                ex.printStackTrace();
+                LOGGER.error(ex);
             }
         }
     }

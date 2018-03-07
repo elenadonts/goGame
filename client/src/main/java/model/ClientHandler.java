@@ -9,7 +9,7 @@ import java.net.Socket;
 
 public class ClientHandler extends Thread {
     private static final int SERVER_PORT = 3000;
-    private static final Logger logger = Logger.getLogger(ClientHandler.class);
+    private static final Logger LOGGER = Logger.getLogger(ClientHandler.class);
     private Socket socket;
     private BufferedReader reader;
     private PrintWriter writer;
@@ -31,7 +31,7 @@ public class ClientHandler extends Thread {
                 guiController.readXML(input);
             }
         } catch (IOException e) {
-            logger.error("IOException", e);
+            LOGGER.error("IOException", e);
         }
     }
 

@@ -1,5 +1,7 @@
 package model;
 
+import org.apache.log4j.Logger;
+
 import java.io.PrintWriter;
 
 public class Player {
@@ -9,8 +11,9 @@ public class Player {
     private String userRating;
     private String userPercentWins;
     private String userWinGames;
-    private boolean admin = false;
+    private boolean admin;
     private PrintWriter writer;
+    private static final Logger LOGGER = Logger.getLogger(Player.class);
 
     public Player() {
     }
@@ -22,6 +25,7 @@ public class Player {
         userRating = "100";
         userPercentWins = "0";
         userWinGames = "0";
+        LOGGER.info("Player " + userName + " logged in");
     }
 
     public String getUserName() {

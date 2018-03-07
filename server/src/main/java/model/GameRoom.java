@@ -1,6 +1,8 @@
 package model;
 
 
+import org.apache.log4j.Logger;
+
 import java.io.PrintWriter;
 
 public class GameRoom {
@@ -17,8 +19,9 @@ public class GameRoom {
     private int roomOnline;
     private GameField gameField;
     private String fieldSizeId;
-    private boolean playerPassed = false;
-    private boolean hostPassed = false;
+    private boolean playerPassed;
+    private boolean hostPassed;
+    private static final Logger LOGGER = Logger.getLogger(GameRoom.class);
 
     GameRoom(String roomDescription, Player player1, PrintWriter printWriter1) {
         gameField = new GameField();
@@ -29,6 +32,7 @@ public class GameRoom {
         hostStatus = "not ready";
         roomOnline = 1;
         gameStatus = "in lobby";
+        LOGGER.info("New room created");
     }
 
     public Player getPlayerHost() {

@@ -16,11 +16,12 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Map;
 import java.util.Set;
 
 public class ClientHandler extends Thread {
-    private static final Logger logger = Logger.getLogger(ClientHandler.class);
+    private static final Logger LOGGER = Logger.getLogger(ClientHandler.class);
     private BufferedReader reader;
     private PrintWriter writer;
 
@@ -31,6 +32,7 @@ public class ClientHandler extends Thread {
     private Player currentPlayer;
     private GameRoom currentRoom;
 
+
     public ClientHandler(Socket client) {
         this.clientSocket = client;
         try {
@@ -40,16 +42,16 @@ public class ClientHandler extends Thread {
             transformer = tf.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "no");
         } catch (ParserConfigurationException e) {
-            logger.error("ParserConfigurationException", e);
+            LOGGER.error("ParserConfigurationException", e);
         } catch (TransformerConfigurationException e) {
-            logger.error("TransformerConfigurationException", e);
+            LOGGER.error("TransformerConfigurationException", e);
         }
         this.setDaemon(true);
     }
 
     @Override
     public void run() {
-        System.out.println("User: " + clientSocket.getInetAddress().toString().replace("/", "") + " connected;");
+        LOGGER.info("User: " + clientSocket.getInetAddress().toString().replace("/", "") + " connected;");
         String input;
         try {
             writer = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream()), true);//send to java.client
@@ -88,12 +90,11 @@ public class ClientHandler extends Thread {
                     }
                 }
             }
-        } catch (IOException e) {
-            logger.error("IOException", e);
-        } catch (SAXException e) {
-            logger.error("SAXException", e);
-        } catch (TransformerException e) {
-            logger.error("TransformerException", e);
+        }
+        catch (SocketException e){
+            LOGGER.info("User disconnected");
+        } catch (IOException | SAXException | TransformerException e) {
+            LOGGER.error(e);
         } finally {
             try {
                 Server.writers.remove(writer);
@@ -101,7 +102,7 @@ public class ClientHandler extends Thread {
                 writer.close();
                 reader.close();
                 clientSocket.close();
-                if (currentRoom.getGameStatus().equals("in game")) {
+                if (currentRoom.getGameStatus().equals("in game") && clientSocket.isConnected()) {
                     if (currentRoom.getPlayerHost().getUserName().equals(currentPlayer.getUserName())) {
                         int white = 10;
                         int black = 0;
@@ -138,7 +139,7 @@ public class ClientHandler extends Thread {
                     }
                 }
             } catch (IOException e) {
-                logger.error("IOException", e);
+                LOGGER.error("IOException", e);
             }
         }
     }
@@ -464,7 +465,7 @@ public class ClientHandler extends Thread {
         try {
             transformer.transform(new DOMSource(doc), new StreamResult(file));
         } catch (TransformerException e) {
-            logger.error("TransformerException", e);
+            LOGGER.error("TransformerException", e);
         }
         return newPlayer;
     }
