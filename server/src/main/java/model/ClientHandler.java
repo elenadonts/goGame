@@ -819,6 +819,7 @@ public class ClientHandler extends Thread {
         Element blackElement = document.createElement("black");
         blackElement.appendChild(document.createTextNode(Integer.toString(black)));
         root.appendChild(blackElement);
+
         StringWriter stringWriter = new StringWriter();
         try {
             transformer.transform(new DOMSource(document), new StreamResult(stringWriter));

@@ -277,6 +277,7 @@ public class PlayerWindowController {
                             ((Element) user).getElementsByTagName("roomDescription").item(0).getTextContent(),
                             ((Element) user).getElementsByTagName("roomId").item(0).getTextContent());
                     addPrivateGameTab(labelPlayerNickName, labelPlayerStatus, currentPlayer.getUserName());
+                    currentGameRoom.setPlayer(currentPlayer.getUserName());
                     Platform.runLater(() -> {
                         labelHostNickName.setText(currentGameRoom.getHost());
                         labelHostStatus.setText(((Element) user).getElementsByTagName("hostStatus").item(0).getTextContent());
