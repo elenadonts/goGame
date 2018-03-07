@@ -45,4 +45,16 @@ public class Player {
         return userRating;
     }
 
+    public void setUserGameCount(String userGameCount) {
+        this.userGameCount = userGameCount;
+    }
+
+    public void setUserPercentWins(String userPercentWins) {
+        this.userPercentWins = userPercentWins;
+    }
+
+    public void setUserRating(String userRating) {
+        this.userRating = userRating;
+    }
+
 }

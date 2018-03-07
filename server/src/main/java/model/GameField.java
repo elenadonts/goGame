@@ -16,6 +16,8 @@ public class GameField {
     private boolean block;
     private int capturedWhiteStones;
     private int capturedBlackStones;
+    private int whiteCount = 0;
+    private int blackCount = 0;
 
 
     public void initGameField(int gridSize) { //points received in xml from player after game start
@@ -82,8 +84,6 @@ public class GameField {
 
     // call after players skipped moves 3 times
     public void countPlayersScore() {
-        int whiteCount = 0;
-        int blackCount = 0;
         for (int i = 0; i < gameGrid.length; i++) {
             for (int j = 0; j < gameGrid[i].length; j++) {
                 if (gameGrid[i][j].getPointState() == PointState.BLANK) {
@@ -100,7 +100,8 @@ public class GameField {
                 }
             }
         }
-        System.out.println("white: " + whiteCount + " black: " + blackCount);
+        whiteCount -= capturedWhiteStones;
+        blackCount -= capturedBlackStones;
     }
 
     private void increaseCapturedStonesNumber() {
@@ -289,5 +290,13 @@ public class GameField {
 
     public void setStepSize(int stepSize) {
         this.stepSize = stepSize;
+    }
+
+    public int getBlackCount() {
+        return blackCount;
+    }
+
+    public int getWhiteCount() {
+        return whiteCount;
     }
 }

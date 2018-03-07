@@ -8,6 +8,7 @@ public class Player {
     private String userGameCount;
     private String userRating;
     private String userPercentWins;
+    private String userWinGames;
     private boolean admin = false;
     private PrintWriter writer;
 
@@ -18,8 +19,9 @@ public class Player {
         this.userName = userName;
         this.userPassword = userPassword;
         userGameCount = "0";
-        userRating = "0";
+        userRating = "100";
         userPercentWins = "0";
+        userWinGames = "0";
     }
 
     public String getUserName() {
@@ -76,5 +78,13 @@ public class Player {
 
     public PrintWriter getWriter() {
         return writer;
+    }
+
+    public String getUserWinGames() {
+        return userWinGames;
+    }
+
+    public void setUserWinGames(String userWinGames) {
+        this.userWinGames = userWinGames;
     }
 }

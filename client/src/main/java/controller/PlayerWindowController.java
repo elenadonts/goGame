@@ -398,12 +398,19 @@ public class PlayerWindowController {
                     passButton.setDisable(false);
                     break;
                 case "gameOver":
-                    currentGameRoom = new GameRoom();
-                    roomId = "";
-                    goGame = null;
-                    Platform.runLater(() -> {
+                    int white = Integer.parseInt(((Element) user).getElementsByTagName("white").item(0).getTextContent());
+                    int black = Integer.parseInt(((Element) user).getElementsByTagName("black").item(0).getTextContent());
+                    String res;
+                    if (white>black) {
+                        res = "Win: " + currentGameRoom.getPlayer() + " with " + (white-black) + " points";
+                    } else if (black>white) {
+                        res = "Win: " + currentGameRoom.getHost() + " with " + (black-white) + " points";
+                    } else {
+                        res = "Draw";
+                    }
+                        Platform.runLater(() -> {
                         tabPane.getTabs().remove(privateRoomTab);
-                        Alert alert = new Alert(Alert.AlertType.INFORMATION, "Game over", ButtonType.OK);
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION, res, ButtonType.OK);
                         alert.showAndWait();
                         labelPlayerStatus.setText("");
                         labelPlayerNickName.setText("");
@@ -416,6 +423,9 @@ public class PlayerWindowController {
                         timeLabel.setText("");
                         playerProgressName.setText("");
                     });
+                    currentGameRoom = new GameRoom();
+                    roomId = "";
+                    goGame = null;
                     stopTimer();
                     break;
                 case "ban" :
@@ -425,6 +435,13 @@ public class PlayerWindowController {
                         System.exit(0);
                         Platform.exit();
                     });
+                    break;
+                case "newUserInfo" :
+                    Player newUserInfo = new Player(((Element) user).getElementsByTagName("userName").item(0).getTextContent(),
+                            ((Element) user).getElementsByTagName("gameCount").item(0).getTextContent(),
+                            ((Element) user).getElementsByTagName("rating").item(0).getTextContent(),
+                            ((Element) user).getElementsByTagName("percentWins").item(0).getTextContent());
+                    setNewInfoAboutPlayer(newUserInfo);
                     break;
                 default:
                     System.out.println("Default:" + input);
@@ -679,6 +696,19 @@ public class PlayerWindowController {
         gameRoomObsList.addAll(newGameRoomObsList);
     }
 
+    private void setNewInfoAboutPlayer(Player player) {
+        ObservableList<Player> newPlayerObsList = FXCollections.observableArrayList();
+        for (Player temp : userObsList) {
+            if (temp.getUserName().equals(player.getUserName())){
+                temp.setUserGameCount(player.getUserGameCount());
+                temp.setUserRating(player.getUserRating());
+                temp.setUserPercentWins(player.getUserPercentWins());
+            }
+            newPlayerObsList.add(temp);
+        }
+        userObsList.clear();
+        userObsList.addAll(newPlayerObsList);
+    }
     private void setStatusInGameRoom(String status, String roomId) {
         ObservableList<GameRoom> newGameRoomObsList = FXCollections.observableArrayList();
         for (GameRoom temp : gameRoomObsList) {

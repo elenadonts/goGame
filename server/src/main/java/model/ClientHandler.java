@@ -1,5 +1,6 @@
 package model;
 
+import javafx.application.Platform;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -294,9 +295,12 @@ public class ClientHandler extends Thread {
                 }
                 if (currentRoom.isHostPassed() && currentRoom.isPlayerPassed()) {
                     Server.gameRooms.remove(Integer.toString(currentRoom.getRoomId()));
-                    System.out.println(Server.gameRooms.size() + " комнат онлайн");
+                    currentRoom.getGameField().countPlayersScore();
+                    int white = currentRoom.getGameField().getWhiteCount();
+                    int black = currentRoom.getGameField().getBlackCount();
+                    changerXMLAfterGameEnd(white, black);
                     for (PrintWriter writer : currentRoom.getWriters()) {
-                        writer.println(createXMLGameOver());
+                        writer.println(createXMLGameOver(white, black));
                     }
                     for (PrintWriter writer : Server.writers) {
                         writer.println(createXMLForRoomList("closeRoom", currentRoom));
@@ -307,6 +311,7 @@ public class ClientHandler extends Thread {
                 String banUserName = inputElement.getElementsByTagName("userName").item(0).getTextContent();
                 if (!banUserName.equals(currentPlayer.getUserName())) {
                     Player banUser = Server.userOnline.get(banUserName);
+
                     File file = new File("users" + File.separator + banUserName + ".xml");
                     Document document = builder.parse(file);
 
@@ -398,12 +403,16 @@ public class ClientHandler extends Thread {
         root.appendChild(gameCount);
 
         Element rating = doc.createElement("rating");
-        rating.appendChild(doc.createTextNode("0"));
+        rating.appendChild(doc.createTextNode("100"));
         root.appendChild(rating);
 
         Element percentWins = doc.createElement("percentWins");
-        percentWins.appendChild(doc.createTextNode("0%"));
+        percentWins.appendChild(doc.createTextNode("0"));
         root.appendChild(percentWins);
+
+        Element winGames = doc.createElement("winGames");
+        winGames.appendChild(doc.createTextNode("0"));
+        root.appendChild(winGames);
 
         Element admin = doc.createElement("admin");
         admin.appendChild(doc.createTextNode("false"));
@@ -671,7 +680,8 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
-    private String createXMLForSendResultToPlayer(boolean res, double x, double y, String color, String userName, String unblockUserName) {
+    private String createXMLForSendResultToPlayer(boolean res, double x, double y, String color,
+                                                  String userName, String unblockUserName) {
         Document document = builder.newDocument();
 
         Element root = document.createElement("body");
@@ -792,7 +802,7 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
-    private String createXMLGameOver() {
+    private String createXMLGameOver(int white, int black) {
         Document document = builder.newDocument();
 
         Element root = document.createElement("body");
@@ -802,6 +812,13 @@ public class ClientHandler extends Thread {
         meta.appendChild(document.createTextNode("gameOver"));
         root.appendChild(meta);
 
+        Element whiteElement = document.createElement("white");
+        whiteElement.appendChild(document.createTextNode(Integer.toString(white)));
+        root.appendChild(whiteElement);
+
+        Element blackElement = document.createElement("black");
+        blackElement.appendChild(document.createTextNode(Integer.toString(black)));
+        root.appendChild(blackElement);
         StringWriter stringWriter = new StringWriter();
         try {
             transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
@@ -820,6 +837,95 @@ public class ClientHandler extends Thread {
         Element meta = document.createElement("meta-info");
         meta.appendChild(document.createTextNode("ban"));
         root.appendChild(meta);
+
+        StringWriter stringWriter = new StringWriter();
+        try {
+            transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+        return stringWriter.toString();
+    }
+
+    private void changerXMLAfterGameEnd(int white, int black) {
+        int res;
+        String hostName = currentRoom.getPlayerHost().getUserName();
+        String userName = currentRoom.getPlayer().getUserName();
+        if (white > black) {
+            res = white - black;
+            setNewInfoAboutUser(userName, res);
+            setNewInfoAboutUser(hostName, -res);
+        } else if (black > white) {
+            res = black - white;
+            setNewInfoAboutUser(hostName, res);
+            setNewInfoAboutUser(userName, -res);
+        }
+    }
+
+    public void setNewInfoAboutUser(String name, int res) {
+
+        try {
+            File file = new File("users" + File.separator + name + ".xml");
+            Document document = builder.parse(file);
+            int gameCount = Integer.parseInt(document.getElementsByTagName("gameCount").item(0).getTextContent());
+            document.getElementsByTagName("gameCount").item(0).setTextContent(Integer.toString(++gameCount));
+
+            int rating = Integer.parseInt(document.getElementsByTagName("rating").item(0).getTextContent());
+            rating += res;
+            document.getElementsByTagName("rating").item(0).setTextContent(Integer.toString(rating));
+
+            int winGames = Integer.parseInt(document.getElementsByTagName("winGames").item(0).getTextContent());
+            if (res > 0) {
+                document.getElementsByTagName("winGames").item(0).setTextContent(Integer.toString(++winGames));
+            }
+            double percentWins = winGames * 100 / gameCount;
+            document.getElementsByTagName("percentWins").item(0).setTextContent(Double.toString(percentWins));
+
+            DOMSource domSource = new DOMSource(document);
+            StreamResult streamResult = new StreamResult(file);
+            try {
+                transformer.transform(domSource, streamResult);
+            } catch (TransformerException e) {
+                e.printStackTrace();
+            }
+            for (PrintWriter writer : Server.writers) {
+                Player player = Server.userList.get(name);
+                player.setUserGameCount(Integer.toString(gameCount));
+                player.setUserRating(Integer.toString(rating));
+                player.setUserWinGames(Integer.toString(winGames));
+                player.setUserPercentWins(Double.toString(percentWins));
+                writer.println(createXMLForNewUserInfo(player));
+            }
+        } catch (SAXException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String createXMLForNewUserInfo(Player player) {
+        Document document = builder.newDocument();
+
+        Element root = document.createElement("body");
+        document.appendChild(root);
+
+        Element meta = document.createElement("meta-info");
+        meta.appendChild(document.createTextNode("newUserInfo"));
+        root.appendChild(meta);
+
+        Element name = document.createElement("userName");
+        name.appendChild(document.createTextNode(player.getUserName()));
+        root.appendChild(name);
+
+        Element gameCount = document.createElement("gameCount");
+        gameCount.appendChild(document.createTextNode(player.getUserGameCount()));
+        root.appendChild(gameCount);
+
+        Element rating = document.createElement("rating");
+        rating.appendChild(document.createTextNode(player.getUserRating()));
+        root.appendChild(rating);
+
+        Element percentWins = document.createElement("percentWins");
+        percentWins.appendChild(document.createTextNode(player.getUserPercentWins()));
+        root.appendChild(percentWins);
 
         StringWriter stringWriter = new StringWriter();
         try {

@@ -56,6 +56,7 @@ public class Server {
                 player.setUserGameCount(userElement.getElementsByTagName("gameCount").item(0).getTextContent());
                 player.setUserPercentWins(userElement.getElementsByTagName("percentWins").item(0).getTextContent());
                 player.setUserRating(userElement.getElementsByTagName("rating").item(0).getTextContent());
+                player.setUserWinGames(userElement.getElementsByTagName("winGames").item(0).getTextContent());
                 if (Boolean.parseBoolean(userElement.getElementsByTagName("admin").item(0).getTextContent())) {
                     player.setAdmin(true);
                 }
