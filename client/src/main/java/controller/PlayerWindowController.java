@@ -212,7 +212,7 @@ public class PlayerWindowController {
                             loginController.setErrorLabel("Login or password are incorrect!!!")
                     );
                     break;
-                case"banned" :
+                case "banned":
                     Platform.runLater(() ->
                             loginController.setErrorLabel("You were banned on this server!!!")
                     );
@@ -402,14 +402,15 @@ public class PlayerWindowController {
                     int white = Integer.parseInt(((Element) user).getElementsByTagName("white").item(0).getTextContent());
                     int black = Integer.parseInt(((Element) user).getElementsByTagName("black").item(0).getTextContent());
                     String res;
-                    if (white>black) {
-                        res = "Win: " + currentGameRoom.getPlayer() + " with " + (white-black) + " points";
-                    } else if (black>white) {
-                        res = "Win: " + currentGameRoom.getHost() + " with " + (black-white) + " points";
+                    String winName = ((Element) user).getElementsByTagName("userName").item(0).getTextContent();
+                    if (white > black) {
+                        res = "Win: " + winName + " with " + (white - black) + " points";
+                    } else if (black > white) {
+                        res = "Win: " + winName + " with " + (black - white) + " points";
                     } else {
                         res = "Draw";
                     }
-                        Platform.runLater(() -> {
+                    Platform.runLater(() -> {
                         tabPane.getTabs().remove(privateRoomTab);
                         Alert alert = new Alert(Alert.AlertType.INFORMATION, res, ButtonType.OK);
                         alert.showAndWait();
@@ -429,7 +430,7 @@ public class PlayerWindowController {
                     goGame = null;
                     stopTimer();
                     break;
-                case "ban" :
+                case "ban":
                     Platform.runLater(() -> {
                         Alert alert = new Alert(Alert.AlertType.WARNING, "You were banned on this server!", ButtonType.OK);
                         alert.showAndWait();
@@ -437,12 +438,18 @@ public class PlayerWindowController {
                         Platform.exit();
                     });
                     break;
-                case "newUserInfo" :
+                case "newUserInfo":
                     Player newUserInfo = new Player(((Element) user).getElementsByTagName("userName").item(0).getTextContent(),
                             ((Element) user).getElementsByTagName("gameCount").item(0).getTextContent(),
                             ((Element) user).getElementsByTagName("rating").item(0).getTextContent(),
                             ((Element) user).getElementsByTagName("percentWins").item(0).getTextContent());
                     setNewInfoAboutPlayer(newUserInfo);
+                    break;
+                case "roomFull":
+                    Platform.runLater(() -> {
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION, "This room is full", ButtonType.OK);
+                        alert.showAndWait();
+                    });
                     break;
                 default:
                     System.out.println("Default:" + input);
@@ -475,6 +482,7 @@ public class PlayerWindowController {
             public void run() {
                 printDate(setInterval());
             }
+
             @Override
             public boolean cancel() {
                 return super.cancel();
@@ -587,8 +595,7 @@ public class PlayerWindowController {
 
         Element meta = doc.createElement("meta-info");
         root.appendChild(meta);
-        tabPane.getTabs().remove(privateRoomTab);
-        createRoomButton.disableProperty().setValue(false);
+
 
         if (currentGameRoom.getHost().equals(currentPlayer.getUserName())) {
             meta.appendChild(doc.createTextNode("closeRoom"));
@@ -605,6 +612,8 @@ public class PlayerWindowController {
         currentGameRoom = new GameRoom();
         goGame = null;
         Platform.runLater(() -> {
+            tabPane.getTabs().remove(privateRoomTab);
+            createRoomButton.disableProperty().setValue(false);
             gamePane.getChildren().clear();
             labelPlayerNickName.setText("");
             labelPlayerStatus.setText("");
@@ -700,7 +709,7 @@ public class PlayerWindowController {
     private void setNewInfoAboutPlayer(Player player) {
         ObservableList<Player> newPlayerObsList = FXCollections.observableArrayList();
         for (Player temp : userObsList) {
-            if (temp.getUserName().equals(player.getUserName())){
+            if (temp.getUserName().equals(player.getUserName())) {
                 temp.setUserGameCount(player.getUserGameCount());
                 temp.setUserRating(player.getUserRating());
                 temp.setUserPercentWins(player.getUserPercentWins());
@@ -710,6 +719,7 @@ public class PlayerWindowController {
         userObsList.clear();
         userObsList.addAll(newPlayerObsList);
     }
+
     private void setStatusInGameRoom(String status, String roomId) {
         ObservableList<GameRoom> newGameRoomObsList = FXCollections.observableArrayList();
         for (GameRoom temp : gameRoomObsList) {
@@ -894,6 +904,29 @@ public class PlayerWindowController {
 
             clientHandler.send(writer.toString());
         }
+    }
+
+    public String gameOverForPlayer(String name) {
+        Document doc = docBuilder.newDocument();
+        Element root = doc.createElement("body");
+        doc.appendChild(root);
+
+        Element meta = doc.createElement("meta-info");
+        meta.appendChild(doc.createTextNode("gameOverForPlayer"));
+        root.appendChild(meta);
+
+        Element userName = doc.createElement("userName");
+        userName.appendChild(doc.createTextNode(name));
+        root.appendChild(userName);
+
+        StringWriter writer = new StringWriter();
+        try {
+            transformer.transform(new DOMSource(doc), new StreamResult(writer));
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+
+        return writer.toString();
     }
 
 }

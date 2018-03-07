@@ -27,17 +27,14 @@ public class Server {
     public static HashSet<String> banList = new HashSet<>();
 
     public static void main(String[] args) throws Exception {
-        ServerSocket server = new ServerSocket(PORT);
         docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         uploadUserList();
-        try {
+        try (ServerSocket server = new ServerSocket(PORT)) {
             System.out.println("Listening...");
             while (true) {
                 ClientHandler clientHandler = new ClientHandler(server.accept());
                 clientHandler.start();
             }
-        } finally {
-            server.close();
         }
     }
 

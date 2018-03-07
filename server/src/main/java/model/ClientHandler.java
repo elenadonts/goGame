@@ -1,6 +1,5 @@
 package model;
 
-import javafx.application.Platform;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -55,7 +54,6 @@ public class ClientHandler extends Thread {
         try {
             writer = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream()), true);//send to java.client
             reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));//receive from java.client
-            Server.writers.add(writer);
             while ((input = reader.readLine()) != null) {
                 Document document = builder.parse(new InputSource(new StringReader(input)));
                 Node user = document.getElementsByTagName("body").item(0);
@@ -68,9 +66,10 @@ public class ClientHandler extends Thread {
 
                 if (!document.getElementsByTagName("meta-info").item(0).getTextContent().equals("")) {
                     writer.println(stringWriter.toString());
-
                 }
+
                 if (document.getElementsByTagName("meta-info").item(0).getTextContent().equals("connect")) {
+                    Server.writers.add(writer);
                     for (PrintWriter writer : Server.writers) {
                         for (Map.Entry<String, Player> entry : Server.userOnline.entrySet()) {
                             if (!writer.equals(this.writer)) {
@@ -96,6 +95,7 @@ public class ClientHandler extends Thread {
         } catch (TransformerException e) {
             logger.error("TransformerException", e);
         } finally {
+            this.interrupt();
             try {
                 Server.writers.remove(writer);
                 Server.userOnline.remove(currentPlayer.getUserName());
@@ -169,6 +169,14 @@ public class ClientHandler extends Thread {
             case "closeRoom":
                 String idRoom = inputElement.getElementsByTagName("roomId").item(0).getTextContent();
                 GameRoom closeRoom = Server.gameRooms.get(idRoom);
+                if (closeRoom.getGameStatus().equals("in game")) {
+                    int white = 10;
+                    int black = 0;
+                    changerXMLAfterGameEnd(white, black);
+                    for (PrintWriter writer : closeRoom.getWriters()) {
+                        writer.println(createXMLGameOver(white, black, closeRoom.getPlayer().getUserName()));
+                    }
+                }
                 Server.gameRooms.remove(idRoom);
                 for (PrintWriter writer : Server.writers) {
                     writer.println(createXMLForRoomList("closeRoom", closeRoom));
@@ -212,14 +220,23 @@ public class ClientHandler extends Thread {
                     }
                     currentRoom = Server.gameRooms.get(id);
                 } else {
-                    System.out.println("комната полна");
+                    metaElement.appendChild(outputDocument.createTextNode("roomFull"));
                 }
                 break;
             case "disconnectingFromRoom":
                 GameRoom gameRoomDisconnect = Server.gameRooms.get(inputElement.getElementsByTagName("roomId").item(0).getTextContent());
-                gameRoomDisconnect.setPlayer(null);
+                if (!gameRoomDisconnect.getGameStatus().equals("in game")) {
+                    gameRoomDisconnect.setPlayer(null);
+                    gameRoomDisconnect.setPrintWriter(null);
+                } else {
+                    int white = 0;
+                    int black = 10;
+                    changerXMLAfterGameEnd(white, black);
+                    for (PrintWriter writer : currentRoom.getWriters()) {
+                        writer.println(createXMLGameOver(white, black, currentRoom.getPlayerHost().getUserName()));
+                    }
+                }
                 gameRoomDisconnect.setPlayerStatus(null);
-                gameRoomDisconnect.setPrintWriter(null);
                 gameRoomDisconnect.setRoomOnline(1);
                 PrintWriter hostWriter = Server.gameRooms.get(
                         inputElement.getElementsByTagName("roomId").item(0).getTextContent()).getPrintWriterHost();
@@ -298,9 +315,15 @@ public class ClientHandler extends Thread {
                     currentRoom.getGameField().countPlayersScore();
                     int white = currentRoom.getGameField().getWhiteCount();
                     int black = currentRoom.getGameField().getBlackCount();
+                    String winName = "";
+                    if (white > black) {
+                        winName = currentRoom.getPlayer().getUserName();
+                    } else if (black > white) {
+                        winName = currentRoom.getPlayerHost().getUserName();
+                    }
                     changerXMLAfterGameEnd(white, black);
                     for (PrintWriter writer : currentRoom.getWriters()) {
-                        writer.println(createXMLGameOver(white, black));
+                        writer.println(createXMLGameOver(white, black, winName));
                     }
                     for (PrintWriter writer : Server.writers) {
                         writer.println(createXMLForRoomList("closeRoom", currentRoom));
@@ -327,6 +350,29 @@ public class ClientHandler extends Thread {
                     Server.banList.add(banUserName);
                     banUser.getWriter().println(createXMLBan());
                 }
+                break;
+            case "gameOverForPlayer":
+//                String name = inputElement.getElementsByTagName("userName").item(0).getTextContent();
+//                int white;
+//                int black;
+//                String winName;
+//                currentRoom.getGameField().countPlayersScore();
+//                if (currentRoom.getPlayerHost().getUserName().equals(name)) {
+//                    black = 0;
+//                    white = currentRoom.getGameField().getWhiteCount();
+//                    winName = currentRoom.getPlayerHost().getUserName();
+//                } else {
+//                    black = currentRoom.getGameField().getBlackCount();
+//                    white = 0;
+//                    winName = currentRoom.getPlayer().getUserName();
+//                }
+//                changerXMLAfterGameEnd(white, black);
+//                for (PrintWriter writer : currentRoom.getWriters()) {
+//                    writer.println(createXMLGameOver(white, black, winName));
+//                }
+//                for (PrintWriter writer : Server.writers) {
+//                    writer.println(createXMLForRoomList("closeRoom", currentRoom));
+//                }
                 break;
             default:
                 break;
@@ -802,7 +848,7 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
-    private String createXMLGameOver(int white, int black) {
+    private String createXMLGameOver(int white, int black, String userName) {
         Document document = builder.newDocument();
 
         Element root = document.createElement("body");
@@ -819,6 +865,10 @@ public class ClientHandler extends Thread {
         Element blackElement = document.createElement("black");
         blackElement.appendChild(document.createTextNode(Integer.toString(black)));
         root.appendChild(blackElement);
+
+        Element userNameElement = document.createElement("userName");
+        userNameElement.appendChild(document.createTextNode(userName));
+        root.appendChild(userNameElement);
 
         StringWriter stringWriter = new StringWriter();
         try {
@@ -863,7 +913,7 @@ public class ClientHandler extends Thread {
         }
     }
 
-    public void setNewInfoAboutUser(String name, int res) {
+    private void setNewInfoAboutUser(String name, int res) {
 
         try {
             File file = new File("users" + File.separator + name + ".xml");
