@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 
 <AnchorPane minWidth="231.0" prefHeight="585.000199999995" prefWidth="700.0000168945262" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="controller.PlayerWindowController">
-  <TabPane fx:id="tabPane" focusTraversable="true" layoutX="14.0" layoutY="48.0" prefHeight="524.0" prefWidth="672.0" side="TOP" tabClosingPolicy="SELECTED_TAB" visible="true">
+  <TabPane fx:id="tabPane" focusTraversable="true" layoutX="14.0" layoutY="48.0" prefHeight="524.0" prefWidth="672.0" numberOfTiles="TOP" tabClosingPolicy="SELECTED_TAB" visible="true">
     <tabs>
       <Tab closable="false" text="Room list">
         <content>

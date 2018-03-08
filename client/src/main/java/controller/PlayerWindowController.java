@@ -317,7 +317,7 @@ public class PlayerWindowController {
                     break;
                 case "startGame":
                     goGame = new GoGame();
-//                    goGame.setSide(Integer.parseInt(((Element) user).getElementsByTagName("side").item(0).getTextContent()));
+//                    goGame.setNumberOfTiles(Integer.parseInt(((Element) user).getElementsByTagName("side").item(0).getTextContent()));
                     Platform.runLater(() -> {
                         gamePane.getChildren().add(goGame.createContent());
                         playerProgressName.setText(currentGameRoom.getHost());
@@ -353,8 +353,8 @@ public class PlayerWindowController {
                     } else {
                         stoneColor = StoneColor.WHITE;
                     }
-                    Stone stone = new Stone(stoneColor, x, y);
-                    LastStone lastStone = new LastStone(stoneColor, x, y);
+                    Stone stone = new Stone(stoneColor, x, y, goGame.getTileSize());
+                    LastStone lastStone = new LastStone(stoneColor, x, y, goGame.getTileSize());
                     Platform.runLater(() -> {
                         playerProgressName.setText(unblockUser);
                         if (goGame.getLastStone() != null) {

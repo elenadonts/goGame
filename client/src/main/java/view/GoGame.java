@@ -10,14 +10,17 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import org.apache.log4j.Logger;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-
 public class GoGame {
-    public static int TILE_SIZE = 80;
-    private int side = 5;
+    public static final int GAME_FIELD = 480;
+    public static final int TILE_FIELD = 400;
+    private double tileSize;
+    private int numberOfTiles;
     private Group tileGroup = new Group();
     private Group pieceGroup = new Group();
 
@@ -33,17 +36,30 @@ public class GoGame {
         return lastStone;
     }
 
+    public void setNumberOfTiles(int numberOfTiles) {
+        this.numberOfTiles = numberOfTiles;
+        initTileSize();
+    }
+
+    public void initTileSize() {
+        tileSize = new BigDecimal(TILE_FIELD / numberOfTiles).setScale(2, RoundingMode.UP).doubleValue();
+    }
+
+    public double getTileSize(){
+        return tileSize;
+    }
+
     public Parent createContent() {
         Pane root = new Pane();
-        root.setPrefSize(side * TILE_SIZE + TILE_SIZE, side * TILE_SIZE + TILE_SIZE);
+        root.setPrefSize(GAME_FIELD, GAME_FIELD);
         root.getChildren().addAll(tileGroup, pieceGroup);
         root.setBackground(new Background(new BackgroundFill(Color.valueOf("#db9900"), CornerRadii.EMPTY, Insets.EMPTY)));
-        for (int y = 0; y < side; y++) {
-            for (int x = 0; x < side; x++) {
-                Tile tile = new Tile(x, y, this);
+        for (int y = 0; y < numberOfTiles; y++) {
+            for (int x = 0; x < numberOfTiles; x++) {
+                Tile tile = new Tile(x, y, this, tileSize);
                 tileGroup.getChildren().add(tile);
-                tileGroup.setLayoutX(TILE_SIZE / 2);
-                tileGroup.setLayoutY(TILE_SIZE / 2);
+                tileGroup.setLayoutX(tileSize / 2);
+                tileGroup.setLayoutY(tileSize / 2);
             }
         }
         return root;
@@ -76,8 +92,5 @@ public class GoGame {
         pieceGroup.getChildren().remove(lastStone);
     }
 
-    public void setSide(int side) {
-        this.side = side;
-        TILE_SIZE = 400 / side;
-    }
+
 }

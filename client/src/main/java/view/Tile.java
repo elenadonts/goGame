@@ -16,11 +16,12 @@ public class Tile extends Rectangle {
     private static PlayerWindowController playerWindowController;
     private static final Logger LOGGER = Logger.getLogger(Tile.class);
 
-    public Tile(int x, int y, GoGame game) {
+
+    public Tile(int x, int y, GoGame game, double tileSize) {
         this.game = game;
-        setWidth(GoGame.TILE_SIZE);
-        setHeight(GoGame.TILE_SIZE);
-        relocate(x * GoGame.TILE_SIZE, y * GoGame.TILE_SIZE);
+        setWidth(tileSize);
+        setHeight(tileSize);
+        relocate(x * tileSize, y * tileSize);
         setFill(Color.valueOf("#db9900"));
         setStroke(Color.BLACK);
         setStrokeWidth(2);

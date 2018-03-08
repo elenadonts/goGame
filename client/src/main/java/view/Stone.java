@@ -6,7 +6,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 import static view.StoneColor.BLACK;
-import static view.GoGame.TILE_SIZE;
 
 public class Stone extends StackPane {
 
@@ -14,22 +13,22 @@ public class Stone extends StackPane {
     private double y;
     private StoneColor stoneColor;
 
-    public Stone(StoneColor stoneColor, double x, double y) {
+    public Stone(StoneColor stoneColor, double x, double y, double tileSize) {
         this.x = x;
         this.y = y;
         this.stoneColor = stoneColor;
         relocate(x, y);
 
-        double backCircleRadius = TILE_SIZE / 2 - TILE_SIZE * 0.06;
+        double backCircleRadius = tileSize / 2 - tileSize * 0.06;
         Circle backCircle = new Circle(backCircleRadius);
         backCircle.setFill(Color.valueOf("#db9900"));
-        backCircle.setTranslateX((TILE_SIZE - backCircleRadius * 2) / 2);
-        backCircle.setTranslateY((TILE_SIZE - backCircleRadius * 2) / 2);
+        backCircle.setTranslateX((tileSize - backCircleRadius * 2) / 2);
+        backCircle.setTranslateY((tileSize - backCircleRadius * 2) / 2);
 
-        double frontCircleRadius = TILE_SIZE / 2 - TILE_SIZE * 0.1;
+        double frontCircleRadius = tileSize / 2 - tileSize * 0.1;
         Circle frontCircle = new Circle(frontCircleRadius);
-        frontCircle.setTranslateX((TILE_SIZE - backCircleRadius * 2) / 2);
-        frontCircle.setTranslateY((TILE_SIZE - backCircleRadius * 2) / 2);
+        frontCircle.setTranslateX((tileSize - backCircleRadius * 2) / 2);
+        frontCircle.setTranslateY((tileSize - backCircleRadius * 2) / 2);
         if (stoneColor.equals(BLACK)) {
             RadialGradient blackGrad = new RadialGradient(0,
                     .0,
@@ -69,5 +68,4 @@ public class Stone extends StackPane {
     public StoneColor getStoneColor() {
         return stoneColor;
     }
-
 }
