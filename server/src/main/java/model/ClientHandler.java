@@ -24,14 +24,11 @@ public class ClientHandler extends Thread {
     private static final Logger LOGGER = Logger.getLogger(ClientHandler.class);
     private BufferedReader reader;
     private PrintWriter writer;
-
     private Socket clientSocket;
-
     private DocumentBuilder builder;
     private Transformer transformer;
     private Player currentPlayer;
     private GameRoom currentRoom;
-
 
     public ClientHandler(Socket client) {
         this.clientSocket = client;
@@ -101,7 +98,7 @@ public class ClientHandler extends Thread {
                 writer.close();
                 reader.close();
                 clientSocket.close();
-                if (currentRoom.getGameStatus().equals("in game") && clientSocket.isConnected()) {
+                if (currentRoom != null && currentRoom.getGameStatus().equals("in game") && clientSocket.isConnected()) {
                     if (currentRoom.getPlayerHost().getUserName().equals(currentPlayer.getUserName())) {
                         int white = 10;
                         int black = 0;
@@ -125,7 +122,7 @@ public class ClientHandler extends Thread {
                             writer.println(createXMLForUserList("offline", currentPlayer));
                         }
                     }
-                } else if (currentRoom.getPlayerHost() == currentPlayer) {
+                } else if (currentRoom != null && currentRoom.getPlayerHost() == currentPlayer) {
                     Server.gameRooms.remove(Integer.toString(currentRoom.getRoomId()));
                     if (currentRoom.getRoomOnline() == 2) {
                         for (PrintWriter writer : Server.writers) {
@@ -135,6 +132,10 @@ public class ClientHandler extends Thread {
                             writer.println(createXMLForUserList("offline", currentPlayer));
                         }
                         currentRoom.getPrintWriter().println(createXmlForHostCloseRoom());
+                    }
+                } else {
+                    for (PrintWriter writer : Server.writers) {
+                        writer.println(createXMLForUserList("offline", currentPlayer));
                     }
                 }
             } catch (IOException e) {
@@ -267,11 +268,11 @@ public class ClientHandler extends Thread {
                 Server.gameRooms.get(Integer.toString(currentRoom.getRoomId())).setGameStatus("in game");
                 currentRoom.setGameStatus("in game");
                 GameField gameField = currentRoom.getGameField();
-                int fieldSize = Integer.parseInt(inputElement.getElementsByTagName("fieldSize").item(0).getTextContent());
-                gameField.initGameField(fieldSize);
-//                gameField.setStepSize(Integer.parseInt(inputElement.getElementsByTagName("stepSize").item(0).getTextContent()));
+                int numberOfTiles = Integer.parseInt(inputElement.getElementsByTagName("numberOfTiles").item(0).getTextContent());
+                gameField.initTileSize(numberOfTiles);
+                gameField.initGameField(numberOfTiles);
                 for (PrintWriter writer : currentRoom.getWriters()) {
-                    writer.println(createGameStartXML(fieldSize));
+                    writer.println(createGameStartXML(numberOfTiles, gameField.getTileSize()));
                 }
                 for (PrintWriter writer : Server.writers) {
                     writer.println(createXMLForChangeStatusGameRoom(currentRoom.getGameStatus(), currentRoom.getRoomId()));
@@ -367,6 +368,9 @@ public class ClientHandler extends Thread {
                     Server.banList.add(banUserName);
                     banUser.getWriter().println(createXMLBan());
                 }
+                break;
+            case "nullCurrentRoom" :
+                currentRoom = null;
                 break;
             default:
                 break;
@@ -697,7 +701,7 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
-    private String createGameStartXML(int side) {
+    private String createGameStartXML(int numberOfTiles, double tileSize) {
         Document document = builder.newDocument();
 
         Element root = document.createElement("body");
@@ -707,9 +711,13 @@ public class ClientHandler extends Thread {
         meta.appendChild(document.createTextNode("startGame"));
         root.appendChild(meta);
 
-        Element sideElement = document.createElement("side");
-        sideElement.appendChild(document.createTextNode(Integer.toString(side)));
-        root.appendChild(sideElement);
+        Element numberOfTilesElement = document.createElement("numberOfTiles");
+        numberOfTilesElement.appendChild(document.createTextNode(Integer.toString(numberOfTiles)));
+        root.appendChild(numberOfTilesElement);
+
+        Element tileSizeElement = document.createElement("tileSize");
+        tileSizeElement.appendChild(document.createTextNode(Double.toString(tileSize)));
+        root.appendChild(tileSizeElement);
 
         StringWriter stringWriter = new StringWriter();
         try {

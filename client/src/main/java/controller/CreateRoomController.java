@@ -40,7 +40,7 @@ public class CreateRoomController {
             fieldSize.appendChild(doc.createTextNode(playerWindowController.fieldSize5.getId()));
             root.appendChild(fieldSize);
 
-            StringWriter writer = TransformerAndDocumentFactory.Transform(doc);
+            StringWriter writer = TransformerAndDocumentFactory.transform(doc);
 
             clientHandler.send(writer.toString());
             currentStage.close();

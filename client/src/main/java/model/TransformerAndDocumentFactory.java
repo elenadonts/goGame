@@ -29,7 +29,7 @@ public class TransformerAndDocumentFactory {
         }
     }
 
-    public static StringWriter Transform(Document document) {
+    public static StringWriter transform(Document document) {
         StringWriter writer = new StringWriter();
         try {
             transformer.transform(new DOMSource(document), new StreamResult(writer));

@@ -2,10 +2,13 @@ package model;
 
 import org.apache.log4j.Logger;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 public class GameField {
     private static final Logger LOGGER = Logger.getLogger(GameField.class);
+    private static final int TILE_FIELD = 400;
     private double tileSize;
     private Point[][] gameGrid;
     private Point[][] tempGrid;
@@ -19,8 +22,12 @@ public class GameField {
     private int whiteCount;
     private int blackCount;
 
-    public void setTileSize(Double tileSize) {
-        this.tileSize = tileSize;
+    public void initTileSize(int numberOfTiles) {
+        tileSize = new BigDecimal(TILE_FIELD / numberOfTiles).setScale(2, RoundingMode.UP).doubleValue();
+    }
+
+    public double getTileSize() {
+        return tileSize;
     }
 
     public void initGameField(int gridSize) { //points received in xml from player after game start
@@ -178,10 +185,7 @@ public class GameField {
     private boolean isPositionOccupied(Point target) {
         int row = getPositionIndexFromCoordinate(target.getY());
         int column = getPositionIndexFromCoordinate(target.getX());
-        if (gameGrid[row][column].getPointState() != PointState.BLANK) {
-            return true;
-        }
-        return false;
+        return gameGrid[row][column].getPointState() != PointState.BLANK;
     }
 
     private boolean hasAnyOpenWay(Point target) {
@@ -190,10 +194,7 @@ public class GameField {
         int row = getPositionIndexFromCoordinate(target.getY());
         int column = getPositionIndexFromCoordinate(target.getX());
         tempGrid[row][column].setPointState(PointState.TARGET);
-        if (wayIsOpen(target.getPointState(), enemyColor, row, column)) {
-            return true;
-        }
-        return false;
+        return wayIsOpen(target.getPointState(), enemyColor, row, column);
     }
 
     private PointState getEnemyStoneColor(PointState currentColor) {
@@ -249,11 +250,11 @@ public class GameField {
     }
 
     private void getSurroundedPoints() {
-        for (int x = 0; x < gameGrid.length; x++) {
-            for (int y = 0; y < gameGrid[x].length; y++) {
-                if (!hasAnyOpenWay(gameGrid[x][y])) {
-                    pointsToRemove.add(gameGrid[x][y].clone());
-                    points.add(gameGrid[x][y]);
+        for (Point[] aGameGrid : gameGrid) {
+            for (Point anAGameGrid : aGameGrid) {
+                if (!hasAnyOpenWay(anAGameGrid)) {
+                    pointsToRemove.add(anAGameGrid.clone());
+                    points.add(anAGameGrid);
                 }
             }
         }

@@ -10,15 +10,12 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import org.apache.log4j.Logger;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 public class GoGame {
-    public static final int GAME_FIELD = 480;
-    public static final int TILE_FIELD = 400;
+    private static final int GAME_FIELD = 480;
     private double tileSize;
     private int numberOfTiles;
     private Group tileGroup = new Group();
@@ -38,12 +35,12 @@ public class GoGame {
 
     public void setNumberOfTiles(int numberOfTiles) {
         this.numberOfTiles = numberOfTiles;
-        initTileSize();
     }
 
-    public void initTileSize() {
-        tileSize = new BigDecimal(TILE_FIELD / numberOfTiles).setScale(2, RoundingMode.UP).doubleValue();
+    public void setTileSize(double tileSize) {
+        this.tileSize = tileSize;
     }
+
 
     public double getTileSize(){
         return tileSize;

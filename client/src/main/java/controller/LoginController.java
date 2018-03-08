@@ -53,7 +53,7 @@ public class LoginController {
             password.appendChild(doc.createTextNode(pass));
             root.appendChild(password);
 
-            StringWriter writer = TransformerAndDocumentFactory.Transform(doc);
+            StringWriter writer = TransformerAndDocumentFactory.transform(doc);
 
             clientHandler.send(writer.toString());
         }
