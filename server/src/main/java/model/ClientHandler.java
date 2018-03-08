@@ -912,6 +912,9 @@ public class ClientHandler extends Thread {
             res = black - white;
             setNewInfoAboutUser(hostName, res);
             setNewInfoAboutUser(userName, -res);
+        } else {
+            setNewInfoAboutUser(hostName, 0);
+            setNewInfoAboutUser(userName, 0);
         }
     }
 

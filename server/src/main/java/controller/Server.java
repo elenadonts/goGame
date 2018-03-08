@@ -29,6 +29,7 @@ public class Server {
     public static HashSet<String> banList = new HashSet<>();
 
     public static void main(String[] args) throws Exception {
+
         docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         uploadUserList();
         try (ServerSocket server = new ServerSocket(PORT)) {
