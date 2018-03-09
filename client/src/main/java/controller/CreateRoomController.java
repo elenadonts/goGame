@@ -11,22 +11,31 @@ import org.w3c.dom.Element;
 
 import java.io.StringWriter;
 
+/**
+ * Class for take info about new room and send
+ * request to server with this info
+ *
+ * @author Eugene Lobin
+ * @version 1.0 09 Mar 2018
+ */
 public class CreateRoomController {
     @FXML
     public TextField roomDescriptionField;
     @FXML
     public Label createRoomError;
-    private String roomDescription;
     private static ClientHandler clientHandler;
     private static Stage currentStage;
     private static PlayerWindowController playerWindowController;
 
+    /**
+     * Take info from created room form and send info to server
+     */
     @FXML
     public void create() {
         if (roomDescriptionField.getText().isEmpty()) {
             createRoomError.setText("Room name can't be empty!");
         } else {
-            roomDescription = roomDescriptionField.getText();
+            String roomDescription = roomDescriptionField.getText();
 
             Document doc = TransformerAndDocumentFactory.newDocument();
 
@@ -47,14 +56,29 @@ public class CreateRoomController {
         }
     }
 
+    /**
+     * Set client handler object for this class
+     *
+     * @param clientHandler the object
+     */
     public static void setClientHandler(ClientHandler clientHandler) {
         CreateRoomController.clientHandler = clientHandler;
     }
 
+    /**
+     * Set current stage for this class what later be closed
+     *
+     * @param currentStage the object
+     */
     public static void setCurrentStage(Stage currentStage) {
         CreateRoomController.currentStage = currentStage;
     }
 
+    /**
+     * Set object playerWindowController class for this class
+     *
+     * @param playerWindowController the object
+     */
     public static void setPlayerWindowController(PlayerWindowController playerWindowController) {
         CreateRoomController.playerWindowController = playerWindowController;
     }

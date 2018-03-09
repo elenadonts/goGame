@@ -11,12 +11,14 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.HashSet;
+
 /**
  * Main class for start server
  *
@@ -33,11 +35,16 @@ public class Server {
     public static HashMap<String, GameRoom> gameRooms;
     public static HashSet<String> banList;
 
-    public static void main(String[] args) throws Exception {
+
+    public static void main(String[] args) {
         writers = new HashSet<>();
         userOnline = new HashMap<>();
         gameRooms = new HashMap<>();
-        docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        try {
+            docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            LOGGER.error(e);
+        }
         uploadUserList();
         try (ServerSocket server = new ServerSocket(PORT)) {
             LOGGER.info("Server starting...");
@@ -45,11 +52,13 @@ public class Server {
                 ClientHandler clientHandler = new ClientHandler(server.accept());
                 clientHandler.start();
             }
+        } catch (IOException e) {
+            LOGGER.error(e);
         }
     }
 
     /**
-     * upload user list from dir 'users'
+     * Upload user list from dir 'users'
      */
     private static void uploadUserList() {
         userList = new HashMap<>();

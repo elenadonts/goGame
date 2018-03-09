@@ -12,6 +12,13 @@ import org.w3c.dom.Element;
 
 import java.io.StringWriter;
 
+/**
+ * Class for test connecting to server when user enter login and
+ * password and for showing error
+ *
+ * @author Eugene Lobin
+ * @version 1.0 09 Mar 2018
+ */
 public class LoginController {
     private static final Logger LOGGER = Logger.getLogger(LoginController.class);
     @FXML
@@ -22,11 +29,19 @@ public class LoginController {
     private PasswordField userPassword;
     private static ClientHandler clientHandler;
 
-
+    /**
+     * Set client handler object for this class
+     *
+     * @param currClientHandler the object
+     */
     public static void setClientHandler(ClientHandler currClientHandler) {
         clientHandler = currClientHandler;
     }
 
+    /**
+     * Take login and password user from fields userLogin and
+     * userPassword, and send request to server about connect
+     */
     @FXML
     public void connectToServer() {
         LOGGER.info("connecting to server");
@@ -59,10 +74,19 @@ public class LoginController {
         }
     }
 
+    /**
+     * Hide text in errorLabel when user click on userLogin or userPassword
+     * when user have error respond from server
+     */
     public void hideError() {
         errorLabel.setText("");
     }
 
+    /**
+     * Set error text in errorLabel when user have error respond from server
+     *
+     * @param text the error
+     */
     public void setErrorLabel(String text) {
         errorLabel.setText(text);
     }

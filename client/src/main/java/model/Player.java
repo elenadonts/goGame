@@ -1,6 +1,12 @@
 package model;
 
-
+/**
+ * Class with all info about new player
+ * for player list
+ *
+ * @author Eugene Lobin
+ * @version 1.0 09 Mar 2018
+ */
 public class Player {
     private String userName;
     private String userGameCount;
@@ -25,34 +31,74 @@ public class Player {
 
     }
 
+    /**
+     * Gets user name
+     *
+     * @return user name
+     */
     public String getUserName() {
         return userName;
     }
 
+    /**
+     * Gets user game count
+     *
+     * @return user game count
+     */
     public String getUserGameCount() {
         return userGameCount;
     }
 
+    /**
+     * Gets user status
+     *
+     * @return user status
+     */
     public String getUserStatus() {
         return userStatus;
     }
 
+    /**
+     * Gets user percent wins
+     *
+     * @return user percent wins
+     */
     public String getUserPercentWins() {
         return userPercentWins;
     }
 
+    /**
+     * Gets user rating
+     *
+     * @return user rating
+     */
     public String getUserRating() {
         return userRating;
     }
 
+    /**
+     * Sets new user game count
+     *
+     * @param userGameCount the new info
+     */
     public void setUserGameCount(String userGameCount) {
         this.userGameCount = userGameCount;
     }
 
+    /**
+     * Sets new user percent wins
+     *
+     * @param userPercentWins the new info
+     */
     public void setUserPercentWins(String userPercentWins) {
         this.userPercentWins = userPercentWins;
     }
 
+    /**
+     * Sets new user rating
+     *
+     * @param userRating the new info
+     */
     public void setUserRating(String userRating) {
         this.userRating = userRating;
     }

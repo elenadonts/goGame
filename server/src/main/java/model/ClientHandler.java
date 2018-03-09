@@ -19,6 +19,7 @@ import java.util.Set;
 
 /**
  * Handler class for create new thread when user connect
+ * on server part
  *
  * @author Eugene Lobin
  * @version 1.0 09 Mar 2018
@@ -44,6 +45,11 @@ public class ClientHandler extends Thread {
         this.setDaemon(true);
     }
 
+    /**
+     * Starts when user connecting to server.
+     * Reads xml from user and send in main method
+     * createXML()
+     */
     @Override
     public void run() {
         LOGGER.info("User: " + clientSocket.getInetAddress().toString().replace("/", "") + " connected;");
@@ -141,6 +147,14 @@ public class ClientHandler extends Thread {
         }
     }
 
+    /**
+     * Method take xml from client, read meta-info in xml, and
+     * decide what need do
+     *
+     * @param inputElement   xml form client
+     * @param outputDocument document with xml for client
+     * @return document with rules
+     */
     private Document createXML(Element inputElement, Document outputDocument) throws IOException, SAXException {
         Element root = outputDocument.createElement("body");
         outputDocument.appendChild(root);
@@ -371,6 +385,13 @@ public class ClientHandler extends Thread {
 
     }
 
+    /**
+     * Creates xml for client with info about this user from server
+     *
+     * @param document for client
+     * @param player   info about this user
+     * @param root     element for document
+     */
     private void createUserXML(Document document, Player player, Element root) {
         Element userName = document.createElement("userName");
         userName.appendChild(document.createTextNode(player.getUserName()));
@@ -389,6 +410,15 @@ public class ClientHandler extends Thread {
         root.appendChild(userRating);
     }
 
+
+    /**
+     * Tests info from client, and
+     * returns error or create new user
+     *
+     * @param login    for test
+     * @param password for test
+     * @return command for client
+     */
     private String testLogin(String login, String password) {
         String action = "connect";
         if (!Server.userList.containsKey(login)) {
@@ -415,6 +445,14 @@ public class ClientHandler extends Thread {
         return action;
     }
 
+    /**
+     * Creates new user with current login and password
+     * and return new player object
+     *
+     * @param login    for new user
+     * @param password for new user
+     * @return new player object
+     */
     private Player createNewUser(String login, String password) {
         Player newPlayer = new Player(password, login);
         newPlayer.setWriter(writer);
@@ -463,6 +501,15 @@ public class ClientHandler extends Thread {
         return newPlayer;
     }
 
+    /**
+     * Creates xml for client with new info about player
+     * and action what need do with player,
+     * returns xml in string format
+     *
+     * @param action online or offline
+     * @param player info
+     * @return xml in string format
+     */
     private String createXMLForUserList(String action, Player player) {
         Document document = builder.newDocument();
 
@@ -481,6 +528,15 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
+    /**
+     * Creates xml for client with new info about game room
+     * and action what need do with game room,
+     * returns xml in string format
+     *
+     * @param action online or offline
+     * @param room   info
+     * @return xml in string format
+     */
     private String createXMLForRoomList(String action, GameRoom room) {
         Document document = builder.newDocument();
 
@@ -511,6 +567,15 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
+    /**
+     * Creates xml for client with new info about status
+     * player in game room,
+     * returns xml in string format
+     *
+     * @param status     new info
+     * @param playerType player type (host or simple player)
+     * @return xml in string format
+     */
     private String createXMLChangeStatus(String status, String playerType) {
         Document document = builder.newDocument();
 
@@ -528,6 +593,13 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
+    /**
+     * Creates xml for client what connect accept
+     *
+     * @param document for client
+     * @param gameRoom info about this game room
+     * @param root     element for document
+     */
     private void createConnectAcceptXML(Document document, Element root, GameRoom gameRoom) {
         Element hostName = document.createElement("hostName");
         hostName.appendChild(document.createTextNode(gameRoom.getPlayerHost().getUserName()));
@@ -546,6 +618,15 @@ public class ClientHandler extends Thread {
         root.appendChild(roomId);
     }
 
+    /**
+     * Creates xml for client, that be a host in room,
+     * about the fact that the new player joined
+     * to room.
+     * Returns xml in string format
+     *
+     * @param playerName new info
+     * @return xml in string format
+     */
     private String createXMLForHostAfterPlayerConnect(String playerName) {
         Document document = builder.newDocument();
 
@@ -559,6 +640,13 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
+    /**
+     * Creates xml for all clients, that in game room changed online
+     *
+     * @param online new info
+     * @param roomId id room
+     * @return xml in string format
+     */
     private String createXMLForChangeOnlineGameRoom(int online, int roomId) {
         Document document = builder.newDocument();
 
@@ -576,6 +664,14 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
+    /**
+     * Creates xml for clients in game room,
+     * what one from them changed status
+     *
+     * @param status new info
+     * @param roomId id room
+     * @return xml in string format
+     */
     private String createXMLForChangeStatusGameRoom(String status, int roomId) {
         Document document = builder.newDocument();
 
@@ -593,12 +689,27 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
+    /**
+     * Creates xml for client with simple meta info like
+     * 'ban', 'playerDisconnect' or 'hostCloseRoom'
+     *
+     * @param meta information for client
+     * @return xml in string format
+     */
     private String createXMLWithMeta(String meta) {
         Document document = builder.newDocument();
         createXML(document, meta);
         return TransformerXML.transform(document).toString();
     }
 
+    /**
+     * Creates xml for clients in game room, what
+     * that game starts with field size
+     *
+     * @param numberOfTiles field size
+     * @param tileSize      tile size for client field
+     * @return xml in string format
+     */
     private String createGameStartXML(int numberOfTiles, double tileSize) {
         Document document = builder.newDocument();
 
@@ -616,6 +727,20 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
+
+    /**
+     * Creates xml for clients in game room, what
+     * that one from two player do move on coordinate,
+     * and second player can move
+     *
+     * @param res             true or false
+     * @param x               coordinate
+     * @param y               coordinate
+     * @param color           player (white ot black)
+     * @param userName        the player who made the move
+     * @param unblockUserName the player who can move
+     * @return xml in string format
+     */
     private String createXMLForSendResultToPlayer(boolean res, double x, double y, String color,
                                                   String userName, String unblockUserName) {
         Document document = builder.newDocument();
@@ -650,6 +775,14 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
+    /**
+     * Creates xml for clients in game room,
+     * what need remove point sets from games
+     * field
+     *
+     * @param set point for remove
+     * @return xml in string format
+     */
     private String createXMLForRemoveSet(Set<Point> set) {
         Document document = builder.newDocument();
 
@@ -672,6 +805,13 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
+    /**
+     * Creates xml for simple player in game room,
+     * that host changed the field size
+     *
+     * @param id radio button for player
+     * @return xml in string format
+     */
     private String createXMLChangeFieldSize(String id) {
         Document document = builder.newDocument();
 
@@ -685,6 +825,13 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
+    /**
+     * Creates xml for clients in game room,
+     * what one from them pass
+     *
+     * @param userName name player who passed
+     * @return xml in string format
+     */
     private String createXMLPlayerPass(String userName) {
         Document document = builder.newDocument();
 
@@ -698,6 +845,15 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
+    /**
+     * Creates xml for clients in game room
+     * that game end
+     *
+     * @param userName name player who win game
+     * @param black    host count score
+     * @param white    simple player count score
+     * @return xml in string format
+     */
     private String createXMLGameOver(int white, int black, String userName) {
         Document document = builder.newDocument();
 
@@ -719,6 +875,13 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
+    /**
+     * Change xml on server with new info
+     * after game end
+     *
+     * @param black host count score
+     * @param white simple player count score
+     */
     private void changerXMLAfterGameEnd(int white, int black) {
         int res;
         String hostName = currentRoom.getPlayerHost().getUserName();
@@ -737,6 +900,12 @@ public class ClientHandler extends Thread {
         }
     }
 
+    /**
+     * Change xml on server about user after game end
+     *
+     * @param name player for change
+     * @param res  result player in game
+     */
     private void setNewInfoAboutUser(String name, int res) {
         try {
             File file = new File("users" + File.separator + name + ".xml");
@@ -771,6 +940,13 @@ public class ClientHandler extends Thread {
         }
     }
 
+    /**
+     * Creates xml for all clients what some player
+     * changed info about yourself,
+     *
+     * @param player with new info for all clients
+     * @return xml in string format
+     */
     private String createXMLForNewUserInfo(Player player) {
         Document document = builder.newDocument();
 
@@ -797,6 +973,14 @@ public class ClientHandler extends Thread {
         return stringWriter.toString();
     }
 
+    /**
+     * Create root xml element
+     * and meta-info element with values
+     *
+     * @param document for creating element
+     * @param metaInfo values for meta-info element
+     * @return root element
+     */
     private Element createXML(Document document, String metaInfo) {
         Element root = document.createElement("body");
         document.appendChild(root);

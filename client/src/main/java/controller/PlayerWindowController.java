@@ -34,10 +34,15 @@ import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
-
+/**
+ * Main controller what read xml and
+ * thinks what need do with this info
+ *
+ * @author Eugene Lobin
+ * @version 1.0 09 Mar 2018
+ */
 public class PlayerWindowController {
-
-    private static final Logger logger = Logger.getLogger(PlayerWindowController.class);
+    private static final Logger LOGGER = Logger.getLogger(PlayerWindowController.class);
     @FXML
     public Label helloUser;
     @FXML
@@ -121,6 +126,12 @@ public class PlayerWindowController {
     private String roomId;
     private GoGame goGame;
 
+
+    /**
+     * Method run when project start
+     * create new clientHandler object and set
+     * properties for table view, login stage and etc.
+     */
     @FXML
     public void initialize() throws IOException {
         TransformerAndDocumentFactory.createTransformerAndBuilder();
@@ -161,9 +172,15 @@ public class PlayerWindowController {
         gamePane.setDisable(true);
         passButton.setDisable(true);
 
-        logger.info("Player's window initialized");
+        LOGGER.info("Player's window initialized");
     }
 
+    /**
+     * Method take xml from server, read meta-info in xml, and
+     * decide what need do
+     *
+     * @param input xml form server in string format
+     */
     public void readXML(String input) {
         try {
             Document document = TransformerAndDocumentFactory.getDocumentBuilder().parse(new InputSource(new StringReader(input)));
@@ -442,10 +459,14 @@ public class PlayerWindowController {
                     break;
             }
         } catch (SAXException | IOException e) {
-            logger.error("Exception", e);
+            LOGGER.error("Exception", e);
         }
     }
 
+
+    /**
+     * Changing interval value for timer
+     */
     private int setInterval() {
         if (interval == 1) {
             timer.cancel();
@@ -456,6 +477,11 @@ public class PlayerWindowController {
         return --interval;
     }
 
+    /**
+     * Start timer when users start game
+     * and write mm:ss in timeLabel
+     * for one user steps
+     */
     private void startTimer() {
         timer.cancel();
         timer = new Timer();
@@ -472,6 +498,11 @@ public class PlayerWindowController {
         }, 1000, 1000);
     }
 
+    /**
+     * Testing radio button id and selected when end search
+     *
+     * @param id for radio button
+     */
     private void setRadioButtonSelected(String id) {
         if (fieldSize5.getId().equals(id)) {
             fieldSize5.selectedProperty().set(true);
@@ -484,6 +515,16 @@ public class PlayerWindowController {
         }
     }
 
+    /**
+     * Showing game tab with private room when player
+     * creates or connecting to room
+     * and set values on label name - player name,
+     * and default value on label status
+     *
+     * @param labelName   label name for player name
+     * @param labelStatus label status for default value
+     * @param playerName  the name for labelName
+     */
     private void addPrivateGameTab(Label labelName, Label labelStatus, String playerName) {
         Platform.runLater(() -> {
             tabPane.getTabs().add(privateRoomTab);
@@ -493,6 +534,11 @@ public class PlayerWindowController {
         });
     }
 
+    /**
+     * Finding and remove player from player list
+     *
+     * @param player for removing
+     */
     private void removePlayerFromPlayersList(Player player) {
         for (Player temp : userObsList) {
             if (temp.getUserName().equals(player.getUserName())) {
@@ -502,6 +548,11 @@ public class PlayerWindowController {
         }
     }
 
+    /**
+     * Finding and remove game room from game room list
+     *
+     * @param gameRoom for removing
+     */
     private void removeGameRoomFromGameRoomList(GameRoom gameRoom) {
         for (GameRoom temp : gameRoomObsList) {
             if (temp.getHost().equals(gameRoom.getHost())) {
@@ -511,6 +562,12 @@ public class PlayerWindowController {
         }
     }
 
+    /**
+     * Reading xml and return new player object
+     *
+     * @param element for removing
+     * @return new player object
+     */
     private Player getPlayerFromXML(Element element) {
         return new Player(element.getElementsByTagName("userName").item(0).getTextContent(),
                 element.getElementsByTagName("userGameCount").item(0).getTextContent(),
@@ -518,6 +575,12 @@ public class PlayerWindowController {
                 element.getElementsByTagName("userPercentWins").item(0).getTextContent());
     }
 
+    /**
+     * Reading xml and return new game room object
+     *
+     * @param element for removing
+     * @return new game room object
+     */
     private GameRoom getGameRoomFromXML(Element element) {
         GameRoom gameRoom = new GameRoom(element.getElementsByTagName("roomHost").item(0).getTextContent(),
                 element.getElementsByTagName("roomDescription").item(0).getTextContent(),
@@ -527,6 +590,12 @@ public class PlayerWindowController {
         return gameRoom;
     }
 
+    /**
+     * Checking what player existing in player list
+     *
+     * @param player for checking
+     * @return true if player exist or else if not
+     */
     private boolean checkContainsPlayer(Player player) {
         for (Player temp : userObsList) {
             if (temp.getUserName().equals(player.getUserName())) {
@@ -536,6 +605,12 @@ public class PlayerWindowController {
         return false;
     }
 
+    /**
+     * Checking what game room existing in game room list
+     *
+     * @param gameRoom for checking
+     * @return true if game room exist or else if not
+     */
     private boolean checkContainsGameRoom(GameRoom gameRoom) {
         for (GameRoom temp : gameRoomObsList) {
             if (temp.getHost().equals(gameRoom.getHost())) {
@@ -545,6 +620,10 @@ public class PlayerWindowController {
         return false;
     }
 
+    /**
+     * Creating and show new form
+     * for creating private game room
+     */
     public void createRoom() {
         try {
             Stage createRoomStage = new Stage();
@@ -560,10 +639,15 @@ public class PlayerWindowController {
             CreateRoomController.setPlayerWindowController(this);
             createRoomStage.show();
         } catch (IOException e) {
-            logger.error(e);
+            LOGGER.error(e);
         }
     }
 
+    /**
+     * Creating xml with info for server that player
+     * want close private game room and sends this xml in
+     * string format
+     */
     public void closeCurrentRoom() {
         Document doc = TransformerAndDocumentFactory.newDocument();
         Element root;
@@ -598,6 +682,11 @@ public class PlayerWindowController {
         });
     }
 
+    /**
+     * Creating xml with info for server
+     * what player change status in game room
+     * and sends this xml in string format
+     */
     public void changeStatus() {
         String playerType = "not host";
         String currStatus = "";
@@ -644,6 +733,11 @@ public class PlayerWindowController {
 
     }
 
+    /**
+     * Creating xml with info for server
+     * that the player wants to connect to the game room
+     * and sends this xml in string format
+     */
     public void connectToGameRoom() {
         GameRoom gameRoom = lobbyListTable.getSelectionModel().getSelectedItem();
         if (gameRoom != null) {
@@ -660,6 +754,12 @@ public class PlayerWindowController {
         }
     }
 
+    /**
+     * Set new info about current online in room list
+     *
+     * @param online new online values
+     * @param roomId id room for change value
+     */
     private void setOnlineInGameRoom(String online, String roomId) {
         ObservableList<GameRoom> newGameRoomObsList = FXCollections.observableArrayList();
         for (GameRoom temp : gameRoomObsList) {
@@ -672,6 +772,11 @@ public class PlayerWindowController {
         gameRoomObsList.addAll(newGameRoomObsList);
     }
 
+    /**
+     * Set new info about player in player list
+     *
+     * @param player new player value
+     */
     private void setNewInfoAboutPlayer(Player player) {
         ObservableList<Player> newPlayerObsList = FXCollections.observableArrayList();
         for (Player temp : userObsList) {
@@ -686,6 +791,13 @@ public class PlayerWindowController {
         userObsList.addAll(newPlayerObsList);
     }
 
+    /**
+     * Set new info about game room status
+     * in game room list
+     *
+     * @param status new status values
+     * @param roomId id room for change value
+     */
     private void setStatusInGameRoom(String status, String roomId) {
         ObservableList<GameRoom> newGameRoomObsList = FXCollections.observableArrayList();
         for (GameRoom temp : gameRoomObsList) {
@@ -698,6 +810,10 @@ public class PlayerWindowController {
         gameRoomObsList.addAll(newGameRoomObsList);
     }
 
+    /**
+     * Starts game when two player ready and
+     * sends to server info about this
+     */
     public void startGameClick() {
         if (currentGameRoom.getOnline().equals("2/2") && currentGameRoom.getStatusHost().equals("ready")
                 && currentGameRoom.getStatusPlayer().equals("ready")) {
@@ -706,6 +822,11 @@ public class PlayerWindowController {
         }
     }
 
+    /**
+     * Create xml about players start game
+     *
+     * @return xml for server in string format
+     */
     private String startGame() {
         int numberOfTiles = Integer.parseInt(filedSizeGroup.getSelectedToggle().getUserData().toString());
 
@@ -724,6 +845,15 @@ public class PlayerWindowController {
         return stringWriter.toString();
     }
 
+    /**
+     * Create xml with x,y coordinate and color.
+     * Return this xml in string format after player made a move
+     *
+     * @param x     coordinate
+     * @param y     coordinate
+     * @param color black or white
+     * @return xml for server in string format
+     */
     public String sendCoordinatesToServer(double x, double y, String color) {
         Document document = TransformerAndDocumentFactory.newDocument();
 
@@ -751,6 +881,11 @@ public class PlayerWindowController {
         return stringWriter.toString();
     }
 
+    /**
+     * Return the color of the current player
+     *
+     * @return black if player are  host, and white for simple player
+     */
     public String getColorCurrentPlayer() {
         String color;
         if (currentGameRoom.getHost().equals(currentPlayer.getUserName())) {
@@ -761,6 +896,11 @@ public class PlayerWindowController {
         return color;
     }
 
+    /**
+     * Create xml about player passed
+     * and sends to server name this player
+     * in string format
+     */
     public void playerPassed() {
         startTimer();
         gamePane.setDisable(true);
@@ -787,6 +927,10 @@ public class PlayerWindowController {
         clientHandler.send(stringWriter.toString());
     }
 
+    /**
+     * Get radio button id when player click on radio button
+     * and sends this info in xml to server
+     */
     public void changeFieldSize(MouseEvent mouseEvent) {
         RadioButton radioButton = (RadioButton) mouseEvent.getSource();
         Document document = TransformerAndDocumentFactory.newDocument();
@@ -806,6 +950,11 @@ public class PlayerWindowController {
         clientHandler.send(stringWriter.toString());
     }
 
+    /**
+     * Get user name from user list,
+     * creates xml and sends this info to server
+     * what this player need banned
+     */
     public void banSelectedUser() {
         Player player = userListTable.getSelectionModel().getSelectedItem();
         if (player != null) {
@@ -822,6 +971,14 @@ public class PlayerWindowController {
         }
     }
 
+    /**
+     * Create root xml element
+     * and meta-info element with values
+     *
+     * @param document for creating element
+     * @param metaInfo values for meta-info element
+     * @return root element
+     */
     public static Element createXML(Document document, String metaInfo) {
         Element root = document.createElement("body");
         document.appendChild(root);
@@ -833,6 +990,10 @@ public class PlayerWindowController {
         return root;
     }
 
+    /**
+     * Sends to server info about that room need
+     * set values in null
+     */
     private void setNullCurrentRoom() {
         Document document = TransformerAndDocumentFactory.newDocument();
         createXML(document, "nullCurrentRoom");

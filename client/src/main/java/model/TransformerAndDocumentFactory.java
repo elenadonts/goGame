@@ -11,6 +11,12 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.StringWriter;
 
+/**
+ * Class for helping transform and create xml document
+ *
+ * @author Eugene Lobin
+ * @version 1.0 09 Mar 2018
+ */
 public class TransformerAndDocumentFactory {
     private static final Logger LOGGER = Logger.getLogger(TransformerAndDocumentFactory.class);
     private static TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -21,6 +27,9 @@ public class TransformerAndDocumentFactory {
     private TransformerAndDocumentFactory() {
     }
 
+    /**
+     * Creates static transformer and builder object
+     */
     public static void createTransformerAndBuilder() {
         try {
             transformer = transformerFactory.newTransformer();
@@ -31,6 +40,13 @@ public class TransformerAndDocumentFactory {
         }
     }
 
+    /**
+     * Transforms xml document to string writer
+     * and returns him
+     *
+     * @param document for transform
+     * @return new string writer object
+     */
     public static StringWriter transform(Document document) {
         StringWriter writer = new StringWriter();
         try {
@@ -41,10 +57,21 @@ public class TransformerAndDocumentFactory {
         return writer;
     }
 
+    /**
+     * Creates new xml document and
+     * return him
+     *
+     * @return new xml document
+     */
     public static Document newDocument() {
         return documentBuilder.newDocument();
     }
 
+    /**
+     * Returns object document builder
+     *
+     * @return object document builder
+     */
     public static DocumentBuilder getDocumentBuilder() {
         return documentBuilder;
     }

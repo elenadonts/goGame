@@ -21,6 +21,9 @@ public class TransformerXML {
 
     }
 
+    /**
+     * Creates static transformer  object
+     */
     public static void createTransformer() {
         try {
             transformer = transformerFactory.newTransformer();
@@ -29,6 +32,13 @@ public class TransformerXML {
         }
     }
 
+    /**
+     * Transforms xml document to string writer
+     * and returns him
+     *
+     * @param document for transform
+     * @return new string writer object
+     */
     public static StringWriter transform(Document document) {
         StringWriter writer = new StringWriter();
         try {
@@ -39,14 +49,18 @@ public class TransformerXML {
         return writer;
     }
 
-    public static StreamResult transformToFile(Document document, File file) {
-        StreamResult streamResult = new StreamResult(file);
+    /**
+     * Writes xml document in file
+     *
+     * @param document for transform
+     * @param file     for writing
+     */
+    public static void transformToFile(Document document, File file) {
         try {
-            transformer.transform(new DOMSource(document), streamResult);
+            transformer.transform(new DOMSource(document), new StreamResult(file));
         } catch (TransformerException e) {
             LOGGER.error(e);
         }
-        return streamResult;
     }
 
 

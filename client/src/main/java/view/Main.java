@@ -6,6 +6,12 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+/**
+ * Main class that start when user run app
+ *
+ * @author Eugene Lobin
+ * @version 1.0 09 Mar 2018
+ */
 public class Main extends Application {
     public static Stage mainStage;
 
@@ -13,6 +19,9 @@ public class Main extends Application {
         launch(args);
     }
 
+    /**
+     * Create new application main stage
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("/playerWindow.fxml"));
