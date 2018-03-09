@@ -10,6 +10,10 @@ public enum PointState {
 
     private int value;
 
+    /**
+     * creates new PointState with given value
+     * @param value
+     */
     PointState(int value) {
         this.value = value;
     }
