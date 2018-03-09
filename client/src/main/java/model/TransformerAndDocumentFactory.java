@@ -1,6 +1,5 @@
 package model;
 
-import controller.PlayerWindowController;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 
@@ -13,13 +12,16 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.StringWriter;
 
 public class TransformerAndDocumentFactory {
-    private static final Logger LOGGER = Logger.getLogger(PlayerWindowController.class);
+    private static final Logger LOGGER = Logger.getLogger(TransformerAndDocumentFactory.class);
     private static TransformerFactory transformerFactory = TransformerFactory.newInstance();
     private static DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
     private static DocumentBuilder documentBuilder;
     private static Transformer transformer;
 
-    public TransformerAndDocumentFactory() {
+    private TransformerAndDocumentFactory() {
+    }
+
+    public static void createTransformerAndBuilder() {
         try {
             transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "no");

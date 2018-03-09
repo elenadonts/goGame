@@ -123,7 +123,7 @@ public class PlayerWindowController {
 
     @FXML
     public void initialize() throws IOException {
-        new TransformerAndDocumentFactory();
+        TransformerAndDocumentFactory.createTransformerAndBuilder();
         tabPane.getTabs().remove(privateRoomTab);
 
         clientHandler.setDaemon(true);
@@ -166,7 +166,6 @@ public class PlayerWindowController {
 
     public void readXML(String input) {
         try {
-            //logger.info("New xml received " + input);
             Document document = TransformerAndDocumentFactory.getDocumentBuilder().parse(new InputSource(new StringReader(input)));
 
             Node user = document.getElementsByTagName("body").item(0);
@@ -836,11 +835,7 @@ public class PlayerWindowController {
 
     private void setNullCurrentRoom() {
         Document document = TransformerAndDocumentFactory.newDocument();
-
         createXML(document, "nullCurrentRoom");
-
-        StringWriter writer = TransformerAndDocumentFactory.transform(document);
-
-        clientHandler.send(writer.toString());
+        clientHandler.send(TransformerAndDocumentFactory.transform(document).toString());
     }
 }
