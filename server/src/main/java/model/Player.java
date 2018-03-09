@@ -36,8 +36,6 @@ public class Player {
     }
 
     /**
-     * Gets user name
-     *
      * @return user name
      */
     public String getUserName() {
@@ -54,8 +52,6 @@ public class Player {
     }
 
     /**
-     * Gets user password
-     *
      * @return user password
      */
     public String getUserPassword() {
@@ -72,8 +68,6 @@ public class Player {
     }
 
     /**
-     * Gets user game count
-     *
      * @return user game count
      */
     public String getUserGameCount() {
@@ -90,8 +84,6 @@ public class Player {
     }
 
     /**
-     * Gets user rating
-     *
      * @return user rating
      */
     public String getUserRating() {
@@ -108,8 +100,6 @@ public class Player {
     }
 
     /**
-     * Gets user percent wins
-     *
      * @return user percent wins
      */
     public String getUserPercentWins() {
@@ -135,8 +125,6 @@ public class Player {
     }
 
     /**
-     * Gets that user admin
-     *
      * @return user admin
      */
     public boolean isAdmin() {
@@ -153,8 +141,6 @@ public class Player {
     }
 
     /**
-     * Gets user writer
-     *
      * @return user writer
      */
     public PrintWriter getWriter() {
@@ -162,8 +148,6 @@ public class Player {
     }
 
     /**
-     * Gets user win games count
-     *
      * @return user win games count
      */
     public String getUserWinGames() {

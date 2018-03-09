@@ -43,8 +43,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets player host
-     *
      * @return player host
      */
     public Player getPlayerHost() {
@@ -61,8 +59,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets host writer
-     *
      * @return host writer
      */
     public PrintWriter getPrintWriterHost() {
@@ -70,8 +66,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets host and simple player writers
-     *
      * @return host and simpler writer
      */
     public PrintWriter[] getWriters() {
@@ -85,8 +79,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets simple player writer
-     *
      * @return simple player writer
      */
     public PrintWriter getPrintWriter() {
@@ -103,8 +95,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets game room description
-     *
      * @return game room description
      */
     public String getRoomDescription() {
@@ -112,8 +102,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets room id
-     *
      * @return room id
      */
     public int getRoomId() {
@@ -121,8 +109,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets host status
-     *
      * @return host status
      */
     public String getHostStatus() {
@@ -175,8 +161,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets game status
-     *
      * @return game status
      */
     public String getGameStatus() {
@@ -184,8 +168,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets game field
-     *
      * @return game field
      */
     public GameField getGameField() {
@@ -202,8 +184,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets field size id
-     *
      * @return field size id
      */
     public String getFieldSizeId() {
@@ -211,8 +191,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets that player passed
-     *
      * @return player passed
      */
     public boolean isPlayerPassed() {
@@ -229,8 +207,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets that host passed
-     *
      * @return host passed
      */
     public boolean isHostPassed() {
@@ -247,8 +223,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets simple player
-     *
      * @return simple player
      */
     public Player getPlayer() {

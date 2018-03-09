@@ -32,8 +32,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets host name for room
-     *
      * @return host name
      */
     public String getHost() {
@@ -41,8 +39,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets game description
-     *
      * @return game description
      */
     public String getDescription() {
@@ -59,8 +55,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets game online
-     *
      * @return game online
      */
     public String getOnline() {
@@ -77,8 +71,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets game status
-     *
      * @return game status
      */
     public String getStatusGame() {
@@ -95,8 +87,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets game id
-     *
      * @return game id
      */
     public String getIdRoom() {
@@ -104,8 +94,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets host status
-     *
      * @return host status
      */
     public String getStatusHost() {
@@ -122,8 +110,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets player status
-     *
      * @return player status
      */
     public String getStatusPlayer() {
@@ -140,8 +126,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets host color
-     *
      * @return host color
      */
     public String getHostColor() {
@@ -149,8 +133,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets player color
-     *
      * @return player color
      */
     public String getPlayerColor() {
@@ -167,8 +149,6 @@ public class GameRoom {
     }
 
     /**
-     * Gets player name
-     *
      * @return player name
      */
     public String getPlayer() {

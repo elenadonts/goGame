@@ -32,8 +32,6 @@ public class Player {
     }
 
     /**
-     * Gets user name
-     *
      * @return user name
      */
     public String getUserName() {
@@ -41,8 +39,6 @@ public class Player {
     }
 
     /**
-     * Gets user game count
-     *
      * @return user game count
      */
     public String getUserGameCount() {
@@ -50,8 +46,6 @@ public class Player {
     }
 
     /**
-     * Gets user status
-     *
      * @return user status
      */
     public String getUserStatus() {
@@ -59,8 +53,6 @@ public class Player {
     }
 
     /**
-     * Gets user percent wins
-     *
      * @return user percent wins
      */
     public String getUserPercentWins() {
@@ -68,8 +60,6 @@ public class Player {
     }
 
     /**
-     * Gets user rating
-     *
      * @return user rating
      */
     public String getUserRating() {
