@@ -64,30 +64,29 @@ public class Server {
         userList = new HashMap<>();
         banList = new HashSet<>();
         File folder = new File("users/");
-        if (folder.mkdir()) {
-            File[] userFileLists = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".xml"));
-            for (File userFile : userFileLists) {
-                try {
-                    Document doc = docBuilder.parse(userFile);
-                    Node user = doc.getElementsByTagName("body").item(0);
-                    Element userElement = (Element) user;
-                    Player player = new Player();
-                    player.setUserName(userElement.getElementsByTagName("login").item(0).getTextContent());
-                    player.setUserPassword(userElement.getElementsByTagName("password").item(0).getTextContent());
-                    player.setUserGameCount(userElement.getElementsByTagName("gameCount").item(0).getTextContent());
-                    player.setUserPercentWins(userElement.getElementsByTagName("percentWins").item(0).getTextContent());
-                    player.setUserRating(userElement.getElementsByTagName("rating").item(0).getTextContent());
-                    player.setUserWinGames(userElement.getElementsByTagName("winGames").item(0).getTextContent());
-                    if (Boolean.parseBoolean(userElement.getElementsByTagName("admin").item(0).getTextContent())) {
-                        player.setAdmin(true);
-                    }
-                    if (Boolean.parseBoolean(userElement.getElementsByTagName("banned").item(0).getTextContent())) {
-                        banList.add(player.getUserName());
-                    }
-                    userList.put(player.getUserName(), player);
-                } catch (SAXException | IOException e) {
-                    LOGGER.error("Exception", e);
+        folder.mkdir();
+        File[] userFileLists = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".xml"));
+        for (File userFile : userFileLists) {
+            try {
+                Document doc = docBuilder.parse(userFile);
+                Node user = doc.getElementsByTagName("body").item(0);
+                Element userElement = (Element) user;
+                Player player = new Player();
+                player.setUserName(userElement.getElementsByTagName("login").item(0).getTextContent());
+                player.setUserPassword(userElement.getElementsByTagName("password").item(0).getTextContent());
+                player.setUserGameCount(userElement.getElementsByTagName("gameCount").item(0).getTextContent());
+                player.setUserPercentWins(userElement.getElementsByTagName("percentWins").item(0).getTextContent());
+                player.setUserRating(userElement.getElementsByTagName("rating").item(0).getTextContent());
+                player.setUserWinGames(userElement.getElementsByTagName("winGames").item(0).getTextContent());
+                if (Boolean.parseBoolean(userElement.getElementsByTagName("admin").item(0).getTextContent())) {
+                    player.setAdmin(true);
                 }
+                if (Boolean.parseBoolean(userElement.getElementsByTagName("banned").item(0).getTextContent())) {
+                    banList.add(player.getUserName());
+                }
+                userList.put(player.getUserName(), player);
+            } catch (SAXException | IOException e) {
+                LOGGER.error("Exception", e);
             }
         }
     }

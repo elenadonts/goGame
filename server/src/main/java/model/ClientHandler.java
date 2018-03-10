@@ -176,7 +176,7 @@ public class ClientHandler extends Thread {
                 root.appendChild(admin);
 
                 if (!newMeta.equals("incorrect") && !newMeta.equals("currentUserOnline") && !newMeta.equals("banned")) {
-                    createUserXML(outputDocument, currentPlayer, root);
+                    root = createUserXML(outputDocument, currentPlayer, root);
                 }
                 break;
             case "createRoom":
@@ -257,6 +257,7 @@ public class ClientHandler extends Thread {
                 if (!gameRoomDisconnect.getGameStatus().equals("in game")) {
                     gameRoomDisconnect.setPlayer(null);
                     gameRoomDisconnect.setPrintWriter(null);
+                    gameRoomDisconnect.setPlayerStatus(null);
                 } else {
                     int white = 0;
                     int black = 10;
@@ -265,7 +266,6 @@ public class ClientHandler extends Thread {
                         writer.println(createXMLGameOver(white, black, currentRoom.getPlayerHost().getUserName()));
                     }
                 }
-                gameRoomDisconnect.setPlayerStatus(null);
                 gameRoomDisconnect.setRoomOnline(1);
                 PrintWriter hostWriter = Server.gameRooms.get(
                         inputElement.getElementsByTagName("roomId").item(0).getTextContent()).getPrintWriterHost();
@@ -313,12 +313,13 @@ public class ClientHandler extends Thread {
                 } else {
                     result = gameField.isAllowedToPlace(x, y, PointState.STONE_WHITE);
                 }
-
-                for (PrintWriter writer : currentRoom.getWriters()) {
-                    if (gameField.getPointsToRemove().size() > 0) {
-                        writer.println(createXMLForRemoveSet(gameField.getPointsToRemove()));
+                if (result) {
+                    for (PrintWriter writer : currentRoom.getWriters()) {
+                        if (gameField.getPointsToRemove().size() > 0) {
+                            writer.println(createXMLForRemoveSet(gameField.getPointsToRemove()));
+                        }
+                        writer.println(createXMLForSendResultToPlayer(result, x, y, color, userName, secondUserName));
                     }
-                    writer.println(createXMLForSendResultToPlayer(result, x, y, color, userName, secondUserName));
                 }
                 gameField.setPointsToRemoveClear();
 
@@ -392,7 +393,7 @@ public class ClientHandler extends Thread {
      * @param player   info about this user
      * @param root     element for document
      */
-    private void createUserXML(Document document, Player player, Element root) {
+    private Element createUserXML(Document document, Player player, Element root) {
         Element userName = document.createElement("userName");
         userName.appendChild(document.createTextNode(player.getUserName()));
         root.appendChild(userName);
@@ -408,6 +409,7 @@ public class ClientHandler extends Thread {
         Element userRating = document.createElement("userRating");
         userRating.appendChild(document.createTextNode(player.getUserRating()));
         root.appendChild(userRating);
+        return root;
     }
 
 
@@ -432,11 +434,13 @@ public class ClientHandler extends Thread {
             }
             if (!Server.userList.get(login).getUserPassword().equals(password)) {
                 action = "incorrect";
-            } else if (Server.userOnline.containsKey(login)) {
-                action = "currentUserOnline";
             } else {
-                currentPlayer = Server.userList.get(login);
-                currentPlayer.setWriter(writer);
+                if (Server.userOnline.containsKey(login)) {
+                    action = "currentUserOnline";
+                } else {
+                    currentPlayer = Server.userList.get(login);
+                    currentPlayer.setWriter(writer);
+                }
             }
         }
         if (currentPlayer != null) {
@@ -513,10 +517,10 @@ public class ClientHandler extends Thread {
     private String createXMLForUserList(String action, Player player) {
         Document document = builder.newDocument();
 
-        Element root = createXML(document, "action");
+        Element root = createXML(document, action);
 
         if (action.equals("online")) {
-            createUserXML(document, player, root);
+            root = createUserXML(document, player, root);
         } else if (action.equals("offline")) {
             Element userName = document.createElement("userName");
             userName.appendChild(document.createTextNode(player.getUserName()));
