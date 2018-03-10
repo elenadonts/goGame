@@ -58,7 +58,6 @@ public class ClientHandler extends Thread {
             writer = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream()), true);
             reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             while ((input = reader.readLine()) != null) {
-                System.out.println(input);
 
                 Document document = builder.parse(new InputSource(new StringReader(input)));
                 Node user = document.getElementsByTagName("body").item(0);
@@ -443,10 +442,11 @@ public class ClientHandler extends Thread {
                 } else {
                     currentPlayer = Server.userList.get(login);
                     currentPlayer.setWriter(writer);
-                    Server.userOnline.put(currentPlayer.getUserName(), currentPlayer);
-                    System.out.println(Server.userOnline.size() + " человек онлайн");
                 }
             }
+        }
+        if (currentPlayer != null) {
+            Server.userOnline.put(currentPlayer.getUserName(), currentPlayer);
         }
         return action;
     }

@@ -182,7 +182,6 @@ public class PlayerWindowController {
      * @param input xml form server in string format
      */
     public void readXML(String input) {
-        System.out.println(input);
         try {
             Document document = TransformerAndDocumentFactory.getDocumentBuilder().parse(new InputSource(new StringReader(input)));
 
