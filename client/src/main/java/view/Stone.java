@@ -7,12 +7,23 @@ import javafx.scene.shape.Circle;
 
 import static view.StoneColor.BLACK;
 
+/**
+ * Stone class creates visual representation of game stone(black, white)
+ */
 public class Stone extends StackPane {
 
     private double x;
     private double y;
     private StoneColor stoneColor;
 
+    /**
+     * constructor for creating stones
+     *
+     * @param stoneColor color of stone
+     * @param x x coordinate of stone
+     * @param y  y coordinate of stone
+     * @param tileSize size of game tile
+     */
     public Stone(StoneColor stoneColor, double x, double y, double tileSize) {
         this.x = x;
         this.y = y;
@@ -57,14 +68,29 @@ public class Stone extends StackPane {
         }
     }
 
+    /**
+     * method for getting stone x coordinate
+     *
+     * @return stone x coordinate
+     */
     public double getX() {
         return x;
     }
 
+    /**
+     * method for getting stone y coordinate
+     *
+     * @return stone y coordinate
+     */
     public double getY() {
         return y;
     }
 
+    /**
+     * method for getting stone color
+     *
+     * @return color of stone
+     */
     public StoneColor getStoneColor() {
         return stoneColor;
     }

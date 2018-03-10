@@ -7,23 +7,27 @@ import javafx.scene.shape.Circle;
 
 import static view.StoneColor.BLACK;
 
-
+/**
+ * LastStone class creates visual indication of the last set stone(red circle)
+ */
 public class LastStone extends StackPane {
 
-
-    public LastStone(StoneColor stoneColor, double x, double y, double tileSize) {
+    /**
+     * constructor for creating last set stone indication
+     *
+     * @param x x coordinate of stone
+     * @param y  y coordinate of stone
+     * @param tileSize size of game tile
+     */
+    public LastStone(double x, double y, double tileSize) {
         relocate(x, y);
 
-        double middleCircleRadius = 0.1 * tileSize / 2;
-        Circle middleCircle = new Circle(middleCircleRadius);
-        middleCircle.setFill(Color.RED);
-        middleCircle.setTranslateX((tileSize - middleCircleRadius * 2) / 2);
-        middleCircle.setTranslateY((tileSize - middleCircleRadius * 2) / 2);
+        double radius = 0.1 * tileSize / 2;
+        Circle redCircle = new Circle(radius);
+        redCircle.setFill(Color.RED);
+        redCircle.setTranslateX((tileSize - radius * 2) / 2);
+        redCircle.setTranslateY((tileSize - radius * 2) / 2);
 
-        if (stoneColor.equals(BLACK)) {
-            getChildren().addAll(middleCircle);
-        } else {
-            getChildren().addAll(middleCircle);
-        }
+        getChildren().addAll(redCircle);
     }
 }

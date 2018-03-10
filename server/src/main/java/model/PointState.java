@@ -1,5 +1,8 @@
 package model;
 
+/**
+ * PointState class contains game stones status
+ */
 public enum PointState {
     STONE_WHITE(1),
     STONE_BLACK(2),
