@@ -58,6 +58,8 @@ public class ClientHandler extends Thread {
             writer = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream()), true);
             reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             while ((input = reader.readLine()) != null) {
+                System.out.println(input);
+
                 Document document = builder.parse(new InputSource(new StringReader(input)));
                 Node user = document.getElementsByTagName("body").item(0);
 
@@ -170,13 +172,11 @@ public class ClientHandler extends Thread {
                         inputElement.getElementsByTagName("password").item(0).getTextContent());
 
                 metaElement.appendChild(outputDocument.createTextNode(newMeta));
-
-                Element admin = outputDocument.createElement("admin");
-                admin.appendChild(outputDocument.createTextNode(Boolean.toString(currentPlayer.isAdmin())));
-                root.appendChild(admin);
-
                 if (!newMeta.equals("incorrect") && !newMeta.equals("currentUserOnline") && !newMeta.equals("banned")) {
                     root = createUserXML(outputDocument, currentPlayer, root);
+                    Element admin = outputDocument.createElement("admin");
+                    admin.appendChild(outputDocument.createTextNode(Boolean.toString(currentPlayer.isAdmin())));
+                    root.appendChild(admin);
                 }
                 break;
             case "createRoom":
@@ -264,6 +264,9 @@ public class ClientHandler extends Thread {
                     changerXMLAfterGameEnd(white, black);
                     for (PrintWriter writer : currentRoom.getWriters()) {
                         writer.println(createXMLGameOver(white, black, currentRoom.getPlayerHost().getUserName()));
+                    }
+                    for (PrintWriter temp : Server.writers) {
+                        temp.println(createXMLForRoomList("closeRoom", currentRoom));
                     }
                 }
                 gameRoomDisconnect.setRoomOnline(1);
@@ -440,11 +443,10 @@ public class ClientHandler extends Thread {
                 } else {
                     currentPlayer = Server.userList.get(login);
                     currentPlayer.setWriter(writer);
+                    Server.userOnline.put(currentPlayer.getUserName(), currentPlayer);
+                    System.out.println(Server.userOnline.size() + " человек онлайн");
                 }
             }
-        }
-        if (currentPlayer != null) {
-            Server.userOnline.put(currentPlayer.getUserName(), currentPlayer);
         }
         return action;
     }
