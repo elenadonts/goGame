@@ -371,7 +371,7 @@ public class PlayerWindowController {
                         stoneColor = StoneColor.WHITE;
                     }
                     Stone stone = new Stone(stoneColor, x, y, goGame.getTileSize());
-                    LastStone lastStone = new LastStone(stoneColor, x, y, goGame.getTileSize());
+                    LastStone lastStone = new LastStone(x, y, goGame.getTileSize());
                     Platform.runLater(() -> {
                         playerProgressName.setText(unblockUser);
                         if (goGame.getLastStone() != null) {

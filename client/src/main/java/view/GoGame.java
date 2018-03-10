@@ -14,6 +14,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+/**
+ * GoGame class creates visual representation of game field
+ */
 public class GoGame {
     private static final int GAME_FIELD = 480;
     private double tileSize;
@@ -25,27 +28,56 @@ public class GoGame {
     private LastStone lastStone;
     private static final Logger LOGGER = Logger.getLogger(GoGame.class);
 
+    /**
+     * method for getting tileGroup
+     *
+     * @return reference to the group of tiles
+     */
     public Group getTileGroup() {
         return tileGroup;
     }
 
+    /**
+     * method for getting lastStone
+     *
+     * @return last stone
+     */
     public LastStone getLastStone() {
         return lastStone;
     }
 
+    /**
+     * method for setting number of tiles in game field
+     *
+     * @param numberOfTiles number of tiles
+     */
     public void setNumberOfTiles(int numberOfTiles) {
         this.numberOfTiles = numberOfTiles;
     }
 
+    /**
+     * method for setting size of tile
+     *
+     * @param tileSize size of tile
+     */
     public void setTileSize(double tileSize) {
         this.tileSize = tileSize;
     }
 
 
+    /**
+     * method for getting size of tile
+     *
+     * @return size of tile
+     */
     public double getTileSize(){
         return tileSize;
     }
 
+    /**
+     * method for creating pane with 2d array from every single tile
+     *
+     */
     public Parent createContent() {
         Pane root = new Pane();
         root.setPrefSize(GAME_FIELD, GAME_FIELD);
@@ -62,17 +94,33 @@ public class GoGame {
         return root;
     }
 
+    /**
+     * method for drawing stone at the game field
+     *
+     * @param stone stone
+     */
     public void drawStone(Stone stone) {
         LOGGER.info("Drawing " + stone.getStoneColor() + " x: " + stone.getX() + " y: " + stone.getY());
         stones.add(stone);
         pieceGroup.getChildren().add(stone);
     }
 
+    /**
+     * method for drawing last set stone indication
+     *
+     * @param lastStone last set stone indication
+     */
     public void drawLastStone(LastStone lastStone) {
         pieceGroup.getChildren().add(lastStone);
         this.lastStone = lastStone;
     }
 
+    /**
+     * method for removing stone from the game field
+     *
+     * @param xCoordinate x coordinate of stone
+     * @param yCoordinate y coordinate of stone
+     */
     public void removeStone(double xCoordinate, double yCoordinate) {
         LOGGER.info("Removing x: " + xCoordinate + " y: " + yCoordinate);
         Iterator<Stone> iterator = stones.iterator();
@@ -85,9 +133,11 @@ public class GoGame {
         }
     }
 
+    /**
+     * method for removing last set stone indication
+     *
+     */
     public void removeLastStone() {
         pieceGroup.getChildren().remove(lastStone);
     }
-
-
 }

@@ -8,6 +8,9 @@ import javafx.scene.shape.Rectangle;
 import model.ClientHandler;
 import org.apache.log4j.Logger;
 
+/**
+ * Tile class creates visual representation of every single square of game field
+ */
 public class Tile extends Rectangle {
     private GoGame game;
     private double xCoordinate;
@@ -17,6 +20,14 @@ public class Tile extends Rectangle {
     private static final Logger LOGGER = Logger.getLogger(Tile.class);
 
 
+    /**
+     * constructor for creating tiles(squares)
+     *
+     * @param x x coordinate of tile
+     * @param y  y coordinate of tile
+     * @param game  reference to GoGame object
+     * @param tileSize size of game tile
+     */
     public Tile(int x, int y, GoGame game, double tileSize) {
         this.game = game;
         setWidth(tileSize);
@@ -35,6 +46,12 @@ public class Tile extends Rectangle {
         });
     }
 
+    /**
+     * method for defining coordinates of closest corner of tile
+     *
+     * @param mouseClickX    x coordinate of mouse click
+     * @param mouseClickY    y coordinate of mouse click
+     */
     private void getTileCorner(double mouseClickX, double mouseClickY) {
         LOGGER.info("Mouse coordinates: x - " + mouseClickX + " y - " + mouseClickY);
         double layoutOffsetX = game.getTileGroup().getLayoutX();
@@ -62,10 +79,20 @@ public class Tile extends Rectangle {
         }
     }
 
+    /**
+     * method for setting reference to ClientHandler object
+     *
+     * @param clientHandler reference to ClientHandler object
+     */
     public static void setClientHandler(ClientHandler clientHandler) {
         Tile.clientHandler = clientHandler;
     }
 
+    /**
+     * method for setting reference to PlayerWindowController object
+     *
+     * @param playerWindowController reference to PlayerWindowController object
+     */
     public static void setPlayerWindowController(PlayerWindowController playerWindowController) {
         Tile.playerWindowController = playerWindowController;
     }
