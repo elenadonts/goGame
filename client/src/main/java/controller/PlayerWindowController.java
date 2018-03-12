@@ -31,6 +31,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -175,6 +176,7 @@ public class PlayerWindowController {
 
         gamePane.setDisable(true);
         passButton.setDisable(true);
+        connectToRoom.setDisable(true);
 
         LOGGER.info("Player's window initialized");
     }
@@ -252,6 +254,7 @@ public class PlayerWindowController {
                     if (!gameRoom.getIdRoom().equals(currentGameRoom.getIdRoom())) {
                         if (!checkContainsGameRoom(gameRoom)) {
                             gameRoomObsList.add(gameRoom);
+                            resetActiveButtons(gameRoomObsList, connectToRoom);
                         }
                     }
                     break;
@@ -564,6 +567,23 @@ public class PlayerWindowController {
                 break;
             }
         }
+        resetActiveButtons(gameRoomObsList, connectToRoom);
+    }
+
+    /**
+     * Disables button if there're no elements in the list and enables if they are added
+     * @param tableElements list of elements
+     * @param button button to enable/disable
+     */
+    private void resetActiveButtons(List tableElements, Button button){
+        Platform.runLater(() -> {
+            if (tableElements.size() == 0) {
+                button.setDisable(true);
+            }
+            else {
+                button.setDisable(false);
+            }
+        });
     }
 
     /**
