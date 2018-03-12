@@ -151,6 +151,10 @@ public class PlayerWindowController {
         loginStage.initModality(Modality.APPLICATION_MODAL);
         loginStage.show();
 
+        loginStage.setOnCloseRequest(we -> {
+            System.exit(0);
+        });
+
         userName.setCellValueFactory(new PropertyValueFactory<>("userName"));
         userGameCount.setCellValueFactory(new PropertyValueFactory<>("userGameCount"));
         userRating.setCellValueFactory(new PropertyValueFactory<>("userRating"));
