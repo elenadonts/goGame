@@ -12,10 +12,9 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
+import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -34,9 +33,20 @@ public class Server {
     public static HashMap<String, Player> userOnline;
     public static HashMap<String, GameRoom> gameRooms;
     public static HashSet<String> banList;
+    private static final BufferedReader SERVER_CONSOLE = new BufferedReader(new InputStreamReader(System.in));
+    private static boolean isRunning;
+    private static ServerSocket server;
 
 
     public static void main(String[] args) {
+        runServer();
+    }
+
+    /**
+     * Start server
+     */
+    private static void runServer(){
+        isRunning = true;
         writers = new HashSet<>();
         userOnline = new HashMap<>();
         gameRooms = new HashMap<>();
@@ -46,15 +56,84 @@ public class Server {
             LOGGER.error(e);
         }
         uploadUserList();
-        try (ServerSocket server = new ServerSocket(PORT)) {
+        try {
+            server = new ServerSocket(PORT);
+            server.setSoTimeout(500);
             LOGGER.info("Server starting...");
-            while (true) {
-                ClientHandler clientHandler = new ClientHandler(server.accept());
-                clientHandler.start();
+            while (isRunning) {
+                try {
+                    if (SERVER_CONSOLE.ready()){
+                        ServerCommand serverCommand = getCommand(SERVER_CONSOLE.readLine());
+                        handleCommand(serverCommand);
+                    }
+                    ClientHandler clientHandler = new ClientHandler(server.accept());
+                    clientHandler.start();
+                }
+                catch (SocketTimeoutException e){
+                    continue;
+                }
             }
         } catch (IOException e) {
             LOGGER.error(e);
         }
+
+    }
+
+    /**
+     * Check the input and execute corresponding command
+     * @param command command received from console
+     */
+    private static void handleCommand(ServerCommand command){
+        switch (command){
+            case STOP: stopServer();
+                break;
+            case RESTART: restartServer();
+                break;
+            case UNKNOWN_COMMAND:
+                break;
+        }
+    }
+
+    /**
+     * Restart server
+     */
+    private static void restartServer(){
+        LOGGER.info("Restarting server");
+        stopServer();
+        runServer();
+    }
+
+    /**
+     * Stop server
+     */
+    private static void stopServer(){
+        LOGGER.info("Stopping server");
+        isRunning = false;
+        try {
+            server.close();
+        }
+        catch (IOException e){
+            LOGGER.error("Exception stopping server");
+        }
+    }
+
+    /**
+     * Parse command to corresponding enum value
+     * @param command received input
+     * @return corresponding command
+     */
+    private static ServerCommand getCommand(String command){
+        command = command.toLowerCase();
+        ServerCommand serverCommand;
+        switch (command){
+            case "stop": serverCommand = ServerCommand.STOP;
+                break;
+            case "restart" : serverCommand = ServerCommand.RESTART;
+                break;
+            default: serverCommand = ServerCommand.UNKNOWN_COMMAND;
+                break;
+        }
+        return serverCommand;
     }
 
     /**
