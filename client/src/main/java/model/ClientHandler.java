@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Properties;
 
 /**
  * Handler class for create new thread when user connect
@@ -15,10 +16,13 @@ import java.net.Socket;
  * @version 1.0 09 Mar 2018
  */
 public class ClientHandler extends Thread {
-    private static final int SERVER_PORT = 3000;
+    private static int serverPort;
+    private static String serverIp;
     private static final Logger LOGGER = Logger.getLogger(ClientHandler.class);
     private PrintWriter writer;
     private PlayerWindowController guiController;
+    public static final String SOCKET_PROPERTIES_PATH = "socket.properties";
+
 
     /**
      * Set object playerWindowController class for this class
@@ -35,8 +39,9 @@ public class ClientHandler extends Thread {
      * player window controller
      */
     public void run() {
+        uploadSocketProperties();
         try {
-            Socket socket = new Socket("localhost", SERVER_PORT);
+            Socket socket = new Socket(serverIp, serverPort );
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
             String input;
@@ -57,4 +62,21 @@ public class ClientHandler extends Thread {
         writer.println(message);
     }
 
+    /**
+     * uploads port and ip values from file
+     */
+    private static void uploadSocketProperties() {
+        ClassLoader classLoader = ClientHandler.class.getClassLoader();
+        File socketProperties = new File(classLoader.getResource(SOCKET_PROPERTIES_PATH).getFile());
+        Properties properties = new Properties();
+        try {
+            FileInputStream inputStream = new FileInputStream(socketProperties);
+            properties.load(inputStream);
+        }
+        catch (IOException e){
+            LOGGER.error("Cannot load socket.properties", e);
+        }
+        serverIp = properties.getProperty("serverIpAddress");
+        serverPort = Integer.parseInt(properties.getProperty("port"));
+    }
 }
