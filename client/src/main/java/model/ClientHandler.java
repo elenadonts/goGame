@@ -1,12 +1,11 @@
 package model;
 
 import controller.PlayerWindowController;
-import javafx.application.Platform;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 import org.apache.log4j.Logger;
 
+
 import java.io.*;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Properties;
@@ -23,7 +22,6 @@ public class ClientHandler extends Thread {
     private static String serverIp;
     private static final Logger LOGGER = Logger.getLogger(ClientHandler.class);
     private PrintWriter writer;
-    private BufferedReader reader;
     private PlayerWindowController guiController;
     public static final String SOCKET_PROPERTIES_PATH = "socket.properties";
 
@@ -45,21 +43,19 @@ public class ClientHandler extends Thread {
     public void run() {
         uploadSocketProperties();
         try {
-            Socket socket = new Socket(serverIp, serverPort);
-            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            Socket socket = new Socket(serverIp, serverPort );
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
             String input;
             while ((input = reader.readLine()) != null) {
                 guiController.readXML(input);
             }
-        } catch (SocketException e) {
-            LOGGER.error("SocketException", e);
-            Platform.runLater(() -> {
-                Alert alert = new Alert(Alert.AlertType.ERROR, "Serve offline", ButtonType.OK);
-                alert.showAndWait();
-                System.exit(0);
-            });
-        } catch (IOException e) {
+
+        }
+        catch (SocketException s){
+            System.out.println("server disconnected");
+        }
+        catch (IOException e) {
             LOGGER.error("IOException", e);
         }
     }
@@ -76,13 +72,15 @@ public class ClientHandler extends Thread {
     /**
      * uploads port and ip values from file
      */
-    private void uploadSocketProperties() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        InputStream socketProperties = classLoader.getResourceAsStream(SOCKET_PROPERTIES_PATH);
+    private static void uploadSocketProperties() {
+        ClassLoader classLoader = ClientHandler.class.getClassLoader();
+        File socketProperties = new File(classLoader.getResource(SOCKET_PROPERTIES_PATH).getFile());
         Properties properties = new Properties();
         try {
-            properties.load(socketProperties);
-        } catch (IOException e) {
+            FileInputStream inputStream = new FileInputStream(socketProperties);
+            properties.load(inputStream);
+        }
+        catch (IOException e){
             LOGGER.error("Cannot load socket.properties", e);
         }
         serverIp = properties.getProperty("serverIpAddress");
