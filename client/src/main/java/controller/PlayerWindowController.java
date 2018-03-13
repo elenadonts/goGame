@@ -151,7 +151,6 @@ public class PlayerWindowController {
         loginStage.initOwner(Main.mainStage);
         loginStage.initModality(Modality.APPLICATION_MODAL);
         loginStage.show();
-
         loginStage.setOnCloseRequest(we -> {
             System.exit(0);
         });

@@ -96,59 +96,61 @@ public class ClientHandler extends Thread {
         } catch (IOException | SAXException e) {
             LOGGER.error(e);
         } finally {
-            try {
-                Server.writers.remove(writer);
-                if (playerAlreadyLoggedIn())
+            Server.writers.remove(writer);
+            if (playerAlreadyLoggedIn()) {
                 Server.userOnline.remove(currentPlayer.getUserName());
-                writer.close();
-                reader.close();
-                clientSocket.close();
-                if (currentRoom != null && currentRoom.getGameStatus().equals("in game") && clientSocket.isConnected()) {
-                    if (currentRoom.getPlayerHost().getUserName().equals(currentPlayer.getUserName())) {
-                        int white = 10;
-                        int black = 0;
-                        changerXMLAfterGameEnd(white, black);
-                        currentRoom.getPrintWriter().println(createXMLGameOver(white, black,
-                                currentRoom.getPlayer().getUserName()));
-                        for (PrintWriter writer : Server.writers) {
-                            if (currentRoom != null) {
-                                writer.println(createXMLForRoomList("closeRoom", currentRoom));
-                            }
-                            writer.println(createXMLForUserList("offline", currentPlayer));
-                        }
-                        Server.gameRooms.remove(Integer.toString(currentRoom.getRoomId()));
-                    } else {
-                        int white = 0;
-                        int black = 10;
-                        changerXMLAfterGameEnd(white, black);
-                        currentRoom.getPrintWriterHost().println(createXMLGameOver(white, black,
-                                currentRoom.getPlayerHost().getUserName()));
-                        for (PrintWriter writer : Server.writers) {
-                            writer.println(createXMLForUserList("offline", currentPlayer));
-                        }
-                    }
-                } else if (currentRoom != null && currentRoom.getPlayerHost() == currentPlayer) {
-                    Server.gameRooms.remove(Integer.toString(currentRoom.getRoomId()));
+            }
+            if (currentRoom != null && currentRoom.getGameStatus().equals("in game") && clientSocket.isConnected()) {
+                if (currentRoom.getPlayerHost().getUserName().equals(currentPlayer.getUserName())) {
+                    int white = 10;
+                    int black = 0;
+                    changerXMLAfterGameEnd(white, black);
+                    currentRoom.getPrintWriter().println(createXMLGameOver(white, black,
+                            currentRoom.getPlayer().getUserName()));
                     for (PrintWriter writer : Server.writers) {
                         if (currentRoom != null) {
                             writer.println(createXMLForRoomList("closeRoom", currentRoom));
                         }
                         writer.println(createXMLForUserList("offline", currentPlayer));
                     }
-                    if (currentRoom.getRoomOnline() == 2) {
-                        currentRoom.getPrintWriter().println(createXMLWithMeta("hostCloseRoom"));
-                    }
+                    Server.gameRooms.remove(Integer.toString(currentRoom.getRoomId()));
                 } else {
+                    int white = 0;
+                    int black = 10;
+                    changerXMLAfterGameEnd(white, black);
+                    currentRoom.getPrintWriterHost().println(createXMLGameOver(white, black,
+                            currentRoom.getPlayerHost().getUserName()));
                     for (PrintWriter writer : Server.writers) {
                         writer.println(createXMLForUserList("offline", currentPlayer));
                     }
+                }
+            } else if (currentRoom != null && currentRoom.getPlayerHost() == currentPlayer) {
+                Server.gameRooms.remove(Integer.toString(currentRoom.getRoomId()));
+                for (PrintWriter writer : Server.writers) {
+                    if (currentRoom != null) {
+                        writer.println(createXMLForRoomList("closeRoom", currentRoom));
+                    }
+                    writer.println(createXMLForUserList("offline", currentPlayer));
+                }
+                if (currentRoom.getRoomOnline() == 2) {
+                    currentRoom.getPrintWriter().println(createXMLWithMeta("hostCloseRoom"));
+                }
+            } else {
+                for (PrintWriter writer : Server.writers) {
+                    writer.println(createXMLForUserList("offline", currentPlayer));
+                }
+            }
+            try {
+                writer.close();
+                reader.close();
+                if (clientSocket!= null) {
+                    clientSocket.close();
                 }
             } catch (IOException e) {
                 LOGGER.error("IOException", e);
             }
         }
     }
-
     private boolean playerAlreadyLoggedIn() {
         return currentPlayer != null;
     }
@@ -176,6 +178,7 @@ public class ClientHandler extends Thread {
                         inputElement.getElementsByTagName("password").item(0).getTextContent());
 
                 metaElement.appendChild(outputDocument.createTextNode(newMeta));
+
                 if (!newMeta.equals("incorrect") && !newMeta.equals("currentUserOnline") && !newMeta.equals("banned")) {
                     root = createUserXML(outputDocument, currentPlayer, root);
                     Element admin = outputDocument.createElement("admin");
