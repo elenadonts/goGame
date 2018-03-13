@@ -62,6 +62,4 @@ public class TransformerXML {
             LOGGER.error(e);
         }
     }
-
-
 }

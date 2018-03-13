@@ -45,7 +45,7 @@ public class Server {
     /**
      * Start server
      */
-    private static void runServer(){
+    private static void runServer() {
         isRunning = true;
         writers = new HashSet<>();
         userOnline = new HashMap<>();
@@ -62,15 +62,14 @@ public class Server {
             LOGGER.info("Server starting...");
             while (isRunning) {
                 try {
-                    if (SERVER_CONSOLE.ready()){
+                    if (SERVER_CONSOLE.ready()) {
                         ServerCommand serverCommand = getCommand(SERVER_CONSOLE.readLine());
                         handleCommand(serverCommand);
                     }
                     ClientHandler clientHandler = new ClientHandler(server.accept());
                     clientHandler.start();
-                }
-                catch (SocketTimeoutException e){
-                    continue;
+                } catch (SocketTimeoutException ex) {
+                    LOGGER.error(ex);
                 }
             }
         } catch (IOException e) {
@@ -81,13 +80,16 @@ public class Server {
 
     /**
      * Check the input and execute corresponding command
+     *
      * @param command command received from console
      */
-    private static void handleCommand(ServerCommand command){
-        switch (command){
-            case STOP: stopServer();
+    private static void handleCommand(ServerCommand command) {
+        switch (command) {
+            case STOP:
+                stopServer();
                 break;
-            case RESTART: restartServer();
+            case RESTART:
+                restartServer();
                 break;
             case UNKNOWN_COMMAND:
                 break;
@@ -97,7 +99,7 @@ public class Server {
     /**
      * Restart server
      */
-    private static void restartServer(){
+    private static void restartServer() {
         LOGGER.info("Restarting server");
         stopServer();
         runServer();
@@ -106,31 +108,34 @@ public class Server {
     /**
      * Stop server
      */
-    private static void stopServer(){
+    private static void stopServer() {
         LOGGER.info("Stopping server");
         isRunning = false;
         try {
             server.close();
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             LOGGER.error("Exception stopping server");
         }
     }
 
     /**
      * Parse command to corresponding enum value
+     *
      * @param command received input
      * @return corresponding command
      */
-    private static ServerCommand getCommand(String command){
+    private static ServerCommand getCommand(String command) {
         command = command.toLowerCase();
         ServerCommand serverCommand;
-        switch (command){
-            case "stop": serverCommand = ServerCommand.STOP;
+        switch (command) {
+            case "stop":
+                serverCommand = ServerCommand.STOP;
                 break;
-            case "restart" : serverCommand = ServerCommand.RESTART;
+            case "restart":
+                serverCommand = ServerCommand.RESTART;
                 break;
-            default: serverCommand = ServerCommand.UNKNOWN_COMMAND;
+            default:
+                serverCommand = ServerCommand.UNKNOWN_COMMAND;
                 break;
         }
         return serverCommand;

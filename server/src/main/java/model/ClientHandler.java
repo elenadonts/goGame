@@ -143,7 +143,7 @@ public class ClientHandler extends Thread {
             try {
                 writer.close();
                 reader.close();
-                if (clientSocket!= null) {
+                if (clientSocket != null) {
                     clientSocket.close();
                 }
             } catch (IOException e) {
@@ -151,6 +151,7 @@ public class ClientHandler extends Thread {
             }
         }
     }
+
     private boolean playerAlreadyLoggedIn() {
         return currentPlayer != null;
     }
@@ -1005,5 +1006,6 @@ public class ClientHandler extends Thread {
 
         return root;
     }
+
 }
 

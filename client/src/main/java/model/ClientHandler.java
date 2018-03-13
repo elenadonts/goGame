@@ -7,8 +7,8 @@ import javafx.scene.control.ButtonType;
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.net.ConnectException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Properties;
 
 /**
@@ -52,8 +52,8 @@ public class ClientHandler extends Thread {
             while ((input = reader.readLine()) != null) {
                 guiController.readXML(input);
             }
-        } catch (ConnectException e) {
-            LOGGER.error("ConnectException", e);
+        } catch (SocketException e) {
+            LOGGER.error("SocketException", e);
             Platform.runLater(() -> {
                 Alert alert = new Alert(Alert.AlertType.ERROR, "Serve offline", ButtonType.OK);
                 alert.showAndWait();
