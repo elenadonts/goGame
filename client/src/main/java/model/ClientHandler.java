@@ -7,6 +7,7 @@ import javafx.scene.control.ButtonType;
 import org.apache.log4j.Logger;
 
 import java.io.*;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.util.Properties;
 
@@ -44,35 +45,22 @@ public class ClientHandler extends Thread {
     public void run() {
         uploadSocketProperties();
         try {
-            if (serverListening()) {
-                Socket socket = new Socket(serverIp, serverPort);
-                reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
-                String input;
-                while ((input = reader.readLine()) != null) {
-                    guiController.readXML(input);
-                }
-            } else {
-                Platform.runLater(() -> {
-                    Alert alert = new Alert(Alert.AlertType.ERROR, "Serve offline", ButtonType.OK);
-                    alert.showAndWait();
-                    System.exit(0);
-                });
+            Socket socket = new Socket(serverIp, serverPort);
+            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
+            String input;
+            while ((input = reader.readLine()) != null) {
+                guiController.readXML(input);
             }
+        } catch (ConnectException e) {
+            LOGGER.error("ConnectException", e);
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Serve offline", ButtonType.OK);
+                alert.showAndWait();
+                System.exit(0);
+            });
         } catch (IOException e) {
             LOGGER.error("IOException", e);
-        }
-    }
-
-
-    /**
-     * checking that server is online
-     */
-    private static boolean serverListening() {
-        try (Socket socket = new Socket(serverIp, serverPort)) {
-            return true;
-        } catch (IOException e) {
-            return false;
         }
     }
 
