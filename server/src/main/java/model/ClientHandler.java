@@ -98,6 +98,7 @@ public class ClientHandler extends Thread {
         } finally {
             try {
                 Server.writers.remove(writer);
+                if (playerAlreadyLoggedIn())
                 Server.userOnline.remove(currentPlayer.getUserName());
                 writer.close();
                 reader.close();
@@ -146,6 +147,10 @@ public class ClientHandler extends Thread {
                 LOGGER.error("IOException", e);
             }
         }
+    }
+
+    private boolean playerAlreadyLoggedIn() {
+        return currentPlayer != null;
     }
 
     /**
