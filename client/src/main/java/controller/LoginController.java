@@ -44,11 +44,9 @@ public class LoginController {
      */
     @FXML
     public void connectToServer() {
-        LOGGER.info("connecting to server");
 
         String log = userLogin.getText();
         String pass = userPassword.getText();
-
         if (log.isEmpty() || pass.isEmpty()) {
             errorLabel.setText("Login or password can't be a empty!");
             LOGGER.info("Empty login or password");

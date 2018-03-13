@@ -199,6 +199,7 @@ public class PlayerWindowController {
             GameRoom gameRoom;
             switch (metaInfo) {
                 case "connect":
+                    LOGGER.info("connecting to server");
                     boolean admin = Boolean.parseBoolean(((Element) user).getElementsByTagName("admin").item(0).getTextContent());
                     Platform.runLater(() -> {
                         if (admin) {
@@ -214,6 +215,11 @@ public class PlayerWindowController {
                 case "incorrect":
                     Platform.runLater(() ->
                             loginController.setErrorLabel("Login or password are incorrect!!!")
+                    );
+                    break;
+                case "incorrectCharInLogin" :
+                    Platform.runLater(() ->
+                            loginController.setErrorLabel("Incorrect chars in login!!!")
                     );
                     break;
                 case "banned":

@@ -16,6 +16,8 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Handler class for create new thread when user connect
@@ -180,7 +182,7 @@ public class ClientHandler extends Thread {
 
                 metaElement.appendChild(outputDocument.createTextNode(newMeta));
 
-                if (!newMeta.equals("incorrect") && !newMeta.equals("currentUserOnline") && !newMeta.equals("banned")) {
+                if (newMeta.equals("connect")) {
                     root = createUserXML(outputDocument, currentPlayer, root);
                     Element admin = outputDocument.createElement("admin");
                     admin.appendChild(outputDocument.createTextNode(Boolean.toString(currentPlayer.isAdmin())));
@@ -434,6 +436,11 @@ public class ClientHandler extends Thread {
      */
     private String testLogin(String login, String password) {
         String action = "connect";
+        Pattern pattern = Pattern.compile("\\w{4,}");
+        Matcher matcher = pattern.matcher(login);
+        if (!matcher.matches()){
+            return "incorrectCharInLogin";
+        }
         if (!Server.userList.containsKey(login)) {
             currentPlayer = createNewUser(login, password);
         } else {
