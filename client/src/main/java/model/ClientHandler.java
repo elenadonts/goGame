@@ -76,13 +76,12 @@ public class ClientHandler extends Thread {
     /**
      * uploads port and ip values from file
      */
-    private static void uploadSocketProperties() {
-        ClassLoader classLoader = ClientHandler.class.getClassLoader();
-        File socketProperties = new File(classLoader.getResource(SOCKET_PROPERTIES_PATH).getFile());
+    private void uploadSocketProperties() {
+        ClassLoader classLoader = getClass().getClassLoader();
+        InputStream socketProperties = classLoader.getResourceAsStream(SOCKET_PROPERTIES_PATH);
         Properties properties = new Properties();
         try {
-            FileInputStream inputStream = new FileInputStream(socketProperties);
-            properties.load(inputStream);
+            properties.load(socketProperties);
         } catch (IOException e) {
             LOGGER.error("Cannot load socket.properties", e);
         }

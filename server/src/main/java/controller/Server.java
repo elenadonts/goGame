@@ -69,7 +69,7 @@ public class Server {
                     ClientHandler clientHandler = new ClientHandler(server.accept());
                     clientHandler.start();
                 } catch (SocketTimeoutException ex) {
-                    LOGGER.error(ex);
+                    continue;
                 }
             }
         } catch (IOException e) {
