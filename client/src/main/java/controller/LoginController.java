@@ -10,8 +10,6 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.StringWriter;
-
 /**
  * Class for test connecting to server when user enter login and
  * password and for showing error
@@ -44,31 +42,20 @@ public class LoginController {
      */
     @FXML
     public void connectToServer() {
-
-        String log = userLogin.getText();
-        String pass = userPassword.getText();
-        if (log.isEmpty() || pass.isEmpty()) {
+        String login = userLogin.getText();
+        String password = userPassword.getText();
+        if (login.isEmpty() || password.isEmpty()) {
             errorLabel.setText("Login or password can't be a empty!");
             LOGGER.info("Empty login or password");
-        } else if (log.length() < 4 || pass.length() < 4) {
+        } else if (login.length() < 4 || password.length() < 4) {
             errorLabel.setText("Login or password must be more 4 char");
             LOGGER.info("Unsatisfied password length");
         } else {
-            Document doc = TransformerAndDocumentFactory.newDocument();
-
-            Element root = PlayerWindowController.createXML(doc, "login");
-
-            Element login = doc.createElement("login");
-            login.appendChild(doc.createTextNode(log));
-            root.appendChild(login);
-
-            Element password = doc.createElement("password");
-            password.appendChild(doc.createTextNode(pass));
-            root.appendChild(password);
-
-            StringWriter writer = TransformerAndDocumentFactory.transform(doc);
-
-            clientHandler.send(writer.toString());
+            Document document = TransformerAndDocumentFactory.newDocument();
+            Element root = PlayerWindowController.createXML(document, "login");
+            root.appendChild(TransformerAndDocumentFactory.createElement(document, "login", login));
+            root.appendChild(TransformerAndDocumentFactory.createElement(document, "password", password));
+            clientHandler.send(TransformerAndDocumentFactory.transformToString(document));
         }
     }
 

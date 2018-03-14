@@ -2,6 +2,7 @@ package model;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -57,6 +58,17 @@ public class TransformerAndDocumentFactory {
         return writer;
     }
 
+    public static String transformToString(Document document) {
+        StringWriter writer = new StringWriter();
+        try {
+            transformer.transform(new DOMSource(document), new StreamResult(writer));
+        } catch (TransformerException e) {
+            LOGGER.error(e);
+        }
+        return writer.toString();
+    }
+
+
     /**
      * Creates new xml document and
      * return him
@@ -74,5 +86,19 @@ public class TransformerAndDocumentFactory {
      */
     public static DocumentBuilder getDocumentBuilder() {
         return documentBuilder;
+    }
+
+    /**
+     * Creates xml element with tag name and data
+     *
+     * @param data xml element value
+     * @param document for created
+     * @param tagName xml element name
+     * @return new element
+     */
+    public static Element createElement(Document document, String tagName, String data) {
+        Element element = document.createElement(tagName);
+        element.appendChild(document.createTextNode(data));
+        return element;
     }
 }

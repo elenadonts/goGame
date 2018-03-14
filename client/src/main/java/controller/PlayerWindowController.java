@@ -28,7 +28,6 @@ import view.*;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -192,9 +191,6 @@ public class PlayerWindowController {
 
             Node user = document.getElementsByTagName("body").item(0);
             String metaInfo = ((Element) user).getElementsByTagName("meta-info").item(0).getTextContent();
-            if (metaInfo.contains(";")) {
-                metaInfo = metaInfo.substring(0, metaInfo.indexOf(";"));
-            }
             Player player;
             GameRoom gameRoom;
             switch (metaInfo) {
@@ -217,7 +213,7 @@ public class PlayerWindowController {
                             loginController.setErrorLabel("Login or password are incorrect!!!")
                     );
                     break;
-                case "incorrectCharInLogin" :
+                case "incorrectCharInLogin":
                     Platform.runLater(() ->
                             loginController.setErrorLabel("Incorrect chars in login!!!")
                     );
@@ -577,15 +573,15 @@ public class PlayerWindowController {
 
     /**
      * Disables button if there're no elements in the list and enables if they are added
+     *
      * @param tableElements list of elements
-     * @param button button to enable/disable
+     * @param button        button to enable/disable
      */
-    private void resetActiveButtons(List tableElements, Button button){
+    private void resetActiveButtons(List tableElements, Button button) {
         Platform.runLater(() -> {
             if (tableElements.size() == 0) {
                 button.setDisable(true);
-            }
-            else {
+            } else {
                 button.setDisable(false);
             }
         });
@@ -686,13 +682,9 @@ public class PlayerWindowController {
             root = createXML(doc, "disconnectingFromRoom");
         }
 
-        Element roomIdElement = doc.createElement("roomId");
-        roomIdElement.appendChild(doc.createTextNode(roomId));
-        root.appendChild(roomIdElement);
+        root.appendChild(TransformerAndDocumentFactory.createElement(doc, "roomId", roomId));
 
-        StringWriter writer = TransformerAndDocumentFactory.transform(doc);
-
-        clientHandler.send(writer.toString());
+        clientHandler.send(TransformerAndDocumentFactory.transformToString(doc));
 
         connectToRoom.disableProperty().setValue(false);
         roomId = "";
@@ -740,24 +732,11 @@ public class PlayerWindowController {
                     break;
             }
             Document doc = TransformerAndDocumentFactory.newDocument();
-
             Element root = createXML(doc, "changeStatus");
-
-            Element idRoomElement = doc.createElement("idRoom");
-            idRoomElement.appendChild(doc.createTextNode(roomId));
-            root.appendChild(idRoomElement);
-
-            Element statusElement = doc.createElement("status");
-            statusElement.appendChild(doc.createTextNode(currStatus));
-            root.appendChild(statusElement);
-
-            Element playerTypeElement = doc.createElement("playerType");
-            playerTypeElement.appendChild(doc.createTextNode(playerType));
-            root.appendChild(playerTypeElement);
-
-            StringWriter writer = TransformerAndDocumentFactory.transform(doc);
-
-            clientHandler.send(writer.toString());
+            root.appendChild(TransformerAndDocumentFactory.createElement(doc, "idRoom", roomId));
+            root.appendChild(TransformerAndDocumentFactory.createElement(doc, "status", currStatus));
+            root.appendChild(TransformerAndDocumentFactory.createElement(doc, "playerType", playerType));
+            clientHandler.send(TransformerAndDocumentFactory.transformToString(doc));
         }
 
     }
@@ -772,14 +751,8 @@ public class PlayerWindowController {
         if (gameRoom != null) {
             Document doc = TransformerAndDocumentFactory.newDocument();
             Element root = createXML(doc, "connectToRoom");
-
-            Element idRoomElement = doc.createElement("idRoom");
-            idRoomElement.appendChild(doc.createTextNode(gameRoom.getIdRoom()));
-            root.appendChild(idRoomElement);
-
-            StringWriter writer = TransformerAndDocumentFactory.transform(doc);
-
-            clientHandler.send(writer.toString());
+            root.appendChild(TransformerAndDocumentFactory.createElement(doc, "idRoom", gameRoom.getIdRoom()));
+            clientHandler.send(TransformerAndDocumentFactory.transformToString(doc));
         }
     }
 
@@ -858,20 +831,11 @@ public class PlayerWindowController {
      */
     private String startGame() {
         int numberOfTiles = Integer.parseInt(filedSizeGroup.getSelectedToggle().getUserData().toString());
-
         Document document = TransformerAndDocumentFactory.newDocument();
-
         Element root = createXML(document, "startGame");
-
-        Element numberOfTilesElement = document.createElement("numberOfTiles");
-        numberOfTilesElement.appendChild(document.createTextNode(Integer.toString(numberOfTiles)));
-        root.appendChild(numberOfTilesElement);
-
+        root.appendChild(TransformerAndDocumentFactory.createElement(document, "numberOfTiles", Integer.toString(numberOfTiles)));
         startGame.disableProperty().set(true);
-
-        StringWriter stringWriter = TransformerAndDocumentFactory.transform(document);
-
-        return stringWriter.toString();
+        return TransformerAndDocumentFactory.transformToString(document);
     }
 
     /**
@@ -885,29 +849,12 @@ public class PlayerWindowController {
      */
     public String sendCoordinatesToServer(double x, double y, String color) {
         Document document = TransformerAndDocumentFactory.newDocument();
-
         Element root = createXML(document, "playerMove");
-
-        Element xCoordinate = document.createElement("xCoordinate");
-        xCoordinate.appendChild(document.createTextNode(Double.toString(x)));
-        root.appendChild(xCoordinate);
-
-        Element yCoordinate = document.createElement("yCoordinate");
-        yCoordinate.appendChild(document.createTextNode(Double.toString(y)));
-        root.appendChild(yCoordinate);
-
-        Element playerColor = document.createElement("playerColor");
-        playerColor.appendChild(document.createTextNode(color));
-        root.appendChild(playerColor);
-
-        Element userName = document.createElement("userName");
-        userName.appendChild(document.createTextNode(currentPlayer.getUserName()));
-        root.appendChild(userName);
-
-
-        StringWriter stringWriter = TransformerAndDocumentFactory.transform(document);
-
-        return stringWriter.toString();
+        root.appendChild(TransformerAndDocumentFactory.createElement(document, "xCoordinate", Double.toString(x)));
+        root.appendChild(TransformerAndDocumentFactory.createElement(document, "yCoordinate", Double.toString(y)));
+        root.appendChild(TransformerAndDocumentFactory.createElement(document, "playerColor", color));
+        root.appendChild(TransformerAndDocumentFactory.createElement(document, "userName", currentPlayer.getUserName()));
+        return TransformerAndDocumentFactory.transformToString(document);
     }
 
     /**
@@ -934,26 +881,16 @@ public class PlayerWindowController {
         startTimer();
         gamePane.setDisable(true);
         passButton.setDisable(true);
-
         String name = currentPlayer.getUserName();
         if (name.equals(currentGameRoom.getHost())) {
             Platform.runLater(() -> playerProgressName.setText(currentGameRoom.getPlayer()));
         } else {
             Platform.runLater(() -> playerProgressName.setText(currentGameRoom.getHost()));
         }
-
         Document document = TransformerAndDocumentFactory.newDocument();
-
         Element root = createXML(document, "playerPassed");
-
-        Element userName = document.createElement("userName");
-        userName.appendChild(document.createTextNode(currentPlayer.getUserName()));
-        root.appendChild(userName);
-
-
-        StringWriter stringWriter = TransformerAndDocumentFactory.transform(document);
-
-        clientHandler.send(stringWriter.toString());
+        root.appendChild(TransformerAndDocumentFactory.createElement(document, "userName", currentPlayer.getUserName()));
+        clientHandler.send(TransformerAndDocumentFactory.transformToString(document));
     }
 
     /**
@@ -963,20 +900,10 @@ public class PlayerWindowController {
     public void changeFieldSize(MouseEvent mouseEvent) {
         RadioButton radioButton = (RadioButton) mouseEvent.getSource();
         Document document = TransformerAndDocumentFactory.newDocument();
-
         Element root = createXML(document, "changeFieldSize");
-
-        Element radioButtonId = document.createElement("buttonId");
-        radioButtonId.appendChild(document.createTextNode(radioButton.getId()));
-        root.appendChild(radioButtonId);
-
-        Element fieldSize = document.createElement("fieldSize");
-        fieldSize.appendChild(document.createTextNode(radioButton.getUserData().toString()));
-        root.appendChild(fieldSize);
-
-        StringWriter stringWriter = TransformerAndDocumentFactory.transform(document);
-
-        clientHandler.send(stringWriter.toString());
+        root.appendChild(TransformerAndDocumentFactory.createElement(document, "buttonId", radioButton.getId()));
+        root.appendChild(TransformerAndDocumentFactory.createElement(document, "fieldSize", radioButton.getUserData().toString()));
+        clientHandler.send(TransformerAndDocumentFactory.transformToString(document));
     }
 
     /**
@@ -989,14 +916,8 @@ public class PlayerWindowController {
         if (player != null) {
             Document document = TransformerAndDocumentFactory.newDocument();
             Element root = createXML(document, "banUser");
-
-            Element userName = document.createElement("userName");
-            userName.appendChild(document.createTextNode(player.getUserName()));
-            root.appendChild(userName);
-
-            StringWriter writer = TransformerAndDocumentFactory.transform(document);
-
-            clientHandler.send(writer.toString());
+            root.appendChild(TransformerAndDocumentFactory.createElement(document, "userName", player.getUserName()));
+            clientHandler.send(TransformerAndDocumentFactory.transformToString(document));
         }
     }
 
@@ -1011,11 +932,7 @@ public class PlayerWindowController {
     public static Element createXML(Document document, String metaInfo) {
         Element root = document.createElement("body");
         document.appendChild(root);
-
-        Element meta = document.createElement("meta-info");
-        meta.appendChild(document.createTextNode(metaInfo));
-        root.appendChild(meta);
-
+        root.appendChild(TransformerAndDocumentFactory.createElement(document, "meta-info", metaInfo));
         return root;
     }
 

@@ -37,7 +37,6 @@ public class ClientHandler extends Thread {
         this.guiController = guiController;
     }
 
-
     /**
      * reads info from server and send this info to
      * player window controller

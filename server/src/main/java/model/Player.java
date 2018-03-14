@@ -25,7 +25,7 @@ public class Player {
     public Player() {
     }
 
-    Player(String userPassword, String userName) {
+    public Player(String userPassword, String userName) {
         this.userName = userName;
         this.userPassword = userPassword;
         userGameCount = "0";
