@@ -2,10 +2,12 @@ package controller;
 
 import model.GameRoom;
 import model.Player;
+import model.TransformerXML;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -28,7 +30,6 @@ import java.util.HashSet;
 public class Server {
     private static final Logger LOGGER = Logger.getLogger(Server.class);
     private static final int PORT = 3000;
-    private static DocumentBuilder docBuilder;
     public static HashMap<String, Player> userList;
     public static HashSet<PrintWriter> writers;
     public static HashMap<String, Player> userOnline;
@@ -47,15 +48,11 @@ public class Server {
      * Start server
      */
     private static void runServer() {
+        TransformerXML.createTransformer();
         isRunning = true;
         writers = new HashSet<>();
         userOnline = new HashMap<>();
         gameRooms = new HashMap<>();
-        try {
-            docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            LOGGER.error(e);
-        }
         uploadUserList();
         try {
             server = new ServerSocket(PORT);
@@ -146,6 +143,7 @@ public class Server {
      * Upload user list from dir 'users'
      */
     private static void uploadUserList() {
+        boolean isXMLBroken = false;
         File folder = new File("users/");
         folder.mkdir();
         File[] userFileLists = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".xml"));
@@ -158,18 +156,18 @@ public class Server {
             documentBuilder = documentBuilderFactory.newDocumentBuilder();
             documentBuilder.setErrorHandler(new ErrorHandler() {
                 @Override
-                public void error(SAXParseException exception) {
-                    // do something more useful in each of these handlers
-                    exception.printStackTrace();
-                }
-                @Override
-                public void fatalError(SAXParseException exception) {
-                    exception.printStackTrace();
+                public void error(SAXParseException ex) {
+                    LOGGER.error("SAXParseException:error", ex);
                 }
 
                 @Override
-                public void warning(SAXParseException exception) {
-                    exception.printStackTrace();
+                public void fatalError(SAXParseException ex) {
+                    LOGGER.error("SAXParseException:fatalError", ex);
+                }
+
+                @Override
+                public void warning(SAXParseException ex) {
+                    LOGGER.error("SAXParseException:warning", ex);
                 }
             });
             for (File userFile : userFileLists) {
@@ -177,20 +175,39 @@ public class Server {
                 Node user = doc.getElementsByTagName("body").item(0);
                 Element userElement = (Element) user;
                 Player player = new Player();
-                player.setUserName(userElement.getElementsByTagName("login").item(0).getTextContent());
-                player.setUserPassword(userElement.getElementsByTagName("password").item(0).getTextContent());
-                player.setUserGameCount(userElement.getElementsByTagName("gameCount").item(0).getTextContent());
-                player.setUserPercentWins(userElement.getElementsByTagName("percentWins").item(0).getTextContent());
-                player.setUserRating(userElement.getElementsByTagName("rating").item(0).getTextContent());
-                player.setUserWinGames(userElement.getElementsByTagName("winGames").item(0).getTextContent());
-                if (Boolean.parseBoolean(userElement.getElementsByTagName("admin").item(0).getTextContent())) {
-                    player.setAdmin(true);
+                String login = getTextValue(userElement, "login");
+                String password = getTextValue(userElement, "password");
+                String gameCount = getTextValue(userElement, "gameCount");
+                String percentWins = getTextValue(userElement, "percentWins");
+                String rating = getTextValue(userElement, "rating");
+                String winGames = getTextValue(userElement, "winGames");
+                String admin = getTextValue(userElement, "admin");
+                String banned = getTextValue(userElement, "banned");
+                String[] elements = new String[]{login, password, gameCount, percentWins, rating, winGames, admin, banned};
+                for (String temp : elements) {
+                    if (temp != null) {
+                        if (temp.isEmpty()) {
+                            isXMLBroken = true;
+                        }
+                    } else {
+                        isXMLBroken = true;
+                    }
                 }
-                if (Boolean.parseBoolean(userElement.getElementsByTagName("banned").item(0).getTextContent())) {
+                if (isXMLBroken) {
+                    System.out.println(isXMLBroken);
+                    continue;
+                }
+                player.setUserName(login);
+                player.setUserGameCount(gameCount);
+                player.setUserPassword(password);
+                player.setUserPercentWins(percentWins);
+                player.setUserRating(rating);
+                player.setUserWinGames(winGames);
+                player.setAdmin(Boolean.parseBoolean(admin));
+                if (Boolean.parseBoolean(banned)) {
                     banList.add(player.getUserName());
                 }
                 userList.put(player.getUserName(), player);
-
             }
         } catch (ParserConfigurationException e) {
             LOGGER.error("ParserConfigurationException", e);
@@ -199,7 +216,22 @@ public class Server {
         } catch (IOException e) {
             LOGGER.error("IOException", e);
         }
+    }
 
-
+    /**
+     * Gets text value from xml element with tag name
+     *
+     * @param doc the xml
+     * @param tag name
+     * @return string value
+     */
+    private static String getTextValue(Element doc, String tag) {
+        String value = null;
+        NodeList nl;
+        nl = doc.getElementsByTagName(tag);
+        if (nl.getLength() > 0 && nl.item(0).hasChildNodes()) {
+            value = nl.item(0).getFirstChild().getNodeValue();
+        }
+        return value;
     }
 }

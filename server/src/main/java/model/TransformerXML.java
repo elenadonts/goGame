@@ -19,14 +19,13 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 public class TransformerXML {
-    private static final Logger LOGGER = Logger.getLogger(TransformerXML.class);
+    private static final Logger LOGGER = Logger.getLogger(Transformer.class);
     private static TransformerFactory transformerFactory = TransformerFactory.newInstance();
     private static Transformer transformer;
     private static DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
     private static DocumentBuilder documentBuilder;
 
     private TransformerXML() {
-
     }
 
     /**

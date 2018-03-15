@@ -50,12 +50,11 @@ public class XMLGenerator {
      */
     public void readInput(String input) {
         try {
-            Document document = TransformerXML.getDocumentBuilder().parse(new InputSource(new StringReader(input)));
-            Node user = document.getElementsByTagName("body").item(0);
+            Document doc = TransformerXML.getDocumentBuilder().parse(new InputSource(new StringReader(input)));
+            Node user = doc.getElementsByTagName("body").item(0);
 
-            document = TransformerXML.newDocument();
+            Document document = TransformerXML.newDocument();
             document = createXML((Element) user, document);
-
 
             if (!document.getElementsByTagName("meta-info").item(0).getTextContent().equals("")) {
                 writer.println(TransformerXML.transformToString(document));
@@ -460,7 +459,6 @@ public class XMLGenerator {
             root.appendChild(TransformerXML.createElement(doc, "winGames", "0"));
             root.appendChild(TransformerXML.createElement(doc, "admin", "false"));
             root.appendChild(TransformerXML.createElement(doc, "banned", "false"));
-
             transformer.transform(new DOMSource(doc), new StreamResult(file));
         } catch (TransformerException e) {
             LOGGER.error(e);

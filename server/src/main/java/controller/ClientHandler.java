@@ -1,6 +1,5 @@
 package controller;
 
-import model.TransformerXML;
 import model.XMLGenerator;
 import org.apache.log4j.Logger;
 
@@ -25,7 +24,6 @@ public class ClientHandler extends Thread {
     ClientHandler(Socket client) {
         xmlGenerator = new XMLGenerator();
         this.clientSocket = client;
-        TransformerXML.createTransformer();
         this.setDaemon(true);
     }
 
