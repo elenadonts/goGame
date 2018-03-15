@@ -186,11 +186,12 @@ public class PlayerWindowController {
      * @param input xml form server in string format
      */
     public void readXML(String input) {
+        String metaInfo = "";
         try {
             Document document = TransformerAndDocumentFactory.getDocumentBuilder().parse(new InputSource(new StringReader(input)));
 
             Node user = document.getElementsByTagName("body").item(0);
-            String metaInfo = ((Element) user).getElementsByTagName("meta-info").item(0).getTextContent();
+            metaInfo = ((Element) user).getElementsByTagName("meta-info").item(0).getTextContent();
             Player player;
             GameRoom gameRoom;
             switch (metaInfo) {
@@ -467,7 +468,7 @@ public class PlayerWindowController {
                     break;
             }
         } catch (SAXException | IOException e) {
-            LOGGER.error("Exception", e);
+            LOGGER.error("Exception parsing metaInfo" + metaInfo, e);
         }
     }
 
@@ -664,7 +665,7 @@ public class PlayerWindowController {
             CreateRoomController.setPlayerWindowController(this);
             createRoomStage.show();
         } catch (IOException e) {
-            LOGGER.error(e);
+            LOGGER.error("Exception opening file", e);
         }
     }
 

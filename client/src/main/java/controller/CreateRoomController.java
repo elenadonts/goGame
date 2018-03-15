@@ -6,6 +6,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import model.ClientHandler;
 import model.TransformerAndDocumentFactory;
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -24,6 +25,7 @@ public class CreateRoomController {
     private static ClientHandler clientHandler;
     private static Stage currentStage;
     private static PlayerWindowController playerWindowController;
+    private static final Logger LOGGER = Logger.getLogger(CreateRoomController.class);
 
     /**
      * Take info from created room form and send info to server
@@ -41,6 +43,7 @@ public class CreateRoomController {
             clientHandler.send(TransformerAndDocumentFactory.transformToString(document));
             currentStage.close();
         }
+        LOGGER.info("Creating a room");
     }
 
     /**
