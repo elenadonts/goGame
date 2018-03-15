@@ -1,13 +1,14 @@
 package controller;
 
-import model.ClientHandler;
 import model.GameRoom;
 import model.Player;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -145,14 +146,34 @@ public class Server {
      * Upload user list from dir 'users'
      */
     private static void uploadUserList() {
-        userList = new HashMap<>();
-        banList = new HashSet<>();
         File folder = new File("users/");
         folder.mkdir();
         File[] userFileLists = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".xml"));
-        for (File userFile : userFileLists) {
-            try {
-                Document doc = docBuilder.parse(userFile);
+        userList = new HashMap<>();
+        banList = new HashSet<>();
+        DocumentBuilder documentBuilder;
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        try {
+            documentBuilderFactory.setValidating(true);
+            documentBuilder = documentBuilderFactory.newDocumentBuilder();
+            documentBuilder.setErrorHandler(new ErrorHandler() {
+                @Override
+                public void error(SAXParseException exception) {
+                    // do something more useful in each of these handlers
+                    exception.printStackTrace();
+                }
+                @Override
+                public void fatalError(SAXParseException exception) {
+                    exception.printStackTrace();
+                }
+
+                @Override
+                public void warning(SAXParseException exception) {
+                    exception.printStackTrace();
+                }
+            });
+            for (File userFile : userFileLists) {
+                Document doc = documentBuilder.parse(userFile);
                 Node user = doc.getElementsByTagName("body").item(0);
                 Element userElement = (Element) user;
                 Player player = new Player();
@@ -169,9 +190,16 @@ public class Server {
                     banList.add(player.getUserName());
                 }
                 userList.put(player.getUserName(), player);
-            } catch (SAXException | IOException e) {
-                LOGGER.error("Exception", e);
+
             }
+        } catch (ParserConfigurationException e) {
+            LOGGER.error("ParserConfigurationException", e);
+        } catch (SAXException e) {
+            LOGGER.error("SAXException", e);
+        } catch (IOException e) {
+            LOGGER.error("IOException", e);
         }
+
+
     }
 }

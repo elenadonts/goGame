@@ -2,158 +2,138 @@ package model;
 
 import controller.Server;
 import org.apache.log4j.Logger;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
-import java.net.Socket;
-import java.net.SocketException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Handler class for create new thread when user connect
- * on server part
+ * Class that read xml from player
+ * and create xml answer
  *
  * @author Eugene Lobin
  * @version 1.0 09 Mar 2018
  */
-public class ClientHandler extends Thread {
-    private static final Logger LOGGER = Logger.getLogger(ClientHandler.class);
-    private BufferedReader reader;
-    private PrintWriter writer;
-    private Socket clientSocket;
-    private DocumentBuilder builder;
+public class XMLGenerator {
+    private static final Logger LOGGER = Logger.getLogger(XMLGenerator.class);
     private Player currentPlayer;
     private GameRoom currentRoom;
+    private PrintWriter writer;
 
-    public ClientHandler(Socket client) {
-        this.clientSocket = client;
-        TransformerXML.createTransformer();
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            builder = factory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            LOGGER.error("ParserConfigurationException", e);
-        }
-        this.setDaemon(true);
+    /**
+     * Sets print writer
+     *
+     * @param writer the new info
+     */
+    public void setWriter(PrintWriter writer) {
+        this.writer = writer;
     }
 
     /**
-     * Starts when user connecting to server.
-     * Reads xml from user and send in main method
-     * createXML()
+     * Reads xml from user and create answer
+     *
+     * @param input xml for read
      */
-    @Override
-    public void run() {
-        LOGGER.info("User: " + clientSocket.getInetAddress().toString().replace("/", "") + " connected;");
-        String input;
+    public void readInput(String input) {
         try {
-            writer = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream()), true);
-            reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            while ((input = reader.readLine()) != null) {
+            Document document = TransformerXML.getDocumentBuilder().parse(new InputSource(new StringReader(input)));
+            Node user = document.getElementsByTagName("body").item(0);
 
-                Document document = builder.parse(new InputSource(new StringReader(input)));
-                Node user = document.getElementsByTagName("body").item(0);
+            document = TransformerXML.newDocument();
+            document = createXML((Element) user, document);
 
-                document = builder.newDocument();
-                document = createXML((Element) user, document);
 
-                StringWriter stringWriter = TransformerXML.transform(document);
+            if (!document.getElementsByTagName("meta-info").item(0).getTextContent().equals("")) {
+                writer.println(TransformerXML.transformToString(document));
+            }
 
-                if (!document.getElementsByTagName("meta-info").item(0).getTextContent().equals("")) {
-                    writer.println(stringWriter.toString());
+            if (document.getElementsByTagName("meta-info").item(0).getTextContent().equals("connect")) {
+                Server.writers.add(writer);
+                for (PrintWriter writer : Server.writers) {
+                    for (Map.Entry<String, Player> entry : Server.userOnline.entrySet()) {
+                        if (!writer.equals(this.writer)) {
+                            writer.println(createXMLForUserList("online", entry.getValue()));
+                        } else if (!entry.getValue().getUserName().equals(currentPlayer.getUserName())) {
+                            writer.println(createXMLForUserList("online", entry.getValue()));
+                        }
+                    }
+                    for (Map.Entry<String, GameRoom> entry : Server.gameRooms.entrySet()) {
+                        writer.println(createXMLForRoomList("newGameRoom", entry.getValue()));
+                    }
                 }
-
-                if (document.getElementsByTagName("meta-info").item(0).getTextContent().equals("connect")) {
-                    Server.writers.add(writer);
-                    for (PrintWriter writer : Server.writers) {
-                        for (Map.Entry<String, Player> entry : Server.userOnline.entrySet()) {
-                            if (!writer.equals(this.writer)) {
-                                writer.println(createXMLForUserList("online", entry.getValue()));
-                            } else if (!entry.getValue().getUserName().equals(currentPlayer.getUserName())) {
-                                writer.println(createXMLForUserList("online", entry.getValue()));
-                            }
-                        }
-                        for (Map.Entry<String, GameRoom> entry : Server.gameRooms.entrySet()) {
-                            writer.println(createXMLForRoomList("newGameRoom", entry.getValue()));
-                        }
-                    }
-                } else if (document.getElementsByTagName("meta-info").item(0).getTextContent().equals("roomCreated")) {
-                    for (PrintWriter writer : Server.writers) {
-                        writer.println(createXMLForRoomList("newGameRoom", currentRoom));
-                    }
+            } else if (document.getElementsByTagName("meta-info").item(0).getTextContent().equals("roomCreated")) {
+                for (PrintWriter writer : Server.writers) {
+                    writer.println(createXMLForRoomList("newGameRoom", currentRoom));
                 }
             }
-        } catch (SocketException e) {
-            LOGGER.info("User disconnected");
-        } catch (IOException | SAXException e) {
+        } catch (SAXException | IOException e) {
             LOGGER.error(e);
-        } finally {
-            Server.writers.remove(writer);
-            if (playerAlreadyLoggedIn()) {
-                Server.userOnline.remove(currentPlayer.getUserName());
-            }
-            if (currentRoom != null && currentRoom.getGameStatus().equals("in game") && clientSocket.isConnected()) {
-                if (currentRoom.getPlayerHost().getUserName().equals(currentPlayer.getUserName())) {
-                    int white = 10;
-                    int black = 0;
-                    changerXMLAfterGameEnd(white, black);
-                    currentRoom.getPrintWriter().println(createXMLGameOver(white, black,
-                            currentRoom.getPlayer().getUserName()));
-                    for (PrintWriter writer : Server.writers) {
-                        if (currentRoom != null) {
-                            writer.println(createXMLForRoomList("closeRoom", currentRoom));
-                        }
-                        writer.println(createXMLForUserList("offline", currentPlayer));
-                    }
-                    Server.gameRooms.remove(Integer.toString(currentRoom.getRoomId()));
-                } else {
-                    int white = 0;
-                    int black = 10;
-                    changerXMLAfterGameEnd(white, black);
-                    currentRoom.getPrintWriterHost().println(createXMLGameOver(white, black,
-                            currentRoom.getPlayerHost().getUserName()));
-                    for (PrintWriter writer : Server.writers) {
-                        writer.println(createXMLForUserList("offline", currentPlayer));
-                    }
+        }
+    }
+
+    /**
+     * Action when player exit from game
+     */
+    public void checkAfterPlayerExit() {
+        Server.writers.remove(writer);
+        if (playerAlreadyLoggedIn()) {
+            Server.userOnline.remove(currentPlayer.getUserName());
+        }
+        if (currentRoom != null && currentRoom.getGameStatus().equals("in game")) {
+            if (currentRoom.getPlayerHost().getUserName().equals(currentPlayer.getUserName())) {
+                int white = 10;
+                int black = 0;
+                changerXMLAfterGameEnd(white, black);
+                currentRoom.getPrintWriter().println(createXMLGameOver(white, black,
+                        currentRoom.getPlayer().getUserName()));
+                for (PrintWriter writer : Server.writers) {
+                    writer.println(createXMLForRoomList("closeRoom", currentRoom));
+                    writer.println(createXMLForUserList("offline", currentPlayer));
                 }
-            } else if (currentRoom != null && currentRoom.getPlayerHost() == currentPlayer) {
                 Server.gameRooms.remove(Integer.toString(currentRoom.getRoomId()));
-                for (PrintWriter writer : Server.writers) {
-                    if (currentRoom != null) {
-                        writer.println(createXMLForRoomList("closeRoom", currentRoom));
-                    }
-                    writer.println(createXMLForUserList("offline", currentPlayer));
-                }
-                if (currentRoom.getRoomOnline() == 2) {
-                    currentRoom.getPrintWriter().println(createXMLWithMeta("hostCloseRoom"));
-                }
             } else {
+                int white = 0;
+                int black = 10;
+                changerXMLAfterGameEnd(white, black);
+                currentRoom.getPrintWriterHost().println(createXMLGameOver(white, black,
+                        currentRoom.getPlayerHost().getUserName()));
                 for (PrintWriter writer : Server.writers) {
                     writer.println(createXMLForUserList("offline", currentPlayer));
                 }
             }
-            try {
-                writer.close();
-                reader.close();
-                if (clientSocket != null) {
-                    clientSocket.close();
-                }
-            } catch (IOException e) {
-                LOGGER.error("IOException", e);
+        } else if (currentRoom != null && currentRoom.getPlayerHost() == currentPlayer) {
+            Server.gameRooms.remove(Integer.toString(currentRoom.getRoomId()));
+            for (PrintWriter writer : Server.writers) {
+                writer.println(createXMLForRoomList("closeRoom", currentRoom));
+                writer.println(createXMLForUserList("offline", currentPlayer));
+            }
+            if (currentRoom.getRoomOnline() == 2) {
+                currentRoom.getPrintWriter().println(createXMLWithMeta("hostCloseRoom"));
+            }
+        } else {
+            for (PrintWriter writer : Server.writers) {
+                writer.println(createXMLForUserList("offline", currentPlayer));
             }
         }
     }
 
+    /**
+     * Check player on logged in
+     */
     private boolean playerAlreadyLoggedIn() {
         return currentPlayer != null;
     }
@@ -166,7 +146,7 @@ public class ClientHandler extends Thread {
      * @param outputDocument document with xml for client
      * @return document with rules
      */
-    private Document createXML(Element inputElement, Document outputDocument) throws IOException, SAXException {
+    private Document createXML(Element inputElement, Document outputDocument) {
         Element root = outputDocument.createElement("body");
         outputDocument.appendChild(root);
 
@@ -184,9 +164,7 @@ public class ClientHandler extends Thread {
 
                 if (newMeta.equals("connect")) {
                     root = createUserXML(outputDocument, currentPlayer, root);
-                    Element admin = outputDocument.createElement("admin");
-                    admin.appendChild(outputDocument.createTextNode(Boolean.toString(currentPlayer.isAdmin())));
-                    root.appendChild(admin);
+                    root.appendChild(TransformerXML.createElement(outputDocument, "admin", Boolean.toString(currentPlayer.isAdmin())));
                 }
                 break;
             case "createRoom":
@@ -197,13 +175,8 @@ public class ClientHandler extends Thread {
                 Server.gameRooms.put(Integer.toString(currentRoom.getRoomId()), currentRoom);
                 metaElement.appendChild(outputDocument.createTextNode("roomCreated"));
 
-                Element roomIdElement = outputDocument.createElement("roomId");
-                roomIdElement.appendChild(outputDocument.createTextNode(Integer.toString(currentRoom.getRoomId())));
-                root.appendChild(roomIdElement);
-
-                Element roomDescriptionElement = outputDocument.createElement("roomDescription");
-                roomDescriptionElement.appendChild(outputDocument.createTextNode(roomDescription));
-                root.appendChild(roomDescriptionElement);
+                root.appendChild(TransformerXML.createElement(outputDocument, "roomId", Integer.toString(currentRoom.getRoomId())));
+                root.appendChild(TransformerXML.createElement(outputDocument, "roomDescription", roomDescription));
                 break;
             case "closeRoom":
                 String idRoom = inputElement.getElementsByTagName("roomId").item(0).getTextContent();
@@ -241,10 +214,7 @@ public class ClientHandler extends Thread {
                 String id = inputElement.getElementsByTagName("idRoom").item(0).getTextContent();
                 if (Server.gameRooms.get(id).getRoomOnline() != 2) {
                     metaElement.appendChild(outputDocument.createTextNode("connectionAllowed"));
-
-                    Element fieldSizeId = outputDocument.createElement("fieldSizeId");
-                    fieldSizeId.appendChild(outputDocument.createTextNode(Server.gameRooms.get(id).getFieldSizeId()));
-                    root.appendChild(fieldSizeId);
+                    root.appendChild(TransformerXML.createElement(outputDocument, "fieldSizeId", Server.gameRooms.get(id).getFieldSizeId()));
 
                     createConnectAcceptXML(outputDocument, root, Server.gameRooms.get(id));
 
@@ -379,10 +349,9 @@ public class ClientHandler extends Thread {
                     Player banUser = Server.userOnline.get(banUserName);
 
                     File file = new File("users" + File.separator + banUserName + ".xml");
-                    Document document = builder.parse(file);
+                    Document document = TransformerXML.parseFile(file);
 
                     document.getElementsByTagName("banned").item(0).setTextContent("true");
-
 
                     TransformerXML.transformToFile(document, file);
                     Server.banList.add(banUserName);
@@ -407,24 +376,12 @@ public class ClientHandler extends Thread {
      * @param root     element for document
      */
     private Element createUserXML(Document document, Player player, Element root) {
-        Element userName = document.createElement("userName");
-        userName.appendChild(document.createTextNode(player.getUserName()));
-        root.appendChild(userName);
-
-        Element userGameCount = document.createElement("userGameCount");
-        userGameCount.appendChild(document.createTextNode(player.getUserGameCount()));
-        root.appendChild(userGameCount);
-
-        Element userPercentWins = document.createElement("userPercentWins");
-        userPercentWins.appendChild(document.createTextNode(player.getUserPercentWins()));
-        root.appendChild(userPercentWins);
-
-        Element userRating = document.createElement("userRating");
-        userRating.appendChild(document.createTextNode(player.getUserRating()));
-        root.appendChild(userRating);
+        root.appendChild(TransformerXML.createElement(document, "userName", player.getUserName()));
+        root.appendChild(TransformerXML.createElement(document, "userGameCount", player.getUserGameCount()));
+        root.appendChild(TransformerXML.createElement(document, "userPercentWins", player.getUserPercentWins()));
+        root.appendChild(TransformerXML.createElement(document, "userRating", player.getUserRating()));
         return root;
     }
-
 
     /**
      * Tests info from client, and
@@ -438,7 +395,7 @@ public class ClientHandler extends Thread {
         String action = "connect";
         Pattern pattern = Pattern.compile("\\w{4,}");
         Matcher matcher = pattern.matcher(login);
-        if (!matcher.matches()){
+        if (!matcher.matches()) {
             return "incorrectCharInLogin";
         }
         if (!Server.userList.containsKey(login)) {
@@ -481,45 +438,33 @@ public class ClientHandler extends Thread {
         Server.userList.put(login, newPlayer);
 
         File file = new File("users" + File.separator + login + ".xml");
-        Document doc = builder.newDocument();
+        Document doc = TransformerXML.newDocument();
+        DOMImplementation domImpl = doc.getImplementation();
+        URL schemaURL = XMLGenerator.class.getClassLoader().getResource("schema.dtd");
+        DocumentType docType = domImpl.createDocumentType("doctype",
+                "body",
+                schemaURL.toString());
+        Transformer transformer;
+        try {
+            transformer = TransformerXML.getTransformerFactory().newTransformer();
+            transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, docType.getPublicId());
+            transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, docType.getSystemId());
+            Element root = doc.createElement("body");
+            doc.appendChild(root);
 
-        Element root = doc.createElement("body");
-        doc.appendChild(root);
+            root.appendChild(TransformerXML.createElement(doc, "login", login));
+            root.appendChild(TransformerXML.createElement(doc, "password", password));
+            root.appendChild(TransformerXML.createElement(doc, "gameCount", "0"));
+            root.appendChild(TransformerXML.createElement(doc, "rating", "100"));
+            root.appendChild(TransformerXML.createElement(doc, "percentWins", "0"));
+            root.appendChild(TransformerXML.createElement(doc, "winGames", "0"));
+            root.appendChild(TransformerXML.createElement(doc, "admin", "false"));
+            root.appendChild(TransformerXML.createElement(doc, "banned", "false"));
 
-        Element log = doc.createElement("login");
-        log.appendChild(doc.createTextNode(login));
-        root.appendChild(log);
-
-        Element pass = doc.createElement("password");
-        pass.appendChild(doc.createTextNode(password));
-        root.appendChild(pass);
-
-        Element gameCount = doc.createElement("gameCount");
-        gameCount.appendChild(doc.createTextNode("0"));
-        root.appendChild(gameCount);
-
-        Element rating = doc.createElement("rating");
-        rating.appendChild(doc.createTextNode("100"));
-        root.appendChild(rating);
-
-        Element percentWins = doc.createElement("percentWins");
-        percentWins.appendChild(doc.createTextNode("0"));
-        root.appendChild(percentWins);
-
-        Element winGames = doc.createElement("winGames");
-        winGames.appendChild(doc.createTextNode("0"));
-        root.appendChild(winGames);
-
-        Element admin = doc.createElement("admin");
-        admin.appendChild(doc.createTextNode("false"));
-        root.appendChild(admin);
-
-        Element banned = doc.createElement("banned");
-        banned.appendChild(doc.createTextNode("false"));
-        root.appendChild(banned);
-
-        TransformerXML.transformToFile(doc, file);
-
+            transformer.transform(new DOMSource(doc), new StreamResult(file));
+        } catch (TransformerException e) {
+            LOGGER.error(e);
+        }
         return newPlayer;
     }
 
@@ -533,21 +478,14 @@ public class ClientHandler extends Thread {
      * @return xml in string format
      */
     private String createXMLForUserList(String action, Player player) {
-        Document document = builder.newDocument();
-
+        Document document = TransformerXML.newDocument();
         Element root = createXML(document, action);
-
         if (action.equals("online")) {
             root = createUserXML(document, player, root);
         } else if (action.equals("offline")) {
-            Element userName = document.createElement("userName");
-            userName.appendChild(document.createTextNode(player.getUserName()));
-            root.appendChild(userName);
+            root.appendChild(TransformerXML.createElement(document, "userName", player.getUserName()));
         }
-
-        StringWriter stringWriter = TransformerXML.transform(document);
-
-        return stringWriter.toString();
+        return TransformerXML.transformToString(document);
     }
 
     /**
@@ -560,33 +498,14 @@ public class ClientHandler extends Thread {
      * @return xml in string format
      */
     private String createXMLForRoomList(String action, GameRoom room) {
-        Document document = builder.newDocument();
-
+        Document document = TransformerXML.newDocument();
         Element root = createXML(document, action);
-
-        Element roomHost = document.createElement("roomHost");
-        roomHost.appendChild(document.createTextNode(room.getPlayerHost().getUserName()));
-        root.appendChild(roomHost);
-
-        Element roomDescription = document.createElement("roomDescription");
-        roomDescription.appendChild(document.createTextNode(room.getRoomDescription()));
-        root.appendChild(roomDescription);
-
-        Element roomId = document.createElement("roomId");
-        roomId.appendChild(document.createTextNode(Integer.toString(room.getRoomId())));
-        root.appendChild(roomId);
-
-        Element roomOnline = document.createElement("roomOnline");
-        roomOnline.appendChild(document.createTextNode(Integer.toString(room.getRoomOnline())));
-        root.appendChild(roomOnline);
-
-        Element gameStatus = document.createElement("gameStatus");
-        gameStatus.appendChild(document.createTextNode(room.getGameStatus()));
-        root.appendChild(gameStatus);
-
-        StringWriter stringWriter = TransformerXML.transform(document);
-
-        return stringWriter.toString();
+        root.appendChild(TransformerXML.createElement(document, "roomHost", room.getPlayerHost().getUserName()));
+        root.appendChild(TransformerXML.createElement(document, "roomDescription", room.getRoomDescription()));
+        root.appendChild(TransformerXML.createElement(document, "roomId", Integer.toString(room.getRoomId())));
+        root.appendChild(TransformerXML.createElement(document, "roomOnline", Integer.toString(room.getRoomOnline())));
+        root.appendChild(TransformerXML.createElement(document, "gameStatus", room.getGameStatus()));
+        return TransformerXML.transformToString(document);
     }
 
     /**
@@ -599,20 +518,11 @@ public class ClientHandler extends Thread {
      * @return xml in string format
      */
     private String createXMLChangeStatus(String status, String playerType) {
-        Document document = builder.newDocument();
-
+        Document document = TransformerXML.newDocument();
         Element root = createXML(document, "changeStatus");
-
-        Element statusElement = document.createElement("status");
-        statusElement.appendChild(document.createTextNode(status));
-        root.appendChild(statusElement);
-
-        Element playerTypeElement = document.createElement("playerType");
-        playerTypeElement.appendChild(document.createTextNode(playerType));
-        root.appendChild(playerTypeElement);
-
-        StringWriter stringWriter = TransformerXML.transform(document);
-        return stringWriter.toString();
+        root.appendChild(TransformerXML.createElement(document, "status", status));
+        root.appendChild(TransformerXML.createElement(document, "playerType", playerType));
+        return TransformerXML.transformToString(document);
     }
 
     /**
@@ -623,21 +533,10 @@ public class ClientHandler extends Thread {
      * @param root     element for document
      */
     private void createConnectAcceptXML(Document document, Element root, GameRoom gameRoom) {
-        Element hostName = document.createElement("hostName");
-        hostName.appendChild(document.createTextNode(gameRoom.getPlayerHost().getUserName()));
-        root.appendChild(hostName);
-
-        Element hostStatus = document.createElement("hostStatus");
-        hostStatus.appendChild(document.createTextNode(gameRoom.getHostStatus()));
-        root.appendChild(hostStatus);
-
-        Element roomDescription = document.createElement("roomDescription");
-        roomDescription.appendChild(document.createTextNode(gameRoom.getRoomDescription()));
-        root.appendChild(roomDescription);
-
-        Element roomId = document.createElement("roomId");
-        roomId.appendChild(document.createTextNode(Integer.toString(gameRoom.getRoomId())));
-        root.appendChild(roomId);
+        root.appendChild(TransformerXML.createElement(document, "hostName", gameRoom.getPlayerHost().getUserName()));
+        root.appendChild(TransformerXML.createElement(document, "hostStatus", gameRoom.getHostStatus()));
+        root.appendChild(TransformerXML.createElement(document, "roomDescription", gameRoom.getRoomDescription()));
+        root.appendChild(TransformerXML.createElement(document, "roomId", Integer.toString(gameRoom.getRoomId())));
     }
 
     /**
@@ -650,16 +549,10 @@ public class ClientHandler extends Thread {
      * @return xml in string format
      */
     private String createXMLForHostAfterPlayerConnect(String playerName) {
-        Document document = builder.newDocument();
-
+        Document document = TransformerXML.newDocument();
         Element root = createXML(document, "playerConnectToRoom");
-
-        Element playerNameElement = document.createElement("playerName");
-        playerNameElement.appendChild(document.createTextNode(playerName));
-        root.appendChild(playerNameElement);
-
-        StringWriter stringWriter = TransformerXML.transform(document);
-        return stringWriter.toString();
+        root.appendChild(TransformerXML.createElement(document, "playerName", playerName));
+        return TransformerXML.transformToString(document);
     }
 
     /**
@@ -670,20 +563,11 @@ public class ClientHandler extends Thread {
      * @return xml in string format
      */
     private String createXMLForChangeOnlineGameRoom(int online, int roomId) {
-        Document document = builder.newDocument();
-
+        Document document = TransformerXML.newDocument();
         Element root = createXML(document, "changeOnline");
-
-        Element playerOnline = document.createElement("playerOnline");
-        playerOnline.appendChild(document.createTextNode(Integer.toString(online)));
-        root.appendChild(playerOnline);
-
-        Element roomIdElement = document.createElement("roomId");
-        roomIdElement.appendChild(document.createTextNode(Integer.toString(roomId)));
-        root.appendChild(roomIdElement);
-
-        StringWriter stringWriter = TransformerXML.transform(document);
-        return stringWriter.toString();
+        root.appendChild(TransformerXML.createElement(document, "playerOnline", Integer.toString(online)));
+        root.appendChild(TransformerXML.createElement(document, "roomId", Integer.toString(roomId)));
+        return TransformerXML.transformToString(document);
     }
 
     /**
@@ -695,20 +579,11 @@ public class ClientHandler extends Thread {
      * @return xml in string format
      */
     private String createXMLForChangeStatusGameRoom(String status, int roomId) {
-        Document document = builder.newDocument();
-
+        Document document = TransformerXML.newDocument();
         Element root = createXML(document, "changeStatusGameRoom");
-
-        Element statusElement = document.createElement("status");
-        statusElement.appendChild(document.createTextNode(status));
-        root.appendChild(statusElement);
-
-        Element roomIdElement = document.createElement("roomId");
-        roomIdElement.appendChild(document.createTextNode(Integer.toString(roomId)));
-        root.appendChild(roomIdElement);
-
-        StringWriter stringWriter = TransformerXML.transform(document);
-        return stringWriter.toString();
+        root.appendChild(TransformerXML.createElement(document, "status", status));
+        root.appendChild(TransformerXML.createElement(document, "roomId", Integer.toString(roomId)));
+        return TransformerXML.transformToString(document);
     }
 
     /**
@@ -719,9 +594,9 @@ public class ClientHandler extends Thread {
      * @return xml in string format
      */
     private String createXMLWithMeta(String meta) {
-        Document document = builder.newDocument();
+        Document document = TransformerXML.newDocument();
         createXML(document, meta);
-        return TransformerXML.transform(document).toString();
+        return TransformerXML.transformToString(document);
     }
 
     /**
@@ -733,20 +608,11 @@ public class ClientHandler extends Thread {
      * @return xml in string format
      */
     private String createGameStartXML(int numberOfTiles, double tileSize) {
-        Document document = builder.newDocument();
-
+        Document document = TransformerXML.newDocument();
         Element root = createXML(document, "startGame");
-
-        Element numberOfTilesElement = document.createElement("numberOfTiles");
-        numberOfTilesElement.appendChild(document.createTextNode(Integer.toString(numberOfTiles)));
-        root.appendChild(numberOfTilesElement);
-
-        Element tileSizeElement = document.createElement("tileSize");
-        tileSizeElement.appendChild(document.createTextNode(Double.toString(tileSize)));
-        root.appendChild(tileSizeElement);
-
-        StringWriter stringWriter = TransformerXML.transform(document);
-        return stringWriter.toString();
+        root.appendChild(TransformerXML.createElement(document, "numberOfTiles", Integer.toString(numberOfTiles)));
+        root.appendChild(TransformerXML.createElement(document, "tileSize", Double.toString(tileSize)));
+        return TransformerXML.transformToString(document);
     }
 
 
@@ -765,36 +631,15 @@ public class ClientHandler extends Thread {
      */
     private String createXMLForSendResultToPlayer(boolean res, double x, double y, String color,
                                                   String userName, String unblockUserName) {
-        Document document = builder.newDocument();
-
+        Document document = TransformerXML.newDocument();
         Element root = createXML(document, "resultMove");
-
-        Element result = document.createElement("result");
-        result.appendChild(document.createTextNode(Boolean.toString(res)));
-        root.appendChild(result);
-
-        Element xCoordinate = document.createElement("xCoordinate");
-        xCoordinate.appendChild(document.createTextNode(Double.toString(x)));
-        root.appendChild(xCoordinate);
-
-        Element yCoordinate = document.createElement("yCoordinate");
-        yCoordinate.appendChild(document.createTextNode(Double.toString(y)));
-        root.appendChild(yCoordinate);
-
-        Element playerColor = document.createElement("playerColor");
-        playerColor.appendChild(document.createTextNode(color));
-        root.appendChild(playerColor);
-
-        Element blockUser = document.createElement("blockUser");
-        blockUser.appendChild(document.createTextNode(userName));
-        root.appendChild(blockUser);
-
-        Element unblockUser = document.createElement("unblockUser");
-        unblockUser.appendChild(document.createTextNode(unblockUserName));
-        root.appendChild(unblockUser);
-
-        StringWriter stringWriter = TransformerXML.transform(document);
-        return stringWriter.toString();
+        root.appendChild(TransformerXML.createElement(document, "result", Boolean.toString(res)));
+        root.appendChild(TransformerXML.createElement(document, "xCoordinate", Double.toString(x)));
+        root.appendChild(TransformerXML.createElement(document, "yCoordinate", Double.toString(y)));
+        root.appendChild(TransformerXML.createElement(document, "playerColor", color));
+        root.appendChild(TransformerXML.createElement(document, "blockUser", userName));
+        root.appendChild(TransformerXML.createElement(document, "unblockUser", unblockUserName));
+        return TransformerXML.transformToString(document);
     }
 
     /**
@@ -806,13 +651,10 @@ public class ClientHandler extends Thread {
      * @return xml in string format
      */
     private String createXMLForRemoveSet(Set<Point> set) {
-        Document document = builder.newDocument();
-
+        Document document = TransformerXML.newDocument();
         Element root = createXML(document, "removePoint");
-
         Element pointSet = document.createElement("pointSet");
         root.appendChild(pointSet);
-
         int id = 1;
         for (Point temp : set) {
             Element coordinate = document.createElement("coordinate");
@@ -821,10 +663,7 @@ public class ClientHandler extends Thread {
             coordinate.setAttribute("yCoordinate", Double.toString(temp.getY()));
             pointSet.appendChild(coordinate);
         }
-
-        StringWriter stringWriter = TransformerXML.transform(document);
-
-        return stringWriter.toString();
+        return TransformerXML.transformToString(document);
     }
 
     /**
@@ -835,16 +674,10 @@ public class ClientHandler extends Thread {
      * @return xml in string format
      */
     private String createXMLChangeFieldSize(String id) {
-        Document document = builder.newDocument();
-
+        Document document = TransformerXML.newDocument();
         Element root = createXML(document, "changeFieldSize");
-
-        Element radioButtonId = document.createElement("radioButtonId");
-        radioButtonId.appendChild(document.createTextNode(id));
-        root.appendChild(radioButtonId);
-
-        StringWriter stringWriter = TransformerXML.transform(document);
-        return stringWriter.toString();
+        root.appendChild(TransformerXML.createElement(document, "radioButtonId", id));
+        return TransformerXML.transformToString(document);
     }
 
     /**
@@ -855,16 +688,10 @@ public class ClientHandler extends Thread {
      * @return xml in string format
      */
     private String createXMLPlayerPass(String userName) {
-        Document document = builder.newDocument();
-
+        Document document = TransformerXML.newDocument();
         Element root = createXML(document, "playerPassed");
-
-        Element userNameElement = document.createElement("userName");
-        userNameElement.appendChild(document.createTextNode(userName));
-        root.appendChild(userNameElement);
-
-        StringWriter stringWriter = TransformerXML.transform(document);
-        return stringWriter.toString();
+        root.appendChild(TransformerXML.createElement(document, "userName", userName));
+        return TransformerXML.transformToString(document);
     }
 
     /**
@@ -877,24 +704,12 @@ public class ClientHandler extends Thread {
      * @return xml in string format
      */
     private String createXMLGameOver(int white, int black, String userName) {
-        Document document = builder.newDocument();
-
+        Document document = TransformerXML.newDocument();
         Element root = createXML(document, "gameOver");
-
-        Element whiteElement = document.createElement("white");
-        whiteElement.appendChild(document.createTextNode(Integer.toString(white)));
-        root.appendChild(whiteElement);
-
-        Element blackElement = document.createElement("black");
-        blackElement.appendChild(document.createTextNode(Integer.toString(black)));
-        root.appendChild(blackElement);
-
-        Element userNameElement = document.createElement("userName");
-        userNameElement.appendChild(document.createTextNode(userName));
-        root.appendChild(userNameElement);
-
-        StringWriter stringWriter = TransformerXML.transform(document);
-        return stringWriter.toString();
+        root.appendChild(TransformerXML.createElement(document, "white", Integer.toString(white)));
+        root.appendChild(TransformerXML.createElement(document, "black", Integer.toString(black)));
+        root.appendChild(TransformerXML.createElement(document, "userName", userName));
+        return TransformerXML.transformToString(document);
     }
 
     /**
@@ -929,36 +744,32 @@ public class ClientHandler extends Thread {
      * @param res  result player in game
      */
     private void setNewInfoAboutUser(String name, int res) {
-        try {
-            File file = new File("users" + File.separator + name + ".xml");
-            Document document = builder.parse(file);
+        File file = new File("users" + File.separator + name + ".xml");
+        Document document = TransformerXML.parseFile(file);
 
-            int gameCount = Integer.parseInt(document.getElementsByTagName("gameCount").item(0).getTextContent());
-            document.getElementsByTagName("gameCount").item(0).setTextContent(Integer.toString(++gameCount));
+        int gameCount = Integer.parseInt(document.getElementsByTagName("gameCount").item(0).getTextContent());
+        document.getElementsByTagName("gameCount").item(0).setTextContent(Integer.toString(++gameCount));
 
-            int rating = Integer.parseInt(document.getElementsByTagName("rating").item(0).getTextContent());
-            rating += res;
-            document.getElementsByTagName("rating").item(0).setTextContent(Integer.toString(rating));
+        int rating = Integer.parseInt(document.getElementsByTagName("rating").item(0).getTextContent());
+        rating += res;
+        document.getElementsByTagName("rating").item(0).setTextContent(Integer.toString(rating));
 
-            int winGames = Integer.parseInt(document.getElementsByTagName("winGames").item(0).getTextContent());
-            if (res > 0) {
-                document.getElementsByTagName("winGames").item(0).setTextContent(Integer.toString(++winGames));
-            }
-            double percentWins = winGames * 100 / gameCount;
-            document.getElementsByTagName("percentWins").item(0).setTextContent(Double.toString(percentWins));
+        int winGames = Integer.parseInt(document.getElementsByTagName("winGames").item(0).getTextContent());
+        if (res > 0) {
+            document.getElementsByTagName("winGames").item(0).setTextContent(Integer.toString(++winGames));
+        }
+        double percentWins = winGames * 100 / gameCount;
+        document.getElementsByTagName("percentWins").item(0).setTextContent(Double.toString(percentWins));
 
-            TransformerXML.transformToFile(document, file);
+        TransformerXML.transformToFile(document, file);
 
-            for (PrintWriter temp : Server.writers) {
-                Player player = Server.userList.get(name);
-                player.setUserGameCount(Integer.toString(gameCount));
-                player.setUserRating(Integer.toString(rating));
-                player.setUserWinGames(Integer.toString(winGames));
-                player.setUserPercentWins(Double.toString(percentWins));
-                temp.println(createXMLForNewUserInfo(player));
-            }
-        } catch (SAXException | IOException e) {
-            LOGGER.error(e);
+        for (PrintWriter temp : Server.writers) {
+            Player player = Server.userList.get(name);
+            player.setUserGameCount(Integer.toString(gameCount));
+            player.setUserRating(Integer.toString(rating));
+            player.setUserWinGames(Integer.toString(winGames));
+            player.setUserPercentWins(Double.toString(percentWins));
+            temp.println(createXMLForNewUserInfo(player));
         }
     }
 
@@ -970,29 +781,13 @@ public class ClientHandler extends Thread {
      * @return xml in string format
      */
     private String createXMLForNewUserInfo(Player player) {
-        Document document = builder.newDocument();
-
+        Document document = TransformerXML.newDocument();
         Element root = createXML(document, "newUserInfo");
-
-        Element name = document.createElement("userName");
-        name.appendChild(document.createTextNode(player.getUserName()));
-        root.appendChild(name);
-
-        Element gameCount = document.createElement("gameCount");
-        gameCount.appendChild(document.createTextNode(player.getUserGameCount()));
-        root.appendChild(gameCount);
-
-        Element rating = document.createElement("rating");
-        rating.appendChild(document.createTextNode(player.getUserRating()));
-        root.appendChild(rating);
-
-        Element percentWins = document.createElement("percentWins");
-        percentWins.appendChild(document.createTextNode(player.getUserPercentWins()));
-        root.appendChild(percentWins);
-
-        StringWriter stringWriter = TransformerXML.transform(document);
-
-        return stringWriter.toString();
+        root.appendChild(TransformerXML.createElement(document, "userName", player.getUserName()));
+        root.appendChild(TransformerXML.createElement(document, "gameCount", player.getUserGameCount()));
+        root.appendChild(TransformerXML.createElement(document, "rating", player.getUserRating()));
+        root.appendChild(TransformerXML.createElement(document, "percentWins", player.getUserPercentWins()));
+        return TransformerXML.transformToString(document);
     }
 
     /**
@@ -1006,13 +801,7 @@ public class ClientHandler extends Thread {
     private Element createXML(Document document, String metaInfo) {
         Element root = document.createElement("body");
         document.appendChild(root);
-
-        Element meta = document.createElement("meta-info");
-        meta.appendChild(document.createTextNode(metaInfo));
-        root.appendChild(meta);
-
+        root.appendChild(TransformerXML.createElement(document, "meta-info", metaInfo));
         return root;
     }
-
 }
-

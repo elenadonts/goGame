@@ -9,8 +9,6 @@ import model.TransformerAndDocumentFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.StringWriter;
-
 /**
  * Class for take info about new room and send
  * request to server with this info
@@ -36,22 +34,11 @@ public class CreateRoomController {
             createRoomError.setText("Room name can't be empty!");
         } else {
             String roomDescription = roomDescriptionField.getText();
-
-            Document doc = TransformerAndDocumentFactory.newDocument();
-
-            Element root = PlayerWindowController.createXML(doc, "createRoom");
-
-            Element roomName = doc.createElement("roomDescription");
-            roomName.appendChild(doc.createTextNode(roomDescription));
-            root.appendChild(roomName);
-
-            Element fieldSize = doc.createElement("fieldSize");
-            fieldSize.appendChild(doc.createTextNode(playerWindowController.fieldSize5.getId()));
-            root.appendChild(fieldSize);
-
-            StringWriter writer = TransformerAndDocumentFactory.transform(doc);
-
-            clientHandler.send(writer.toString());
+            Document document = TransformerAndDocumentFactory.newDocument();
+            Element root = PlayerWindowController.createXML(document, "createRoom");
+            root.appendChild(TransformerAndDocumentFactory.createElement(document,"roomDescription",roomDescription));
+            root.appendChild(TransformerAndDocumentFactory.createElement(document,"fieldSize",playerWindowController.fieldSize5.getId()));
+            clientHandler.send(TransformerAndDocumentFactory.transformToString(document));
             currentStage.close();
         }
     }

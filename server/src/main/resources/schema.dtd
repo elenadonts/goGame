@@ -1,0 +1,38 @@
+<?xml encoding="UTF-8"?>
+
+<!ELEMENT body (login,password,gameCount,rating,percentWins,winGames,
+                admin,banned)>
+<!ATTLIST body
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT login (#PCDATA)>
+<!ATTLIST login
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT password (#PCDATA)>
+<!ATTLIST password
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT gameCount (#PCDATA)>
+<!ATTLIST gameCount
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT rating (#PCDATA)>
+<!ATTLIST rating
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT percentWins (#PCDATA)>
+<!ATTLIST percentWins
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT winGames (#PCDATA)>
+<!ATTLIST winGames
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT admin (#PCDATA)>
+<!ATTLIST admin
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT banned (#PCDATA)>
+<!ATTLIST banned
+  xmlns CDATA #FIXED ''>

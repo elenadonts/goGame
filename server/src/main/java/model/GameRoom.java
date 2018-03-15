@@ -30,7 +30,7 @@ public class GameRoom {
     private boolean hostPassed;
     private static final Logger LOGGER = Logger.getLogger(GameRoom.class);
 
-    GameRoom(String roomDescription, Player player1, PrintWriter printWriter1) {
+    public GameRoom(String roomDescription, Player player1, PrintWriter printWriter1) {
         gameField = new GameField();
         roomId = id++;
         this.roomDescription = roomDescription;
