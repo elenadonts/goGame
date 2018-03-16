@@ -41,7 +41,12 @@ public class ClientHandler extends Thread {
             xmlGenerator.setWriter(writer);
             reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             while ((input = reader.readLine()) != null) {
-                xmlGenerator.readInput(input);
+                if (input.equals("stop") || input.equals("restart")) {
+                    ServerCommand serverCommand = Server.getCommand(input);
+                    Server.handleCommand(serverCommand);
+                } else {
+                    xmlGenerator.readInput(input);
+                }
             }
         } catch (SocketException e) {
             LOGGER.info("User disconnected");

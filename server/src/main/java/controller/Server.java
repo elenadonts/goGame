@@ -16,10 +16,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.SocketTimeoutException;
+import java.net.*;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Main class for start server
@@ -38,9 +38,14 @@ public class Server {
     private static final BufferedReader SERVER_CONSOLE = new BufferedReader(new InputStreamReader(System.in));
     private static boolean isRunning;
     private static ServerSocket server;
-
+    private static String serverArgs;
 
     public static void main(String[] args) {
+        if (args.length > 0) {
+            serverArgs = args[0].toLowerCase();
+        } else {
+            serverArgs = "";
+        }
         runServer();
     }
 
@@ -48,32 +53,46 @@ public class Server {
      * Start server
      */
     private static void runServer() {
-        TransformerXML.createTransformer();
-        isRunning = true;
-        writers = new HashSet<>();
-        userOnline = new HashMap<>();
-        gameRooms = new HashMap<>();
-        uploadUserList();
-        try {
-            server = new ServerSocket(PORT);
-            server.setSoTimeout(500);
-            LOGGER.info("Server starting...");
-            while (isRunning) {
-                try {
-                    if (SERVER_CONSOLE.ready()) {
-                        ServerCommand serverCommand = getCommand(SERVER_CONSOLE.readLine());
-                        handleCommand(serverCommand);
-                    }
-                    ClientHandler clientHandler = new ClientHandler(server.accept());
-                    clientHandler.start();
-                } catch (SocketTimeoutException ex) {
-                    continue;
-                }
+        if (serverArgs.equals("stop") || serverArgs.equals("restart")) {
+            final Socket checkSocket = new Socket();
+            final int timeOut = (int) TimeUnit.SECONDS.toMillis(5); // 5 sec wait period
+            try {
+                checkSocket.connect(new InetSocketAddress("localhost", PORT), timeOut);
+                PrintWriter writer = new PrintWriter(new OutputStreamWriter(checkSocket.getOutputStream()), true);
+                writer.println(serverArgs);
+            } catch (ConnectException e) {
+                LOGGER.error("Server doesn't exist!!!" , e);
+                System.exit(0);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            LOGGER.error("Exception during executing", e);
+        } else {
+            TransformerXML.createTransformer();
+            isRunning = true;
+            writers = new HashSet<>();
+            userOnline = new HashMap<>();
+            gameRooms = new HashMap<>();
+            uploadUserList();
+            try {
+                server = new ServerSocket(PORT);
+                server.setSoTimeout(500);
+                LOGGER.info("Server starting...");
+                while (isRunning) {
+                    try {
+                        if (SERVER_CONSOLE.ready()) {
+                            ServerCommand serverCommand = getCommand(SERVER_CONSOLE.readLine());
+                            handleCommand(serverCommand);
+                        }
+                        ClientHandler clientHandler = new ClientHandler(server.accept());
+                        clientHandler.start();
+                    } catch (SocketTimeoutException ex) {
+                        continue;
+                    }
+                }
+            } catch (IOException e) {
+                LOGGER.error("Exception during executing", e);
+            }
         }
-
     }
 
     /**
@@ -81,7 +100,7 @@ public class Server {
      *
      * @param command command received from console
      */
-    private static void handleCommand(ServerCommand command) {
+    public static void handleCommand(ServerCommand command) {
         switch (command) {
             case STOP:
                 stopServer();
@@ -122,7 +141,7 @@ public class Server {
      * @param command received input
      * @return corresponding command
      */
-    private static ServerCommand getCommand(String command) {
+    public static ServerCommand getCommand(String command) {
         command = command.toLowerCase();
         ServerCommand serverCommand;
         switch (command) {
