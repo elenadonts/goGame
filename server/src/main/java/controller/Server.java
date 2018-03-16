@@ -71,7 +71,7 @@ public class Server {
                 }
             }
         } catch (IOException e) {
-            LOGGER.error(e);
+            LOGGER.error("Exception during executing", e);
         }
 
     }
@@ -112,7 +112,7 @@ public class Server {
         try {
             server.close();
         } catch (IOException e) {
-            LOGGER.error("Exception stopping server");
+            LOGGER.error("Exception stopping server", e);
         }
     }
 
@@ -210,11 +210,11 @@ public class Server {
                 userList.put(player.getUserName(), player);
             }
         } catch (ParserConfigurationException e) {
-            LOGGER.error("ParserConfigurationException", e);
+            LOGGER.error(e);
         } catch (SAXException e) {
-            LOGGER.error("SAXException", e);
+            LOGGER.error(e);
         } catch (IOException e) {
-            LOGGER.error("IOException", e);
+            LOGGER.error(e);
         }
     }
 
