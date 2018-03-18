@@ -43,6 +43,7 @@ public class ClientHandler extends Thread {
             while ((input = reader.readLine()) != null) {
                 if (input.equals("stop") || input.equals("restart")) {
                     ServerCommand serverCommand = Server.getCommand(input);
+                    LOGGER.info("User disconnected");
                     Server.handleCommand(serverCommand);
                 } else {
                     xmlGenerator.readInput(input);

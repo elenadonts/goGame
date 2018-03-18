@@ -54,17 +54,25 @@ public class Server {
      */
     private static void runServer() {
         if (serverArgs.equals("stop") || serverArgs.equals("restart")) {
-            final Socket checkSocket = new Socket();
-            final int timeOut = (int) TimeUnit.SECONDS.toMillis(5); // 5 sec wait period
+            Socket checkSocket = new Socket();
+            int timeOut = (int) TimeUnit.SECONDS.toMillis(5); // 5 sec wait period
+            PrintWriter writer = null;
             try {
                 checkSocket.connect(new InetSocketAddress("localhost", PORT), timeOut);
-                PrintWriter writer = new PrintWriter(new OutputStreamWriter(checkSocket.getOutputStream()), true);
+                writer = new PrintWriter(new OutputStreamWriter(checkSocket.getOutputStream()), true);
                 writer.println(serverArgs);
             } catch (ConnectException e) {
-                LOGGER.error("Server doesn't exist!!!" , e);
+                LOGGER.error("Server doesn't exist" , e);
                 System.exit(0);
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error("Exception during executing", e);
+            } finally {
+                try {
+                    writer.close();
+                    checkSocket.close();
+                } catch (IOException e) {
+                    LOGGER.error("Exception during closing", e);
+                }
             }
         } else {
             TransformerXML.createTransformer();
@@ -82,6 +90,11 @@ public class Server {
                         if (SERVER_CONSOLE.ready()) {
                             ServerCommand serverCommand = getCommand(SERVER_CONSOLE.readLine());
                             handleCommand(serverCommand);
+                        }
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+                            LOGGER.error("Exception during sleeping", e);
                         }
                         ClientHandler clientHandler = new ClientHandler(server.accept());
                         clientHandler.start();

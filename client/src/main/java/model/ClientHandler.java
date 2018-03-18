@@ -54,7 +54,7 @@ public class ClientHandler extends Thread {
         } catch (SocketException e) {
             LOGGER.error("Unable to connect to " + serverIp + ":" + serverPort, e);
             Platform.runLater(() -> {
-                Alert alert = new Alert(Alert.AlertType.ERROR, "Serve offline", ButtonType.OK);
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Server offline", ButtonType.OK);
                 alert.showAndWait();
                 System.exit(0);
             });
