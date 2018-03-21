@@ -41,7 +41,7 @@ import java.util.TimerTask;
  * @author Eugene Lobin
  * @version 1.0 09 Mar 2018
  */
-public class PlayerWindowController {
+public class PlayerWindowController implements ClientConstants {
     private static final Logger LOGGER = Logger.getLogger(PlayerWindowController.class);
     @FXML
     public Label helloUser;
@@ -154,17 +154,17 @@ public class PlayerWindowController {
             System.exit(0);
         });
 
-        userName.setCellValueFactory(new PropertyValueFactory<>("userName"));
-        userGameCount.setCellValueFactory(new PropertyValueFactory<>("userGameCount"));
-        userRating.setCellValueFactory(new PropertyValueFactory<>("userRating"));
-        userPercentWins.setCellValueFactory(new PropertyValueFactory<>("userPercentWins"));
-        userStatus.setCellValueFactory(new PropertyValueFactory<>("userStatus"));
+        userName.setCellValueFactory(new PropertyValueFactory<>(USER_NAME));
+        userGameCount.setCellValueFactory(new PropertyValueFactory<>(USER_GAME_COUNT));
+        userRating.setCellValueFactory(new PropertyValueFactory<>(USER_RATING));
+        userPercentWins.setCellValueFactory(new PropertyValueFactory<>(USER_PERCENT_WINS));
+        userStatus.setCellValueFactory(new PropertyValueFactory<>(USER_STATUS));
         userListTable.setItems(userObsList);
 
-        lobbyHost.setCellValueFactory(new PropertyValueFactory<>("host"));
-        lobbyDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
-        lobbyOnline.setCellValueFactory(new PropertyValueFactory<>("online"));
-        lobbyStatus.setCellValueFactory(new PropertyValueFactory<>("statusGame"));
+        lobbyHost.setCellValueFactory(new PropertyValueFactory<>(HOST));
+        lobbyDescription.setCellValueFactory(new PropertyValueFactory<>(DESCRIPTION));
+        lobbyOnline.setCellValueFactory(new PropertyValueFactory<>(ONLINE));
+        lobbyStatus.setCellValueFactory(new PropertyValueFactory<>(STATUS_GAME));
         lobbyListTable.setItems(gameRoomObsList);
 
         LoginController.setClientHandler(clientHandler);
@@ -190,14 +190,14 @@ public class PlayerWindowController {
         try {
             Document document = TransformerAndDocumentFactory.getDocumentBuilder().parse(new InputSource(new StringReader(input)));
 
-            Node user = document.getElementsByTagName("body").item(0);
-            metaInfo = ((Element) user).getElementsByTagName("meta-info").item(0).getTextContent();
+            Node user = document.getElementsByTagName(BODY).item(0);
+            metaInfo = ((Element) user).getElementsByTagName(META_INFO).item(0).getTextContent();
             Player player;
             GameRoom gameRoom;
             switch (metaInfo) {
-                case "connect":
+                case CONNECT:
                     LOGGER.info("connecting to server");
-                    boolean admin = Boolean.parseBoolean(((Element) user).getElementsByTagName("admin").item(0).getTextContent());
+                    boolean admin = Boolean.parseBoolean(((Element) user).getElementsByTagName(ADMIN).item(0).getTextContent());
                     Platform.runLater(() -> {
                         if (admin) {
                             banUser.setVisible(true);
@@ -229,7 +229,7 @@ public class PlayerWindowController {
                             loginController.setErrorLabel("Current user online now!!!")
                     );
                     break;
-                case "online":
+                case ONLINE:
                     player = getPlayerFromXML((Element) user);
                     if (!player.getUserName().equals(currentPlayer.getUserName())) {
                         if (!checkContainsPlayer(player)) {
@@ -237,15 +237,15 @@ public class PlayerWindowController {
                         }
                     }
                     break;
-                case "offline":
-                    player = new Player(((Element) user).getElementsByTagName("userName").item(0).getTextContent());
+                case OFFLINE:
+                    player = new Player(((Element) user).getElementsByTagName(USER_NAME).item(0).getTextContent());
                     removePlayerFromPlayersList(player);
                     break;
                 case "roomCreated":
-                    roomId = ((Element) user).getElementsByTagName("roomId").item(0).getTextContent();
+                    roomId = ((Element) user).getElementsByTagName(ROOM_ID).item(0).getTextContent();
                     currentGameRoom = new GameRoom(currentPlayer.getUserName(),
-                            ((Element) user).getElementsByTagName("roomDescription").item(0).getTextContent(),
-                            ((Element) user).getElementsByTagName("roomId").item(0).getTextContent());
+                            ((Element) user).getElementsByTagName(ROOM_DESCRIPTION).item(0).getTextContent(),
+                            ((Element) user).getElementsByTagName(ROOM_ID).item(0).getTextContent());
                     addPrivateGameTab(labelHostNickName, labelHostStatus, currentPlayer.getUserName());
                     createRoomButton.disableProperty().setValue(true);
                     connectToRoom.disableProperty().setValue(true);
@@ -260,16 +260,16 @@ public class PlayerWindowController {
                         }
                     }
                     break;
-                case "closeRoom":
+                case CLOSE_ROOM:
                     gameRoom = getGameRoomFromXML((Element) user);
                     removeGameRoomFromGameRoomList(gameRoom);
                     connectToRoom.disableProperty().setValue(false);
                     break;
-                case "changeStatus":
-                    String playerType = ((Element) user).getElementsByTagName("playerType").item(0).getTextContent();
-                    String status = ((Element) user).getElementsByTagName("status").item(0).getTextContent();
+                case CHANGE_STATUS:
+                    String playerType = ((Element) user).getElementsByTagName(PLAYER_TYPE).item(0).getTextContent();
+                    String status = ((Element) user).getElementsByTagName(STATUS).item(0).getTextContent();
                     Platform.runLater(() -> {
-                        if (playerType.equals("host")) {
+                        if (playerType.equals(HOST)) {
                             labelHostStatus.setText(status);
                             currentGameRoom.setStatusHost(status);
                         } else {
@@ -280,10 +280,10 @@ public class PlayerWindowController {
                     break;
 
                 case "connectionAllowed":
-                    roomId = ((Element) user).getElementsByTagName("roomId").item(0).getTextContent();
+                    roomId = ((Element) user).getElementsByTagName(ROOM_ID).item(0).getTextContent();
                     currentGameRoom = new GameRoom(((Element) user).getElementsByTagName("hostName").item(0).getTextContent(),
-                            ((Element) user).getElementsByTagName("roomDescription").item(0).getTextContent(),
-                            ((Element) user).getElementsByTagName("roomId").item(0).getTextContent());
+                            ((Element) user).getElementsByTagName(ROOM_DESCRIPTION).item(0).getTextContent(),
+                            ((Element) user).getElementsByTagName(ROOM_ID).item(0).getTextContent());
                     addPrivateGameTab(labelPlayerNickName, labelPlayerStatus, currentPlayer.getUserName());
                     currentGameRoom.setPlayer(currentPlayer.getUserName());
                     Platform.runLater(() -> {
@@ -299,20 +299,20 @@ public class PlayerWindowController {
                     break;
 
                 case "playerConnectToRoom":
-                    currentGameRoom.setPlayer(((Element) user).getElementsByTagName("playerName").item(0).getTextContent());
+                    currentGameRoom.setPlayer(((Element) user).getElementsByTagName(PLAYER_NAME).item(0).getTextContent());
                     Platform.runLater(() -> {
-                        labelPlayerNickName.setText(((Element) user).getElementsByTagName("playerName").item(0).getTextContent());
-                        labelPlayerStatus.setText("not ready");
+                        labelPlayerNickName.setText(((Element) user).getElementsByTagName(PLAYER_NAME).item(0).getTextContent());
+                        labelPlayerStatus.setText(NOT_READY);
                     });
                     currentGameRoom.setOnline("2");
                     break;
                 case "changeOnline":
                     setOnlineInGameRoom(((Element) user).getElementsByTagName("playerOnline").item(0).getTextContent(),
-                            ((Element) user).getElementsByTagName("roomId").item(0).getTextContent());
+                            ((Element) user).getElementsByTagName(ROOM_ID).item(0).getTextContent());
                     break;
                 case "changeStatusGameRoom":
-                    setStatusInGameRoom(((Element) user).getElementsByTagName("status").item(0).getTextContent(),
-                            ((Element) user).getElementsByTagName("roomId").item(0).getTextContent());
+                    setStatusInGameRoom(((Element) user).getElementsByTagName(STATUS).item(0).getTextContent(),
+                            ((Element) user).getElementsByTagName(ROOM_ID).item(0).getTextContent());
                     break;
                 case "playerDisconnect":
                     currentGameRoom.setPlayer("");
@@ -340,9 +340,9 @@ public class PlayerWindowController {
                     });
                     goGame = null;
                     break;
-                case "startGame":
+                case START_GAME:
                     goGame = new GoGame();
-                    goGame.setNumberOfTiles(Integer.parseInt(((Element) user).getElementsByTagName("numberOfTiles").item(0).getTextContent()));
+                    goGame.setNumberOfTiles(Integer.parseInt(((Element) user).getElementsByTagName(NUMBER_OF_TILES).item(0).getTextContent()));
                     goGame.setTileSize(Double.parseDouble(((Element) user).getElementsByTagName("tileSize").item(0).getTextContent()));
                     Platform.runLater(() -> {
                         gamePane.getChildren().add(goGame.createContent());
@@ -359,9 +359,9 @@ public class PlayerWindowController {
                     startTimer();
                     break;
                 case "resultMove":
-                    double x = Double.parseDouble(((Element) user).getElementsByTagName("xCoordinate").item(0).getTextContent());
-                    double y = Double.parseDouble(((Element) user).getElementsByTagName("yCoordinate").item(0).getTextContent());
-                    String color = ((Element) user).getElementsByTagName("playerColor").item(0).getTextContent();
+                    double x = Double.parseDouble(((Element) user).getElementsByTagName(X_COORDINATE).item(0).getTextContent());
+                    double y = Double.parseDouble(((Element) user).getElementsByTagName(Y_COORDINATE).item(0).getTextContent());
+                    String color = ((Element) user).getElementsByTagName(PLAYER_COLOR).item(0).getTextContent();
                     String blockUser = ((Element) user).getElementsByTagName("blockUser").item(0).getTextContent();
                     String unblockUser = ((Element) user).getElementsByTagName("unblockUser").item(0).getTextContent();
                     if (blockUser.equals(currentPlayer.getUserName())) {
@@ -393,15 +393,15 @@ public class PlayerWindowController {
                 case "removePoint":
                     NodeList nodeList = document.getElementsByTagName("coordinate");
                     for (int i = 0; i < nodeList.getLength(); i++) {
-                        double xCoordinate = Double.parseDouble(nodeList.item(i).getAttributes().getNamedItem("xCoordinate").getTextContent());
-                        double yCoordinate = Double.parseDouble(nodeList.item(i).getAttributes().getNamedItem("yCoordinate").getTextContent());
+                        double xCoordinate = Double.parseDouble(nodeList.item(i).getAttributes().getNamedItem(X_COORDINATE).getTextContent());
+                        double yCoordinate = Double.parseDouble(nodeList.item(i).getAttributes().getNamedItem(Y_COORDINATE).getTextContent());
                         Platform.runLater(() -> goGame.removeStone(xCoordinate, yCoordinate));
                     }
                     break;
-                case "changeFieldSize":
+                case CHANGE_FIELD_SIZE:
                     setRadioButtonSelected(((Element) user).getElementsByTagName("radioButtonId").item(0).getTextContent());
                     break;
-                case "playerPassed":
+                case PLAYER_PASSED:
                     Platform.runLater(() -> playerProgressName.setText(currentPlayer.getUserName()));
                     startTimer();
                     gamePane.setDisable(false);
@@ -411,7 +411,7 @@ public class PlayerWindowController {
                     int white = Integer.parseInt(((Element) user).getElementsByTagName("white").item(0).getTextContent());
                     int black = Integer.parseInt(((Element) user).getElementsByTagName("black").item(0).getTextContent());
                     String res;
-                    String winName = ((Element) user).getElementsByTagName("userName").item(0).getTextContent();
+                    String winName = ((Element) user).getElementsByTagName(USER_NAME).item(0).getTextContent();
                     if (white > black) {
                         res = "Win: " + winName + " with " + (white - black) + " points";
                     } else if (black > white) {
@@ -451,7 +451,7 @@ public class PlayerWindowController {
                     });
                     break;
                 case "newUserInfo":
-                    Player newUserInfo = new Player(((Element) user).getElementsByTagName("userName").item(0).getTextContent(),
+                    Player newUserInfo = new Player(((Element) user).getElementsByTagName(USER_NAME).item(0).getTextContent(),
                             ((Element) user).getElementsByTagName("gameCount").item(0).getTextContent(),
                             ((Element) user).getElementsByTagName("rating").item(0).getTextContent(),
                             ((Element) user).getElementsByTagName("percentWins").item(0).getTextContent());
@@ -539,7 +539,7 @@ public class PlayerWindowController {
             tabPane.getTabs().add(privateRoomTab);
             tabPane.setSelectionModel(gameRoomTabSelectionModel);
             labelName.setText(playerName);
-            labelStatus.setText("not ready");
+            labelStatus.setText(NOT_READY);
         });
     }
 
@@ -595,10 +595,10 @@ public class PlayerWindowController {
      * @return new player object
      */
     private Player getPlayerFromXML(Element element) {
-        return new Player(element.getElementsByTagName("userName").item(0).getTextContent(),
-                element.getElementsByTagName("userGameCount").item(0).getTextContent(),
-                element.getElementsByTagName("userRating").item(0).getTextContent(),
-                element.getElementsByTagName("userPercentWins").item(0).getTextContent());
+        return new Player(element.getElementsByTagName(USER_NAME).item(0).getTextContent(),
+                element.getElementsByTagName(USER_GAME_COUNT).item(0).getTextContent(),
+                element.getElementsByTagName(USER_RATING).item(0).getTextContent(),
+                element.getElementsByTagName(USER_PERCENT_WINS).item(0).getTextContent());
     }
 
     /**
@@ -609,8 +609,8 @@ public class PlayerWindowController {
      */
     private GameRoom getGameRoomFromXML(Element element) {
         GameRoom gameRoom = new GameRoom(element.getElementsByTagName("roomHost").item(0).getTextContent(),
-                element.getElementsByTagName("roomDescription").item(0).getTextContent(),
-                element.getElementsByTagName("roomId").item(0).getTextContent());
+                element.getElementsByTagName(ROOM_DESCRIPTION).item(0).getTextContent(),
+                element.getElementsByTagName(ROOM_ID).item(0).getTextContent());
         gameRoom.setOnline(element.getElementsByTagName("roomOnline").item(0).getTextContent());
         gameRoom.setStatusGame(element.getElementsByTagName("gameStatus").item(0).getTextContent());
         return gameRoom;
@@ -678,12 +678,12 @@ public class PlayerWindowController {
         Document doc = TransformerAndDocumentFactory.newDocument();
         Element root;
         if (currentGameRoom.getHost().equals(currentPlayer.getUserName())) {
-            root = createXML(doc, "closeRoom");
+            root = createXML(doc, CLOSE_ROOM);
         } else {
             root = createXML(doc, "disconnectingFromRoom");
         }
 
-        root.appendChild(TransformerAndDocumentFactory.createElement(doc, "roomId", roomId));
+        root.appendChild(TransformerAndDocumentFactory.createElement(doc, ROOM_ID, roomId));
 
         clientHandler.send(TransformerAndDocumentFactory.transformToString(doc));
 
@@ -716,27 +716,27 @@ public class PlayerWindowController {
             if (!labelHostStatus.getText().isEmpty()) {
                 currStatus = labelHostStatus.getText();
             }
-            playerType = "host";
+            playerType = HOST;
         } else if (!labelPlayerStatus.getText().isEmpty()) {
             currStatus = labelPlayerStatus.getText();
         }
         if (!currStatus.isEmpty()) {
             switch (currStatus) {
-                case "ready":
-                    currStatus = "not ready";
+                case READY:
+                    currStatus = NOT_READY;
                     break;
-                case "not ready":
-                    currStatus = "ready";
+                case NOT_READY:
+                    currStatus = READY;
                     break;
                 default:
                     currStatus = "unknown status";
                     break;
             }
             Document doc = TransformerAndDocumentFactory.newDocument();
-            Element root = createXML(doc, "changeStatus");
-            root.appendChild(TransformerAndDocumentFactory.createElement(doc, "idRoom", roomId));
-            root.appendChild(TransformerAndDocumentFactory.createElement(doc, "status", currStatus));
-            root.appendChild(TransformerAndDocumentFactory.createElement(doc, "playerType", playerType));
+            Element root = createXML(doc, CHANGE_STATUS);
+            root.appendChild(TransformerAndDocumentFactory.createElement(doc, ID_ROOM, roomId));
+            root.appendChild(TransformerAndDocumentFactory.createElement(doc, STATUS, currStatus));
+            root.appendChild(TransformerAndDocumentFactory.createElement(doc, PLAYER_TYPE, playerType));
             clientHandler.send(TransformerAndDocumentFactory.transformToString(doc));
         }
 
@@ -752,7 +752,7 @@ public class PlayerWindowController {
         if (gameRoom != null) {
             Document doc = TransformerAndDocumentFactory.newDocument();
             Element root = createXML(doc, "connectToRoom");
-            root.appendChild(TransformerAndDocumentFactory.createElement(doc, "idRoom", gameRoom.getIdRoom()));
+            root.appendChild(TransformerAndDocumentFactory.createElement(doc, ID_ROOM, gameRoom.getIdRoom()));
             clientHandler.send(TransformerAndDocumentFactory.transformToString(doc));
         }
     }
@@ -818,8 +818,8 @@ public class PlayerWindowController {
      * sends to server info about this
      */
     public void startGameClick() {
-        if (currentGameRoom.getOnline().equals("2/2") && currentGameRoom.getStatusHost().equals("ready")
-                && currentGameRoom.getStatusPlayer().equals("ready")) {
+        if (currentGameRoom.getOnline().equals("2/2") && currentGameRoom.getStatusHost().equals(READY)
+                && currentGameRoom.getStatusPlayer().equals(READY)) {
             clientHandler.send(startGame());
             currentGameRoom.setStatusGame("in game");
         }
@@ -833,8 +833,8 @@ public class PlayerWindowController {
     private String startGame() {
         int numberOfTiles = Integer.parseInt(filedSizeGroup.getSelectedToggle().getUserData().toString());
         Document document = TransformerAndDocumentFactory.newDocument();
-        Element root = createXML(document, "startGame");
-        root.appendChild(TransformerAndDocumentFactory.createElement(document, "numberOfTiles", Integer.toString(numberOfTiles)));
+        Element root = createXML(document, START_GAME);
+        root.appendChild(TransformerAndDocumentFactory.createElement(document, NUMBER_OF_TILES, Integer.toString(numberOfTiles)));
         startGame.disableProperty().set(true);
         return TransformerAndDocumentFactory.transformToString(document);
     }
@@ -851,10 +851,10 @@ public class PlayerWindowController {
     public String sendCoordinatesToServer(double x, double y, String color) {
         Document document = TransformerAndDocumentFactory.newDocument();
         Element root = createXML(document, "playerMove");
-        root.appendChild(TransformerAndDocumentFactory.createElement(document, "xCoordinate", Double.toString(x)));
-        root.appendChild(TransformerAndDocumentFactory.createElement(document, "yCoordinate", Double.toString(y)));
-        root.appendChild(TransformerAndDocumentFactory.createElement(document, "playerColor", color));
-        root.appendChild(TransformerAndDocumentFactory.createElement(document, "userName", currentPlayer.getUserName()));
+        root.appendChild(TransformerAndDocumentFactory.createElement(document, X_COORDINATE, Double.toString(x)));
+        root.appendChild(TransformerAndDocumentFactory.createElement(document, Y_COORDINATE, Double.toString(y)));
+        root.appendChild(TransformerAndDocumentFactory.createElement(document, PLAYER_COLOR, color));
+        root.appendChild(TransformerAndDocumentFactory.createElement(document, USER_NAME, currentPlayer.getUserName()));
         return TransformerAndDocumentFactory.transformToString(document);
     }
 
@@ -889,8 +889,8 @@ public class PlayerWindowController {
             Platform.runLater(() -> playerProgressName.setText(currentGameRoom.getHost()));
         }
         Document document = TransformerAndDocumentFactory.newDocument();
-        Element root = createXML(document, "playerPassed");
-        root.appendChild(TransformerAndDocumentFactory.createElement(document, "userName", currentPlayer.getUserName()));
+        Element root = createXML(document, PLAYER_PASSED);
+        root.appendChild(TransformerAndDocumentFactory.createElement(document, USER_NAME, currentPlayer.getUserName()));
         clientHandler.send(TransformerAndDocumentFactory.transformToString(document));
     }
 
@@ -901,7 +901,7 @@ public class PlayerWindowController {
     public void changeFieldSize(MouseEvent mouseEvent) {
         RadioButton radioButton = (RadioButton) mouseEvent.getSource();
         Document document = TransformerAndDocumentFactory.newDocument();
-        Element root = createXML(document, "changeFieldSize");
+        Element root = createXML(document, CHANGE_FIELD_SIZE);
         root.appendChild(TransformerAndDocumentFactory.createElement(document, "buttonId", radioButton.getId()));
         root.appendChild(TransformerAndDocumentFactory.createElement(document, "fieldSize", radioButton.getUserData().toString()));
         clientHandler.send(TransformerAndDocumentFactory.transformToString(document));
@@ -917,7 +917,7 @@ public class PlayerWindowController {
         if (player != null) {
             Document document = TransformerAndDocumentFactory.newDocument();
             Element root = createXML(document, "banUser");
-            root.appendChild(TransformerAndDocumentFactory.createElement(document, "userName", player.getUserName()));
+            root.appendChild(TransformerAndDocumentFactory.createElement(document, USER_NAME, player.getUserName()));
             clientHandler.send(TransformerAndDocumentFactory.transformToString(document));
         }
     }
@@ -931,9 +931,9 @@ public class PlayerWindowController {
      * @return root element
      */
     public static Element createXML(Document document, String metaInfo) {
-        Element root = document.createElement("body");
+        Element root = document.createElement(BODY);
         document.appendChild(root);
-        root.appendChild(TransformerAndDocumentFactory.createElement(document, "meta-info", metaInfo));
+        root.appendChild(TransformerAndDocumentFactory.createElement(document, META_INFO, metaInfo));
         return root;
     }
 
