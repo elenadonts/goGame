@@ -80,7 +80,7 @@ public class XMLGenerator implements ServerConstants {
                 }
             }
         } catch (SAXException | IOException e) {
-            LOGGER.error(e);
+            LOGGER.error("Exception while reading xml", e);
         }
     }
 
@@ -461,7 +461,7 @@ public class XMLGenerator implements ServerConstants {
             root.appendChild(TransformerXML.createElement(doc, BANNED, FALSE));
             transformer.transform(new DOMSource(doc), new StreamResult(file));
         } catch (TransformerException e) {
-            LOGGER.error(e);
+            LOGGER.error("Exception while creating new user", e);
         }
         return newPlayer;
     }

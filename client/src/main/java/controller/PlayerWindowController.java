@@ -464,7 +464,7 @@ public class PlayerWindowController implements ClientConstants {
                     });
                     break;
                 default:
-                    System.out.println("Default:" + input);
+                    LOGGER.warn("Default:" + input);
                     break;
             }
         } catch (SAXException | IOException e) {

@@ -226,7 +226,7 @@ public class Server {
                     }
                 }
                 if (isXMLBroken) {
-                    System.out.println(isXMLBroken);
+                    LOGGER.warn(isXMLBroken);
                     continue;
                 }
                 player.setUserName(login);

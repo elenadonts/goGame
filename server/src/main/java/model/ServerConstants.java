@@ -1,8 +1,5 @@
 package model;
 
-/**
- * Created by 2017 on 21.03.2018.
- */
 public interface ServerConstants {
     String ADMIN = "admin";
     String BANNED = "banned";

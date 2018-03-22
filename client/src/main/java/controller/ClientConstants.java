@@ -1,8 +1,5 @@
 package controller;
 
-/**
- * Created by 2017 on 21.03.2018.
- */
 public interface ClientConstants {
     String ADMIN = "admin";
     String BODY = "body";
