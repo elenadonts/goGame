@@ -8,6 +8,7 @@ public interface ClientConstants {
     String CLOSE_ROOM = "closeRoom";
     String CONNECT = "connect";
     String DESCRIPTION = "description";
+    String EMPTY_STRING = "";
     String HOST = "host";
     String ID_ROOM = "idRoom";
     String META_INFO = "meta-info";
@@ -25,6 +26,7 @@ public interface ClientConstants {
     String START_GAME = "startGame";
     String STATUS = "status";
     String STATUS_GAME = "statusGame";
+    String TWO_NUMBER = "2";
     String USER_GAME_COUNT = "userGameCount";
     String USER_NAME = "userName";
     String USER_PERCENT_WINS = "userPercentWins";

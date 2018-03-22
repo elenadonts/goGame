@@ -186,7 +186,7 @@ public class PlayerWindowController implements ClientConstants {
      * @param input xml form server in string format
      */
     public void readXML(String input) {
-        String metaInfo = "";
+        String metaInfo = EMPTY_STRING;
         try {
             Document document = TransformerAndDocumentFactory.getDocumentBuilder().parse(new InputSource(new StringReader(input)));
 
@@ -295,7 +295,7 @@ public class PlayerWindowController implements ClientConstants {
                     createRoomButton.disableProperty().setValue(true);
                     connectToRoom.disableProperty().setValue(true);
                     startGame.disableProperty().setValue(true);
-                    currentGameRoom.setOnline("2");
+                    currentGameRoom.setOnline(TWO_NUMBER);
                     break;
 
                 case "playerConnectToRoom":
@@ -304,7 +304,7 @@ public class PlayerWindowController implements ClientConstants {
                         labelPlayerNickName.setText(((Element) user).getElementsByTagName(PLAYER_NAME).item(0).getTextContent());
                         labelPlayerStatus.setText(NOT_READY);
                     });
-                    currentGameRoom.setOnline("2");
+                    currentGameRoom.setOnline(TWO_NUMBER);
                     break;
                 case "changeOnline":
                     setOnlineInGameRoom(((Element) user).getElementsByTagName("playerOnline").item(0).getTextContent(),
@@ -315,22 +315,22 @@ public class PlayerWindowController implements ClientConstants {
                             ((Element) user).getElementsByTagName(ROOM_ID).item(0).getTextContent());
                     break;
                 case "playerDisconnect":
-                    currentGameRoom.setPlayer("");
+                    currentGameRoom.setPlayer(EMPTY_STRING);
                     Platform.runLater(() -> {
-                        labelPlayerNickName.setText("");
-                        labelPlayerStatus.setText("");
+                        labelPlayerNickName.setText(EMPTY_STRING);
+                        labelPlayerStatus.setText(EMPTY_STRING);
                         currentGameRoom.setOnline("1");
                     });
                     break;
                 case "hostCloseRoom":
                     currentGameRoom = new GameRoom();
-                    roomId = "";
+                    roomId = EMPTY_STRING;
                     Platform.runLater(() -> {
                         tabPane.getTabs().remove(privateRoomTab);
                         Alert alert = new Alert(Alert.AlertType.INFORMATION, "Host closed this room", ButtonType.OK);
                         alert.showAndWait();
-                        labelPlayerStatus.setText("");
-                        labelPlayerNickName.setText("");
+                        labelPlayerStatus.setText(EMPTY_STRING);
+                        labelPlayerNickName.setText(EMPTY_STRING);
                         buttonReady.disableProperty().setValue(false);
                         startGame.disableProperty().setValue(false);
                         createRoomButton.disableProperty().setValue(false);
@@ -424,20 +424,20 @@ public class PlayerWindowController implements ClientConstants {
                         tabPane.getTabs().remove(privateRoomTab);
                         Alert alert = new Alert(Alert.AlertType.INFORMATION, res, ButtonType.OK);
                         alert.showAndWait();
-                        labelPlayerStatus.setText("");
-                        labelPlayerNickName.setText("");
+                        labelPlayerStatus.setText(EMPTY_STRING);
+                        labelPlayerNickName.setText(EMPTY_STRING);
                         buttonReady.disableProperty().setValue(false);
                         startGame.disableProperty().setValue(false);
                         createRoomButton.disableProperty().setValue(false);
                         fieldSize5.selectedProperty().setValue(true);
                         gamePane.getChildren().clear();
                         fieldSizePane.setDisable(false);
-                        timeLabel.setText("");
-                        playerProgressName.setText("");
+                        timeLabel.setText(EMPTY_STRING);
+                        playerProgressName.setText(EMPTY_STRING);
                     });
                     removeGameRoomFromGameRoomList(currentGameRoom);
                     currentGameRoom = new GameRoom();
-                    roomId = "";
+                    roomId = EMPTY_STRING;
                     goGame = null;
 
                     timer.cancel();
@@ -688,15 +688,15 @@ public class PlayerWindowController implements ClientConstants {
         clientHandler.send(TransformerAndDocumentFactory.transformToString(doc));
 
         connectToRoom.disableProperty().setValue(false);
-        roomId = "";
+        roomId = EMPTY_STRING;
         currentGameRoom = new GameRoom();
         goGame = null;
         Platform.runLater(() -> {
             tabPane.getTabs().remove(privateRoomTab);
             createRoomButton.disableProperty().setValue(false);
             gamePane.getChildren().clear();
-            labelPlayerNickName.setText("");
-            labelPlayerStatus.setText("");
+            labelPlayerNickName.setText(EMPTY_STRING);
+            labelPlayerStatus.setText(EMPTY_STRING);
             buttonReady.disableProperty().setValue(false);
             startGame.disableProperty().setValue(false);
             fieldSizePane.setDisable(false);
@@ -711,7 +711,7 @@ public class PlayerWindowController implements ClientConstants {
      */
     public void changeStatus() {
         String playerType = "not host";
-        String currStatus = "";
+        String currStatus = EMPTY_STRING;
         if (currentGameRoom.getHost().equals(currentPlayer.getUserName())) {
             if (!labelHostStatus.getText().isEmpty()) {
                 currStatus = labelHostStatus.getText();

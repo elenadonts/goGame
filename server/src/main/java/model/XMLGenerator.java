@@ -56,7 +56,7 @@ public class XMLGenerator implements ServerConstants {
             Document document = TransformerXML.newDocument();
             document = createXML((Element) user, document);
 
-            if (!document.getElementsByTagName(META_INFO).item(0).getTextContent().equals("")) {
+            if (!document.getElementsByTagName(META_INFO).item(0).getTextContent().equals(EMPTY_STRING)) {
                 writer.println(TransformerXML.transformToString(document));
             }
 
@@ -327,7 +327,7 @@ public class XMLGenerator implements ServerConstants {
                     currentRoom.getGameField().countPlayersScore();
                     int white = currentRoom.getGameField().getWhiteCount();
                     int black = currentRoom.getGameField().getBlackCount();
-                    String winName = "";
+                    String winName = EMPTY_STRING;
                     if (white > black) {
                         winName = currentRoom.getPlayer().getUserName();
                     } else if (black > white) {
@@ -453,10 +453,10 @@ public class XMLGenerator implements ServerConstants {
 
             root.appendChild(TransformerXML.createElement(doc, LOGIN, login));
             root.appendChild(TransformerXML.createElement(doc, PASSWORD, password));
-            root.appendChild(TransformerXML.createElement(doc, GAME_COUNT, "0"));
+            root.appendChild(TransformerXML.createElement(doc, GAME_COUNT, ZERO_NUMBER));
             root.appendChild(TransformerXML.createElement(doc, RATING, "100"));
-            root.appendChild(TransformerXML.createElement(doc, PERCENT_WINS, "0"));
-            root.appendChild(TransformerXML.createElement(doc, WIN_GAMES, "0"));
+            root.appendChild(TransformerXML.createElement(doc, PERCENT_WINS, ZERO_NUMBER));
+            root.appendChild(TransformerXML.createElement(doc, WIN_GAMES, ZERO_NUMBER));
             root.appendChild(TransformerXML.createElement(doc, ADMIN, FALSE));
             root.appendChild(TransformerXML.createElement(doc, BANNED, FALSE));
             transformer.transform(new DOMSource(doc), new StreamResult(file));

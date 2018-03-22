@@ -8,6 +8,7 @@ public interface ServerConstants {
     String CHANGE_STATUS = "changeStatus";
     String CLOSE_ROOM = "closeRoom";
     String CONNECT = "connect";
+    String EMPTY_STRING = "";
     String FALSE = "false";
     String GAME_COUNT = "gameCount";
     String HOST_CLOSE_ROOM = "hostCloseRoom";
@@ -36,4 +37,5 @@ public interface ServerConstants {
     String WIN_GAMES = "winGames";
     String X_COORDINATE = "xCoordinate";
     String Y_COORDINATE = "yCoordinate";
+    String ZERO_NUMBER = "0";
 }
