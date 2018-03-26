@@ -591,7 +591,7 @@ public class XMLGenerator implements ServerConstants {
      * @param meta information for client
      * @return xml in string format
      */
-    private String createXMLWithMeta(String meta) {
+    public String createXMLWithMeta(String meta) {
         Document document = TransformerXML.newDocument();
         createXML(document, meta);
         return TransformerXML.transformToString(document);

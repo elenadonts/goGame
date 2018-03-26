@@ -229,6 +229,13 @@ public class PlayerWindowController implements ClientConstants {
                             loginController.setErrorLabel("Current user online now!!!")
                     );
                     break;
+                case "restart":
+                    Platform.runLater(() -> {
+                        Alert alert = new Alert(Alert.AlertType.ERROR, "Server restarting", ButtonType.OK);
+                        alert.showAndWait();
+                        System.exit(0);
+                    });
+                    break;
                 case ONLINE:
                     player = getPlayerFromXML((Element) user);
                     if (!player.getUserName().equals(currentPlayer.getUserName())) {

@@ -3,6 +3,7 @@ package controller;
 import model.GameRoom;
 import model.Player;
 import model.TransformerXML;
+import model.XMLGenerator;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -62,7 +63,7 @@ public class Server {
                 writer = new PrintWriter(new OutputStreamWriter(checkSocket.getOutputStream()), true);
                 writer.println(serverArgs);
             } catch (ConnectException e) {
-                LOGGER.error("Server doesn't exist" , e);
+                LOGGER.error("Server doesn't exist", e);
                 System.exit(0);
             } catch (IOException e) {
                 LOGGER.error("Exception during executing", e);
@@ -131,6 +132,9 @@ public class Server {
      */
     private static void restartServer() {
         LOGGER.info("Restarting server");
+        for (PrintWriter writer : writers) {
+            writer.println(new XMLGenerator().createXMLWithMeta("restart"));
+        }
         stopServer();
         runServer();
     }
